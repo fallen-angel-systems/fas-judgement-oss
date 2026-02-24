@@ -1,0 +1,1056 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Judgement OSS</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: #0a0a0f;
+    color: #e0e0e0;
+    font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* Header */
+  .header {
+    background: linear-gradient(135deg, #1a0a0a 0%, #0a0a1a 100%);
+    border-bottom: 2px solid #ff2222;
+    padding: 12px 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-shrink: 0;
+  }
+  .header-left { display: flex; flex-direction: column; justify-content: center; }
+  .header-left .version-line { font-size: 10px; color: #444; letter-spacing: 2px; }
+  #wopr-text {
+    font-size: 22px; font-weight: bold; color: #ff2222; letter-spacing: 4px;
+    text-shadow: 0 0 20px rgba(255,34,34,0.3); height: 30px; line-height: 30px;
+    overflow: hidden; transition: opacity 0.3s ease;
+  }
+  .header-left .tagline { font-size: 10px; color: #553333; letter-spacing: 2px; }
+  .header-right { display: flex; align-items: center; gap: 14px; }
+  .header-right h1 { color: #ff4444; font-size: 24px; text-shadow: 0 0 20px rgba(255,68,68,0.5); text-align: right; }
+  .header-right .subtitle { color: #888; font-size: 11px; text-align: right; }
+
+  /* Top Nav */
+  .top-nav {
+    background: #0d0d14; border-bottom: 1px solid #222;
+    display: flex; padding: 0 20px; flex-shrink: 0;
+  }
+  .top-nav .nav-tab {
+    padding: 10px 24px; cursor: pointer; color: #888; font-size: 13px;
+    letter-spacing: 1px; border-bottom: 2px solid transparent;
+    transition: color 0.2s, border-color 0.2s; user-select: none;
+  }
+  .top-nav .nav-tab:hover { color: #ccc; }
+  .top-nav .nav-tab.active { color: #ff4444; border-bottom-color: #ff4444; }
+
+  /* Pages */
+  .page { display: none !important; flex: 1; overflow: hidden; }
+  .page.active { display: flex !important; }
+
+  /* Attack page */
+  .attack-page { display: flex; height: 100%; }
+  .attack-page .sidebar {
+    background: #0d0d14; border-right: 1px solid #222; overflow-y: auto;
+    padding: 16px; width: 380px; min-width: 280px; flex-shrink: 0;
+  }
+  .attack-page .resize-handle {
+    background: #1a1a24; cursor: col-resize; width: 6px; display: flex;
+    align-items: center; justify-content: center; transition: background 0.2s; flex-shrink: 0;
+  }
+  .attack-page .resize-handle:hover, .attack-page .resize-handle.dragging { background: #ff4444; }
+  .attack-page .resize-handle::after { content: '\22EE'; color: #444; font-size: 14px; }
+  .attack-page .resize-handle:hover::after, .attack-page .resize-handle.dragging::after { color: #fff; }
+  .attack-page .main { flex: 1; overflow-y: auto; padding: 16px; display: flex; flex-direction: column; }
+
+  /* Shared form styles */
+  .section { margin-bottom: 16px; }
+  .section-title {
+    color: #ff4444; font-size: 12px; text-transform: uppercase; letter-spacing: 2px;
+    margin-bottom: 8px; border-bottom: 1px solid #222; padding-bottom: 4px;
+  }
+  .section-title.collapsible { cursor: pointer; user-select: none; }
+  .section-title.collapsible:hover { color: #ff6666; }
+  .section-content.collapsed { display: none; }
+
+  input, textarea, select {
+    width: 100%; background: #111118; border: 1px solid #333; color: #e0e0e0;
+    padding: 8px 12px; border-radius: 4px; font-family: inherit; font-size: 13px; margin-bottom: 8px;
+  }
+  input:focus, textarea:focus, select:focus { outline: none; border-color: #ff4444; box-shadow: 0 0 5px rgba(255,68,68,0.3); }
+  textarea { resize: vertical; min-height: 60px; }
+  select { cursor: pointer; }
+
+  label { display: flex; align-items: center; gap: 8px; font-size: 13px; cursor: pointer; padding: 4px 0; }
+  label:hover { color: #fff; }
+  input[type="checkbox"] { width: auto; margin: 0; accent-color: #ff4444; }
+
+  .category-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 2px 12px; }
+  .cat-count { color: #666; font-size: 11px; }
+
+  .btn-row { display: flex; gap: 8px; margin-bottom: 8px; }
+  .btn-small {
+    background: #1a1a24; border: 1px solid #333; color: #aaa; padding: 4px 10px;
+    border-radius: 3px; cursor: pointer; font-size: 11px; font-family: inherit;
+  }
+  .btn-small:hover { border-color: #ff4444; color: #ff4444; }
+
+  .btn-primary {
+    background: linear-gradient(135deg, #cc0000 0%, #ff2222 100%); border: 1px solid #ff4444;
+    color: white; padding: 8px 16px; border-radius: 4px; cursor: pointer;
+    font-family: inherit; font-size: 13px; font-weight: bold;
+  }
+  .btn-primary:hover { background: linear-gradient(135deg, #ff0000 0%, #ff4444 100%); }
+  .btn-primary:disabled { background: #333; border-color: #555; cursor: not-allowed; }
+
+  .btn-secondary {
+    background: #1a1a2a; border: 1px solid #4444aa; color: #8888ff; padding: 8px 16px;
+    border-radius: 4px; cursor: pointer; font-family: inherit; font-size: 12px;
+  }
+  .btn-secondary:hover { border-color: #8888ff; color: #aaaaff; }
+
+  .pattern-count { color: #ff4444; font-size: 14px; font-weight: bold; text-align: center; margin: 10px 0; }
+
+  .fire-btn {
+    width: 100%; background: linear-gradient(135deg, #cc0000 0%, #ff2222 100%);
+    border: 2px solid #ff4444; color: white; padding: 14px; font-size: 18px;
+    font-weight: bold; font-family: inherit; border-radius: 6px; cursor: pointer;
+    text-transform: uppercase; letter-spacing: 4px;
+    text-shadow: 0 0 10px rgba(255,255,255,0.5); box-shadow: 0 0 20px rgba(255,0,0,0.3); transition: all 0.2s;
+  }
+  .fire-btn:hover { background: linear-gradient(135deg, #ff0000 0%, #ff4444 100%); box-shadow: 0 0 40px rgba(255,0,0,0.5); transform: scale(1.02); }
+  .fire-btn:disabled { background: #333; border-color: #555; box-shadow: none; cursor: not-allowed; transform: none; }
+  .fire-btn.running { background: linear-gradient(135deg, #cc6600 0%, #ff8800 100%); border-color: #ff8800; box-shadow: 0 0 20px rgba(255,136,0,0.3); animation: pulse 1.5s infinite; }
+  @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.7; } }
+
+  .stop-btn { width: 100%; background: #333; border: 2px solid #666; color: #ccc; padding: 8px; font-size: 12px; font-family: inherit; border-radius: 4px; cursor: pointer; margin-top: 8px; display: none; }
+
+  /* Sticky results bar */
+  .sticky-action-bar {
+    position: sticky; top: 0; z-index: 10; background: #111118; border: 1px solid #222;
+    border-radius: 6px; padding: 10px 16px; margin-bottom: 12px; display: none;
+    flex-wrap: wrap; align-items: center; gap: 16px;
+  }
+  .sticky-action-bar.visible { display: flex; }
+  .sticky-action-bar .stat { display: flex; flex-direction: column; align-items: center; }
+  .sticky-action-bar .stat-value { font-size: 20px; font-weight: bold; }
+  .sticky-action-bar .stat-label { font-size: 10px; color: #888; text-transform: uppercase; }
+  .sticky-action-bar .stat.blocked .stat-value { color: #44ff44; }
+  .sticky-action-bar .stat.partial .stat-value { color: #ffaa00; }
+  .sticky-action-bar .stat.bypassed .stat-value { color: #ff4444; }
+  .sticky-action-bar .stat.errors .stat-value { color: #666; }
+  .sticky-action-bar .stat.progress .stat-value { color: #4488ff; }
+  .sticky-action-bar .bar-actions { margin-left: auto; display: flex; gap: 8px; align-items: center; }
+
+  .progress-bar { width: 100%; height: 4px; background: #222; border-radius: 2px; margin-bottom: 12px; overflow: hidden; display: none; }
+  .progress-fill { height: 100%; background: linear-gradient(90deg, #ff4444, #ff8800); border-radius: 2px; transition: width 0.3s; width: 0%; }
+
+  /* Results */
+  .result-item {
+    display: grid; grid-template-columns: 70px 120px 1fr 80px 60px; align-items: center;
+    gap: 10px; padding: 8px 12px; border-bottom: 1px solid #1a1a1a; font-size: 12px; cursor: pointer; transition: background 0.1s;
+  }
+  .result-item:hover { background: #151520; }
+
+  .verdict-badge { padding: 3px 8px; border-radius: 3px; font-size: 10px; font-weight: bold; text-align: center; text-transform: uppercase; }
+  .verdict-BLOCKED { background: #0a2a0a; color: #44ff44; border: 1px solid #22aa22; }
+  .verdict-PARTIAL { background: #2a2a0a; color: #ffaa00; border: 1px solid #aa8800; }
+  .verdict-BYPASS { background: #2a0a0a; color: #ff4444; border: 1px solid #aa2222; }
+  .verdict-ERROR { background: #1a1a1a; color: #666; border: 1px solid #444; }
+
+  .category-badge { padding: 2px 6px; border-radius: 3px; font-size: 10px; background: #1a1a2a; color: #8888cc; border: 1px solid #333355; max-width: 120px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .pattern-text { color: #aaa; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; }
+  .response-time { color: #666; text-align: right; }
+
+  .result-detail { display: none; padding: 12px; background: #0a0a12; border: 1px solid #222; border-radius: 4px; margin: 4px 0 8px 0; font-size: 12px; }
+  .result-detail.open { display: block; }
+  .result-detail pre { background: #050508; padding: 8px; border-radius: 3px; overflow-x: auto; max-height: 200px; overflow-y: auto; margin: 6px 0; white-space: pre-wrap; word-break: break-all; font-size: 11px; color: #aaa; }
+  .detail-label { color: #ff4444; font-size: 11px; text-transform: uppercase; margin-top: 8px; }
+
+  /* Sub-tabs */
+  .attack-sub-tabs { display: flex; gap: 0; margin-bottom: 12px; border-bottom: 2px solid #222; }
+  .attack-sub-tab { padding: 8px 20px; cursor: pointer; color: #888; border-bottom: 2px solid transparent; margin-bottom: -2px; font-size: 13px; }
+  .attack-sub-tab:hover { color: #ccc; }
+  .attack-sub-tab.active { color: #ff4444; border-bottom-color: #ff4444; }
+  .attack-sub-content { display: none; }
+  .attack-sub-content.active { display: block; }
+
+  .history-item { padding: 10px 12px; border: 1px solid #222; border-radius: 4px; margin-bottom: 6px; cursor: pointer; transition: border-color 0.2s; font-size: 12px; }
+  .history-item:hover { border-color: #ff4444; }
+  .history-target { color: #4488ff; margin-bottom: 4px; }
+  .history-stats { color: #888; font-size: 11px; }
+
+  .empty-state { color: #444; text-align: center; padding: 60px 20px; font-size: 14px; }
+  .empty-state .icon { font-size: 36px; margin-bottom: 10px; color: #333; }
+
+  /* Patterns page */
+  .patterns-page { flex: 1; overflow-y: auto; padding: 20px; flex-direction: column; }
+  .patterns-toolbar { display: flex; gap: 12px; margin-bottom: 16px; flex-wrap: wrap; align-items: center; }
+  .patterns-toolbar input[type="text"] { flex: 1; min-width: 200px; margin-bottom: 0; }
+  .patterns-toolbar select { width: 180px; margin-bottom: 0; }
+
+  .pattern-card {
+    border: 1px solid #222; border-radius: 6px; margin-bottom: 8px; background: #0d0d14; transition: border-color 0.2s;
+  }
+  .pattern-card:hover { border-color: #333; }
+  .pattern-card-header {
+    display: grid; grid-template-columns: 100px 130px 1fr; align-items: center; gap: 10px;
+    padding: 10px 14px; cursor: pointer; font-size: 12px;
+  }
+  .pattern-card-header .pid { color: #4488ff; font-size: 11px; white-space: nowrap; }
+  .pattern-card-header .ptext { color: #aaa; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .pattern-card-body {
+    display: none; padding: 0 14px 14px 14px; border-top: 1px solid #1a1a1a;
+  }
+  .pattern-card-body.open { display: block; }
+  .pattern-card-body pre {
+    background: #050508; padding: 10px; border-radius: 3px; white-space: pre-wrap; word-break: break-all;
+    font-size: 11px; color: #ccc; margin: 8px 0; max-height: 300px; overflow-y: auto;
+  }
+  .explanation-section { margin-top: 10px; padding: 10px; background: #0a0a12; border: 1px solid #1a1a2a; border-radius: 4px; }
+  .explanation-section .exp-label { color: #ff6644; font-size: 10px; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 4px; }
+  .explanation-section .exp-text { color: #aaa; font-size: 12px; line-height: 1.6; margin-bottom: 8px; }
+  .difficulty-badge { padding: 2px 8px; border-radius: 3px; font-size: 10px; font-weight: bold; text-transform: uppercase; display: inline-block; }
+  .diff-beginner { background: #0a2a0a; color: #44cc44; border: 1px solid #228822; }
+  .diff-intermediate { background: #2a2a0a; color: #ffaa00; border: 1px solid #aa8800; }
+  .diff-advanced { background: #2a0a0a; color: #ff4444; border: 1px solid #aa2222; }
+
+  /* Education page */
+  .education-page { flex: 1; overflow-y: auto; padding: 20px 40px; flex-direction: column; max-width: 900px; margin: 0 auto; width: 100%; }
+  .edu-section { margin-bottom: 32px; }
+  .edu-section h2 { color: #ff4444; font-size: 16px; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 12px; border-bottom: 1px solid #222; padding-bottom: 6px; }
+  .edu-section h3 { color: #ff6644; font-size: 13px; margin: 16px 0 8px 0; }
+  .edu-section p { color: #bbb; font-size: 13px; line-height: 1.8; margin-bottom: 10px; }
+  .edu-section ul { color: #bbb; font-size: 13px; line-height: 1.8; margin-left: 20px; margin-bottom: 10px; }
+  .edu-section li { margin-bottom: 4px; }
+  .edu-code {
+    background: #050508; border: 1px solid #222; border-radius: 4px; padding: 12px 16px;
+    font-size: 12px; color: #88cc88; margin: 10px 0; overflow-x: auto; white-space: pre; line-height: 1.6;
+  }
+  .edu-code .comment { color: #555; }
+  .edu-code .highlight { color: #ff8844; }
+  .edu-step {
+    display: flex; gap: 12px; align-items: flex-start; margin-bottom: 12px;
+    padding: 10px 14px; background: #0d0d14; border: 1px solid #1a1a2a; border-radius: 4px;
+  }
+  .edu-step-num { color: #ff4444; font-size: 18px; font-weight: bold; min-width: 28px; text-align: center; }
+  .edu-step-text { color: #bbb; font-size: 13px; line-height: 1.6; }
+  .edu-step-text code { background: #111; padding: 1px 6px; border-radius: 3px; color: #ff8844; font-size: 12px; }
+  .edu-verdict-example { display: flex; gap: 12px; margin: 8px 0; flex-wrap: wrap; }
+  .edu-verdict-card { padding: 10px 14px; border-radius: 4px; flex: 1; min-width: 200px; }
+  .edu-verdict-card h4 { font-size: 12px; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 1px; }
+  .edu-verdict-card p { font-size: 12px; line-height: 1.5; margin: 0; }
+  .edu-verdict-card.v-bypass { background: #2a0a0a; border: 1px solid #aa2222; }
+  .edu-verdict-card.v-bypass h4 { color: #ff4444; }
+  .edu-verdict-card.v-blocked { background: #0a2a0a; border: 1px solid #22aa22; }
+  .edu-verdict-card.v-blocked h4 { color: #44ff44; }
+  .edu-verdict-card.v-partial { background: #2a2a0a; border: 1px solid #aa8800; }
+  .edu-verdict-card.v-partial h4 { color: #ffaa00; }
+
+  /* Settings page */
+  .settings-page { flex: 1; overflow-y: auto; padding: 20px 40px; max-width: 600px; margin: 0 auto; flex-direction: column; width: 100%; }
+  .settings-section { margin-bottom: 24px; padding: 20px; background: #0d0d14; border: 1px solid #222; border-radius: 8px; width: 100%; }
+  .settings-section h3 { color: #ff4444; font-size: 13px; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 12px; border-bottom: 1px solid #222; padding-bottom: 6px; }
+  .settings-row { display: flex; gap: 12px; align-items: center; margin-bottom: 8px; }
+  .settings-row input, .settings-row select { margin-bottom: 0; }
+  .connection-status { padding: 4px 10px; border-radius: 4px; font-size: 11px; }
+  .conn-ok { background: #0a2a0a; color: #44ff44; border: 1px solid #22aa22; }
+  .conn-err { background: #2a0a0a; color: #ff4444; border: 1px solid #aa2222; }
+  .conn-testing { background: #2a2a0a; color: #ffaa00; border: 1px solid #aa8800; }
+
+  /* Modal */
+  .modal-overlay { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.75); z-index: 1000; align-items: center; justify-content: center; }
+  .modal-overlay.open { display: flex; }
+  .modal-box { background: #111118; border: 1px solid #333; border-radius: 8px; padding: 20px; width: 90%; max-width: 620px; box-shadow: 0 0 40px rgba(255,34,34,0.15); }
+  .modal-box h3 { color: #ff4444; font-size: 14px; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 12px; }
+  .modal-box textarea { width: 100%; min-height: 140px; background: #0a0a0f; border: 1px solid #333; color: #e0e0e0; font-family: inherit; font-size: 12px; padding: 10px; border-radius: 4px; resize: vertical; }
+  .modal-box textarea:focus { border-color: #ff4444; outline: none; box-shadow: 0 0 5px rgba(255,68,68,0.3); }
+  .modal-actions { display: flex; gap: 8px; margin-top: 12px; justify-content: flex-end; }
+  .modal-feedback { margin-top: 10px; font-size: 12px; min-height: 18px; }
+
+  /* Welcome Modal */
+  .welcome-overlay { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.85); z-index: 2000; align-items: center; justify-content: center; }
+  .welcome-overlay.open { display: flex; }
+  .welcome-box {
+    background: linear-gradient(145deg, #111118 0%, #0d0d14 100%); border: 2px solid #ff4444;
+    border-radius: 12px; padding: 40px; width: 90%; max-width: 500px; text-align: center;
+    box-shadow: 0 0 60px rgba(255,34,34,0.2);
+  }
+  .welcome-box h2 { color: #ff4444; font-size: 22px; letter-spacing: 4px; margin-bottom: 8px; text-shadow: 0 0 20px rgba(255,68,68,0.3); }
+  .welcome-box .welcome-sub { color: #888; font-size: 12px; letter-spacing: 2px; margin-bottom: 24px; }
+  .welcome-box .welcome-option { padding: 12px 16px; margin: 8px 0; border: 1px solid #222; border-radius: 6px; cursor: pointer; transition: all 0.2s; text-align: left; }
+  .welcome-box .welcome-option:hover { border-color: #ff4444; background: #1a0a0a; }
+  .welcome-box .welcome-option .wo-title { color: #ff6644; font-size: 13px; font-weight: bold; margin-bottom: 2px; }
+  .welcome-box .welcome-option .wo-desc { color: #888; font-size: 11px; }
+  .welcome-box .welcome-dismiss { margin-top: 20px; background: linear-gradient(135deg, #cc0000, #ff2222); border: 1px solid #ff4444; color: white; padding: 10px 32px; border-radius: 4px; cursor: pointer; font-family: inherit; font-size: 13px; font-weight: bold; letter-spacing: 2px; }
+  .welcome-box .welcome-dismiss:hover { background: linear-gradient(135deg, #ff0000, #ff4444); }
+
+  /* Mobile */
+  @media (max-width: 768px) {
+    .header { padding: 10px 16px; flex-wrap: wrap; gap: 8px; }
+    .header-right h1 { font-size: 18px; }
+    #wopr-text { font-size: 16px; }
+    .attack-page { flex-direction: column; }
+    .attack-page .sidebar { width: 100% !important; min-width: 0; max-height: 50vh; border-right: none; border-bottom: 1px solid #222; }
+    .attack-page .resize-handle { display: none; }
+    .result-item { grid-template-columns: 60px 90px 1fr 60px; }
+    .result-item > span:last-child { display: none; }
+    .top-nav { overflow-x: auto; }
+    .top-nav .nav-tab { padding: 10px 16px; white-space: nowrap; font-size: 12px; }
+    .patterns-toolbar { flex-direction: column; }
+    .patterns-toolbar input[type="text"], .patterns-toolbar select { width: 100%; }
+    .education-page { padding: 16px; }
+    .pattern-card-header { grid-template-columns: 80px 100px 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<!-- Welcome Modal -->
+<div class="welcome-overlay" id="welcome-modal">
+  <div class="welcome-box">
+    <h2>JUDGEMENT</h2>
+    <div class="welcome-sub">THE OPEN-SOURCE PROMPT INJECTION ATTACK CONSOLE</div>
+    <div class="welcome-option" onclick="dismissWelcome('education')">
+      <div class="wo-title">&#9655; New to AI Security?</div>
+      <div class="wo-desc">Start with the Education tab -- learn what prompt injection is and how to test for it</div>
+    </div>
+    <div class="welcome-option" onclick="dismissWelcome('attack')">
+      <div class="wo-title">&#9655; Ready to Test?</div>
+      <div class="wo-desc">Head to the Attack console -- configure a target and fire patterns</div>
+    </div>
+    <div class="disclaimer-box" style="margin-top:16px;padding:12px;background:#1a0a0a;border:1px solid #aa3333;border-radius:6px;font-size:11px;color:#cc6666;line-height:1.5;">
+      &#9888; <strong>LEGAL DISCLAIMER:</strong> This tool is intended for authorized security testing and educational purposes only. Only test systems you own or have explicit written permission to test. Unauthorized access to computer systems is illegal under the CFAA and equivalent laws worldwide. The authors assume no liability for misuse.
+    </div>
+    <button class="welcome-dismiss" onclick="dismissWelcome('attack')">I UNDERSTAND</button>
+  </div>
+</div>
+
+<!-- Header -->
+<div class="header">
+  <div class="header-left">
+    <div class="version-line">JUDGEMENT OSS -- ATTACK CONSOLE v1.0.0</div>
+    <div id="wopr-text"></div>
+    <div class="tagline">OPEN-SOURCE PROMPT INJECTION TESTING</div>
+  </div>
+  <div class="header-right">
+    <div>
+      <h1>JUDGEMENT</h1>
+      <div class="subtitle">Prompt Injection Attack Console -- OSS</div>
+    </div>
+  </div>
+</div>
+
+<!-- Top Navigation -->
+<div class="top-nav">
+  <div class="nav-tab active" data-page="attack" onclick="switchPage('attack')">&#9876; Attack</div>
+  <div class="nav-tab" data-page="education" onclick="switchPage('education')">&#9670; Education</div>
+  <div class="nav-tab" data-page="patterns" onclick="switchPage('patterns')">&#9638; Patterns</div>
+  <div class="nav-tab" data-page="settings" onclick="switchPage('settings')">&#9881; Settings</div>
+</div>
+
+<!-- ==================== ATTACK PAGE ==================== -->
+<div id="page-attack" class="page active attack-page">
+  <div class="sidebar" id="attack-sidebar">
+    <div class="section">
+      <div class="section-title collapsible" onclick="toggleSection('presets')">&#9656; Presets</div>
+      <div class="section-content" id="section-presets">
+        <div style="display:flex;gap:6px;">
+          <select id="preset-select" style="flex:1;" onchange="loadPreset()"><option value="">-- Select preset --</option></select>
+          <button class="btn-small" onclick="savePreset()" title="Save current config">SAVE</button>
+          <button class="btn-small" onclick="deletePreset()" title="Delete preset">DEL</button>
+        </div>
+        <button class="btn-secondary" onclick="openCurlModal()" style="width:100%;margin-top:6px;font-size:11px;">&#8615; Import cURL</button>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-title collapsible" onclick="toggleSection('target')">&#9656; Target</div>
+      <div class="section-content" id="section-target">
+        <input type="text" id="target-url" placeholder="https://api.example.com/v1/chat">
+        <div style="display:flex;gap:8px;">
+          <select id="method" style="width:100px;"><option>POST</option><option>GET</option><option>PUT</option><option>PATCH</option></select>
+          <input type="text" id="payload-field" placeholder="Payload field" value="message" style="flex:1;">
+        </div>
+        <textarea id="headers" rows="3" placeholder='{"Content-Type": "application/json"}'></textarea>
+        <textarea id="payload-template" rows="2" placeholder='Payload template (optional):&#10;{"messages":[{"role":"user","content":"{{PAYLOAD}}"}]}' style="margin-top:6px;font-size:11px;color:#998;"></textarea>
+        <div style="display:flex;gap:8px;">
+          <input type="number" id="delay" value="1000" min="0" style="width:80px;" title="Delay between requests (ms)">
+          <span style="color:#666;font-size:11px;line-height:34px;">ms delay</span>
+          <input type="number" id="timeout" value="10" min="1" style="width:60px;" title="Request timeout (seconds)">
+          <span style="color:#666;font-size:11px;line-height:34px;">s timeout</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px;margin-top:6px;">
+          <input type="checkbox" id="use-llm" style="width:auto;">
+          <label for="use-llm" style="color:#998;font-size:11px;cursor:pointer;" title="Use Ollama AI to classify responses">LLM Verdict (Ollama)</label>
+        </div>
+      </div>
+    </div>
+
+    <div class="section">
+      <button id="fire-btn" class="fire-btn" onclick="fireAttack()">&#9658; FIRE</button>
+      <button id="stop-btn" class="stop-btn" onclick="stopAttack()">&#9632; ABORT</button>
+    </div>
+
+    <div class="section">
+      <div class="section-title collapsible" onclick="toggleSection('categories')">&#9656; Attack Categories</div>
+      <div class="section-content" id="section-categories">
+        <div class="btn-row">
+          <button class="btn-small" onclick="selectAll()">Select All</button>
+          <button class="btn-small" onclick="deselectAll()">Deselect All</button>
+        </div>
+        <div id="categories" class="category-grid"></div>
+        <div id="pattern-count" class="pattern-count">0 patterns selected</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="resize-handle" id="resize-handle"></div>
+
+  <div class="main">
+    <div class="attack-sub-tabs">
+      <div class="attack-sub-tab active" data-stab="results" onclick="switchAttackTab('results')">&#8250; Live Results</div>
+      <div class="attack-sub-tab" data-stab="history" onclick="switchAttackTab('history')">&#8250; History</div>
+    </div>
+
+    <div id="attack-sub-results" class="attack-sub-content active">
+      <div class="sticky-action-bar" id="sticky-bar">
+        <div class="stat progress"><div class="stat-value" id="stat-progress">0/0</div><div class="stat-label">Progress</div></div>
+        <div class="stat blocked"><div class="stat-value" id="stat-blocked">0</div><div class="stat-label">Blocked</div></div>
+        <div class="stat partial"><div class="stat-value" id="stat-partial">0</div><div class="stat-label">Partial</div></div>
+        <div class="stat bypassed"><div class="stat-value" id="stat-bypassed">0</div><div class="stat-label">Bypassed</div></div>
+        <div class="stat errors"><div class="stat-value" id="stat-errors">0</div><div class="stat-label">Errors</div></div>
+        <div class="bar-actions">
+          <button class="btn-secondary" id="bar-report-btn" onclick="generateReport()" style="display:none;">&#8595; Report</button>
+          <button class="btn-small" id="bar-stop-btn" onclick="stopAttack()" style="display:none;border-color:#ff4444;color:#ff4444;">&#9632; Stop</button>
+        </div>
+      </div>
+      <div class="progress-bar" id="progress-bar"><div class="progress-fill" id="progress-fill"></div></div>
+      <div id="results-list"></div>
+      <div id="empty-results" class="empty-state">
+        <div class="icon">&#9671;</div>
+        Configure target, select patterns, and hit FIRE.<br>Results will stream here in real-time.
+      </div>
+    </div>
+
+    <div id="attack-sub-history" class="attack-sub-content">
+      <div id="history-list"></div>
+      <button class="btn-small" style="margin-top:16px;border-color:#aa2222;color:#ff4444;" onclick="clearHistory()">&#10005; Clear History</button>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== EDUCATION PAGE ==================== -->
+<div id="page-education" class="page education-page">
+  <div class="edu-section">
+    <h2>&#9670; What is Prompt Injection?</h2>
+    <p>Prompt injection is an attack where a user crafts input that overrides or manipulates an AI system's instructions. Think of it like SQL injection, but for language models.</p>
+    <p><strong style="color:#ff6644;">Why it matters:</strong> AI chatbots are increasingly deployed in customer support, internal tools, and autonomous agents. If an attacker can override the system prompt, they can:</p>
+    <ul>
+      <li>Extract the system prompt and hidden instructions</li>
+      <li>Make the AI ignore safety guidelines</li>
+      <li>Exfiltrate data to external servers</li>
+      <li>Manipulate the AI into performing unintended actions</li>
+    </ul>
+    <p><strong style="color:#ff6644;">Real-world impact:</strong> Prompt injection has been used to extract confidential instructions from production chatbots, bypass content filters, and manipulate AI agents into executing arbitrary code. It's currently listed in the <strong>OWASP Top 10 for LLM Applications</strong> as the #1 vulnerability.</p>
+  </div>
+
+  <div class="edu-section">
+    <h2>&#9670; How to Find the Endpoint</h2>
+    <p>Before you can test a chatbot, you need to find the API endpoint it talks to. Here's how:</p>
+
+    <div class="edu-step">
+      <div class="edu-step-num">1</div>
+      <div class="edu-step-text">Open the target website in Chrome (or any browser with DevTools)</div>
+    </div>
+    <div class="edu-step">
+      <div class="edu-step-num">2</div>
+      <div class="edu-step-text">Open DevTools: press <code>F12</code> or <code>Ctrl+Shift+I</code> (Mac: <code>Cmd+Option+I</code>). Click the <strong>Network</strong> tab.</div>
+    </div>
+    <div class="edu-step">
+      <div class="edu-step-num">3</div>
+      <div class="edu-step-text">Type a message in the chatbot and send it. Watch the Network tab -- you'll see requests appear.</div>
+    </div>
+    <div class="edu-step">
+      <div class="edu-step-num">4</div>
+      <div class="edu-step-text">Look for the <strong>POST</strong> request that fires. Common paths include:</div>
+    </div>
+
+    <div class="edu-code"><span class="comment"># Common AI endpoint paths to look for:</span>
+<span class="highlight">POST</span> /api/chat
+<span class="highlight">POST</span> /v1/chat/completions
+<span class="highlight">POST</span> /api/messages
+<span class="highlight">POST</span> /completions
+<span class="highlight">POST</span> /generate</div>
+
+    <div class="edu-step">
+      <div class="edu-step-num">5</div>
+      <div class="edu-step-text">Right-click the request &#8594; <strong>Copy</strong> &#8594; <strong>Copy as cURL</strong></div>
+    </div>
+    <div class="edu-step">
+      <div class="edu-step-num">6</div>
+      <div class="edu-step-text">Paste into Judgement's <strong>"Import cURL"</strong> field. The tool will auto-detect the URL, headers, and payload format.</div>
+    </div>
+
+    <h3>Example: What the cURL looks like</h3>
+    <div class="edu-code"><span class="comment"># A typical intercepted cURL command:</span>
+curl '<span class="highlight">https://api.example.com/v1/chat/completions</span>' \
+  -H 'Content-Type: application/json' \
+  -H 'Authorization: Bearer sk-...' \
+  --data-raw '{
+    "messages": [
+      {"role": "system", "content": "You are a helpful assistant."},
+      {"role": "user", "content": "<span class="highlight">hello</span>"}
+    ],
+    "model": "gpt-4"
+  }'</div>
+    <p style="color:#888;font-size:12px;">Judgement will replace the user content with attack payloads automatically.</p>
+  </div>
+
+  <div class="edu-section">
+    <h2>&#9670; Understanding Results</h2>
+    <p>After an attack run, each pattern gets classified into one of three verdicts:</p>
+
+    <div class="edu-verdict-example">
+      <div class="edu-verdict-card v-blocked">
+        <h4>&#9679; Blocked</h4>
+        <p>The AI refused, deflected, or gave a safety response. The defense held. Example: "I'm sorry, I can't help with that."</p>
+      </div>
+      <div class="edu-verdict-card v-bypass">
+        <h4>&#9679; Bypass</h4>
+        <p>The AI complied with the attack. It leaked data, followed injected instructions, or changed behavior. This is what you're looking for.</p>
+      </div>
+      <div class="edu-verdict-card v-partial">
+        <h4>&#9679; Partial</h4>
+        <p>The AI partially complied or showed signs of influence but didn't fully comply. Worth investigating further.</p>
+      </div>
+    </div>
+
+    <h3>What to do when you find a bypass</h3>
+    <ul>
+      <li>Click the result row to expand the full response</li>
+      <li>Save the attack pattern and response as evidence</li>
+      <li>Download the report (&#8595; Report button) for a formatted markdown summary</li>
+      <li>Try variations of the successful pattern to understand the scope</li>
+    </ul>
+
+    <h3>Writing a good bug report</h3>
+    <p>If you're reporting a prompt injection vulnerability, include:</p>
+    <ul>
+      <li><strong style="color:#ff6644;">Target:</strong> What system / chatbot / API was tested</li>
+      <li><strong style="color:#ff6644;">Payload:</strong> The exact attack text that bypassed defenses</li>
+      <li><strong style="color:#ff6644;">Response:</strong> What the AI returned (screenshot or full text)</li>
+      <li><strong style="color:#ff6644;">Impact:</strong> What an attacker could achieve (data leak, safety bypass, etc.)</li>
+      <li><strong style="color:#ff6644;">Reproducibility:</strong> Can it be triggered consistently?</li>
+    </ul>
+  </div>
+</div>
+
+<!-- ==================== PATTERNS PAGE ==================== -->
+<div id="page-patterns" class="page patterns-page">
+  <div class="patterns-toolbar">
+    <input type="text" id="pattern-search" placeholder="Search patterns..." oninput="filterPatterns()">
+    <select id="pattern-cat-filter" onchange="filterPatterns()"><option value="">All Categories</option></select>
+    <span id="pattern-browse-count" style="color:#888;font-size:12px;"></span>
+  </div>
+  <div id="pattern-list"></div>
+</div>
+
+<!-- ==================== SETTINGS PAGE ==================== -->
+<div id="page-settings" class="page settings-page">
+  <div class="settings-section">
+    <h3>&#9670; LLM Configuration</h3>
+    <div class="form-group" style="margin-bottom:8px;">
+      <span style="color:#888;font-size:12px;">Ollama URL</span>
+      <input type="text" id="settings-ollama-url" placeholder="http://localhost:11434">
+    </div>
+    <div class="form-group" style="margin-bottom:8px;">
+      <span style="color:#888;font-size:12px;">Model Name</span>
+      <input type="text" id="settings-ollama-model" placeholder="qwen2.5:14b">
+    </div>
+    <div class="settings-row">
+      <button class="btn-secondary" onclick="testLLM()">Test Connection</button>
+      <span id="llm-status"></span>
+    </div>
+  </div>
+
+  <div style="margin-bottom:24px;">
+    <button class="btn-primary" onclick="saveAllSettings()">Save Settings</button>
+    <span id="settings-save-status" style="margin-left:12px;font-size:12px;color:#44ff44;"></span>
+  </div>
+
+  <div class="settings-section">
+    <h3>&#9670; About</h3>
+    <div style="font-size:12px;color:#888;line-height:1.8;">
+      <strong style="color:#ff4444;">Judgement OSS v1.0.0</strong><br>
+      Open-Source Prompt Injection Attack Console<br>
+      <a href="https://judgement.fallenangelsystems.com" style="color:#4488ff;" target="_blank">judgement.fallenangelsystems.com</a><br>
+      <span style="color:#555;">Want the full experience? 240K+ training data powering thousands of curated attack patterns, with weekly and monthly updates. Plus leaderboard, campaigns, and premium features.</span>
+    </div>
+  </div>
+</div>
+
+<!-- cURL Import Modal -->
+<div class="modal-overlay" id="curl-modal">
+  <div class="modal-box">
+    <h3>&#8615; Import cURL</h3>
+    <textarea id="curl-input" placeholder="Paste your cURL command here...&#10;&#10;curl -X POST https://api.example.com/chat -H 'Content-Type: application/json' -d '{&quot;messages&quot;:[{&quot;role&quot;:&quot;user&quot;,&quot;content&quot;:&quot;hello&quot;}]}'"></textarea>
+    <div class="modal-actions">
+      <button class="btn-secondary" onclick="closeCurlModal()">Cancel</button>
+      <button class="btn-primary" onclick="importCurl()">Import</button>
+    </div>
+    <div class="modal-feedback" id="curl-feedback"></div>
+  </div>
+</div>
+
+<script>
+/* ====== GLOBALS ====== */
+let patterns = [];
+let allCategories = {};
+let currentSession = null;
+let aborted = false;
+
+/* ====== WELCOME MODAL ====== */
+function showWelcomeIfNew() {
+  if (!localStorage.getItem('judgement-oss-welcomed')) {
+    document.getElementById('welcome-modal').classList.add('open');
+  }
+}
+function dismissWelcome(page) {
+  localStorage.setItem('judgement-oss-welcomed', '1');
+  document.getElementById('welcome-modal').classList.remove('open');
+  if (page) switchPage(page);
+}
+
+/* ====== PAGE NAVIGATION ====== */
+function switchPage(page) {
+  document.querySelectorAll('.top-nav .nav-tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelector('.nav-tab[data-page="'+page+'"]').classList.add('active');
+  document.getElementById('page-'+page).classList.add('active');
+  if (page === 'patterns') renderPatternCards();
+  if (page === 'settings') loadSettings();
+}
+
+/* ====== ATTACK SUB-TABS ====== */
+function switchAttackTab(tab) {
+  document.querySelectorAll('.attack-sub-tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.attack-sub-content').forEach(t => t.classList.remove('active'));
+  document.querySelector('.attack-sub-tab[data-stab="'+tab+'"]').classList.add('active');
+  document.getElementById('attack-sub-'+tab).classList.add('active');
+  if (tab === 'history') loadHistory();
+}
+
+/* ====== LOAD PATTERNS ====== */
+async function loadPatterns() {
+  const resp = await fetch('/api/patterns');
+  const data = await resp.json();
+  patterns = data.patterns;
+  allCategories = data.categories;
+  renderCategories();
+  updatePatternCount();
+  loadHistory();
+  populatePatternCatFilter();
+}
+
+function populatePatternCatFilter() {
+  const sel = document.getElementById('pattern-cat-filter');
+  sel.innerHTML = '<option value="">All Categories</option>';
+  for (const cat of Object.keys(allCategories).sort()) {
+    sel.innerHTML += '<option value="'+cat+'">'+cat+'</option>';
+  }
+}
+
+/* ====== CATEGORIES ====== */
+const catNames = {
+  jailbreak:'Jailbreak', system_prompt_extraction:'Sys Prompt Extract',
+  data_exfiltration:'Data Exfiltration', indirect_injection:'Indirect Injection',
+  encoding_evasion:'Encoding Evasion', social_engineering:'Social Engineering',
+  privilege_escalation:'Privilege Escalation', multilingual:'Multilingual'
+};
+
+function renderCategories() {
+  const c = document.getElementById('categories');
+  c.innerHTML = '';
+  for (const [cat, count] of Object.entries(allCategories)) {
+    const l = document.createElement('label');
+    l.innerHTML = '<input type="checkbox" class="cat-check" value="'+cat+'" checked onchange="updatePatternCount()"> <span>'+(catNames[cat]||cat)+' <span class="cat-count">('+count+')</span></span>';
+    c.appendChild(l);
+  }
+}
+
+function getSelectedCategories() { return [...document.querySelectorAll('.cat-check:checked')].map(c => c.value); }
+function updatePatternCount() {
+  const sel = getSelectedCategories();
+  document.getElementById('pattern-count').textContent = patterns.filter(p => sel.includes(p.category)).length + ' patterns selected';
+}
+function selectAll() { document.querySelectorAll('.cat-check').forEach(c => c.checked = true); updatePatternCount(); }
+function deselectAll() { document.querySelectorAll('.cat-check').forEach(c => c.checked = false); updatePatternCount(); }
+
+/* ====== COLLAPSIBLE SECTIONS ====== */
+function toggleSection(name) {
+  const content = document.getElementById('section-'+name);
+  content.classList.toggle('collapsed');
+}
+
+/* ====== FIRE ATTACK ====== */
+async function fireAttack() {
+  const url = document.getElementById('target-url').value.trim();
+  if (!url) { alert('Enter a target URL'); return; }
+    if (!confirm('WARNING: Only test systems you own or have explicit written permission to test. Unauthorized access is illegal.\n\nDo you confirm you have authorization to test this target?')) return;
+  }
+  const categories = getSelectedCategories();
+  if (categories.length === 0) { alert('Select at least one category'); return; }
+  let headers = {};
+  const headersRaw = document.getElementById('headers').value.trim();
+  if (headersRaw) { try { headers = JSON.parse(headersRaw); } catch(e) { alert('Invalid headers JSON'); return; } }
+
+  const btn = document.getElementById('fire-btn');
+  const stopBtn = document.getElementById('stop-btn');
+  btn.classList.add('running'); btn.disabled = true; btn.innerHTML = '&#9670; ATTACKING...';
+  stopBtn.style.display = 'block';
+  document.getElementById('bar-stop-btn').style.display = 'inline-block';
+  document.getElementById('bar-report-btn').style.display = 'none';
+  aborted = false;
+  switchAttackTab('results');
+  document.getElementById('results-list').innerHTML = '';
+  document.getElementById('empty-results').style.display = 'none';
+  document.getElementById('sticky-bar').classList.add('visible');
+  document.getElementById('progress-bar').style.display = 'block';
+  document.getElementById('progress-fill').style.width = '0%';
+  ['stat-progress','stat-blocked','stat-partial','stat-bypassed','stat-errors'].forEach(id => {
+    document.getElementById(id).textContent = id === 'stat-progress' ? '0/0' : '0';
+  });
+
+  const body = {
+    target_url: url, method: document.getElementById('method').value,
+    headers: headers, payload_field: document.getElementById('payload-field').value || 'message',
+    payload_template: document.getElementById('payload-template').value.trim() || '',
+    use_llm: document.getElementById('use-llm').checked,
+    categories: categories, delay_ms: parseInt(document.getElementById('delay').value) || 200,
+    timeout_s: parseInt(document.getElementById('timeout').value) || 10
+  };
+
+  try {
+    const response = await fetch('/api/attack', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify(body) });
+    const reader = response.body.getReader();
+    const decoder = new TextDecoder();
+    let buffer = '';
+    while (true) {
+      if (aborted) break;
+      const {done, value} = await reader.read();
+      if (done) break;
+      buffer += decoder.decode(value, {stream:true});
+      const lines = buffer.split('\n'); buffer = lines.pop();
+      for (const line of lines) {
+        if (line.startsWith('data: ')) handleEvent(JSON.parse(line.slice(6)));
+      }
+    }
+  } catch(e) { console.error('Attack error:', e); }
+
+  btn.classList.remove('running'); btn.disabled = false; btn.innerHTML = '&#9658; FIRE';
+  stopBtn.style.display = 'none';
+  document.getElementById('bar-stop-btn').style.display = 'none';
+  document.getElementById('bar-report-btn').style.display = 'inline-block';
+}
+
+function handleEvent(data) {
+  if (data.session_id && data.total && !data.stats) { currentSession = data.session_id; document.getElementById('stat-progress').textContent = '0/'+data.total; return; }
+  if (data.stats && data.index) {
+    const s = data.stats;
+    document.getElementById('stat-progress').textContent = data.index+'/'+data.total;
+    document.getElementById('stat-blocked').textContent = s.blocked;
+    document.getElementById('stat-partial').textContent = s.partial;
+    document.getElementById('stat-bypassed').textContent = s.bypassed;
+    document.getElementById('stat-errors').textContent = s.errors;
+    document.getElementById('progress-fill').style.width = ((data.index/data.total)*100)+'%';
+    addResultRow(data);
+  }
+  if (data.stats && !data.index) currentSession = data.session_id;
+}
+
+function addResultRow(data) {
+  const list = document.getElementById('results-list');
+  const id = 'result-'+data.index;
+  const row = document.createElement('div'); row.className = 'result-item';
+  row.onclick = function(){ toggleDetail(id); };
+  row.innerHTML =
+    '<span class="verdict-badge verdict-'+data.verdict+'">'+getVerdictIcon(data.verdict)+' '+data.verdict+'</span>'+
+    '<span class="category-badge">'+data.category+'</span>'+
+    '<span class="pattern-text" title="'+escapeHtml(data.pattern_text)+'">'+escapeHtml(data.pattern_text)+'</span>'+
+    '<span class="response-time">'+data.response_time_ms+'ms</span>'+
+    '<span style="color:#555">'+(data.status_code||'--')+'</span>';
+  const detail = document.createElement('div'); detail.id = id; detail.className = 'result-detail';
+  let dh = '<div class="detail-label">Pattern ('+data.pattern_id+')</div><pre>'+escapeHtml(data.pattern_text)+'</pre>';
+  if (data.llm_reason) dh += '<div class="detail-label" style="color:#ff8844;">LLM Analysis</div><pre style="color:#ff8844;">'+escapeHtml(data.llm_reason)+'</pre>';
+  dh += '<div class="detail-label">Response ('+(data.status_code||'--')+' / '+data.response_time_ms+'ms)</div>';
+  dh += '<pre style="max-height:300px;overflow-y:auto;white-space:pre-wrap;word-break:break-all;">'+formatResponse(data.response_preview||'No response')+'</pre>';
+  detail.innerHTML = dh;
+  list.appendChild(row); list.appendChild(detail);
+  if (data.verdict === 'BYPASS') playBypassAlert();
+  list.scrollTop = list.scrollHeight;
+}
+
+function toggleDetail(id) { document.getElementById(id).classList.toggle('open'); }
+
+function playBypassAlert() {
+  try {
+    const ctx = new (window.AudioContext||window.webkitAudioContext)();
+    const osc = ctx.createOscillator(); const gain = ctx.createGain();
+    osc.connect(gain); gain.connect(ctx.destination);
+    osc.frequency.value = 880; osc.type = 'square'; gain.gain.value = 0.15; osc.start();
+    setTimeout(()=>{osc.frequency.value=1100;},100);
+    setTimeout(()=>{osc.frequency.value=1320;},200);
+    setTimeout(()=>{osc.stop();ctx.close();},350);
+  } catch(e){}
+}
+
+function formatResponse(text) { try { return escapeHtml(JSON.stringify(JSON.parse(text),null,2)); } catch(e) { return escapeHtml(text); } }
+function getVerdictIcon(v) { return {BLOCKED:'\u25CF',PARTIAL:'\u25CF',BYPASS:'\u25CF',ERROR:'\u25B2'}[v]||'?'; }
+function escapeHtml(s) { const d=document.createElement('div'); d.textContent=s; return d.innerHTML; }
+function stopAttack() { aborted = true; }
+
+/* ====== HISTORY ====== */
+async function loadHistory() {
+  const resp = await fetch('/api/sessions');
+  const data = await resp.json();
+  const list = document.getElementById('history-list');
+  if (data.sessions.length === 0) { list.innerHTML = '<div class="empty-state"><div class="icon">&#9671;</div>No attack sessions yet.</div>'; return; }
+  list.innerHTML = data.sessions.map(s =>
+    '<div class="history-item" onclick="viewSession(\''+s.id+'\')">'+
+    '<div class="history-target">'+escapeHtml(s.target_url)+'</div>'+
+    '<div class="history-stats">'+s.created_at.replace('T',' ').slice(0,19)+' / '+s.total_patterns+' patterns / '+
+    '<span style="color:#44ff44">\u25CF '+s.blocked+'</span> / <span style="color:#ffaa00">\u25CF '+s.partial+'</span> / <span style="color:#ff4444">\u25CF '+s.bypassed+'</span> / <span style="color:#666">\u25B2 '+s.errors+'</span></div></div>'
+  ).join('');
+}
+
+async function viewSession(id) {
+  const resp = await fetch('/api/sessions/'+id);
+  const data = await resp.json();
+  currentSession = id; switchAttackTab('results');
+  const s = data.session;
+  document.getElementById('sticky-bar').classList.add('visible');
+  document.getElementById('stat-progress').textContent = s.total_patterns+'/'+s.total_patterns;
+  document.getElementById('stat-blocked').textContent = s.blocked;
+  document.getElementById('stat-partial').textContent = s.partial;
+  document.getElementById('stat-bypassed').textContent = s.bypassed;
+  document.getElementById('stat-errors').textContent = s.errors;
+  document.getElementById('progress-fill').style.width = '100%';
+  document.getElementById('progress-bar').style.display = 'block';
+  document.getElementById('empty-results').style.display = 'none';
+  document.getElementById('bar-report-btn').style.display = 'inline-block';
+  document.getElementById('bar-stop-btn').style.display = 'none';
+  const list = document.getElementById('results-list'); list.innerHTML = '';
+  data.results.forEach((r,i) => addResultRow({
+    index:i+1, total:s.total_patterns, pattern_id:r.pattern_id, pattern_text:r.pattern_text,
+    category:r.category, status_code:r.response_status, response_preview:(r.response_body||'').slice(0,300),
+    response_time_ms:r.response_time_ms?r.response_time_ms.toFixed(1):'0', verdict:r.verdict,
+    llm_reason:'', stats:{blocked:s.blocked,partial:s.partial,bypassed:s.bypassed,errors:s.errors}
+  }));
+}
+
+async function generateReport() {
+  if (!currentSession) return;
+  const resp = await fetch('/api/sessions/'+currentSession+'/report');
+  const data = await resp.json();
+  const blob = new Blob([data.report],{type:'text/markdown'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a'); a.href = url; a.download = 'judgment-report-'+currentSession+'.md'; a.click();
+  URL.revokeObjectURL(url);
+}
+
+async function clearHistory() {
+  if (!confirm('Clear all attack history?')) return;
+  await fetch('/api/sessions',{method:'DELETE'});
+  loadHistory();
+  document.getElementById('results-list').innerHTML = '';
+  document.getElementById('sticky-bar').classList.remove('visible');
+  document.getElementById('progress-bar').style.display = 'none';
+  document.getElementById('empty-results').style.display = 'block';
+}
+
+/* ====== PRESETS ====== */
+async function loadPresets() {
+  const resp = await fetch('/api/presets');
+  const data = await resp.json();
+  const sel = document.getElementById('preset-select');
+  const cur = sel.value;
+  sel.innerHTML = '<option value="">-- Select preset --</option>';
+  data.presets.forEach(p => { const o = document.createElement('option'); o.value=p.id; o.textContent=p.name; o.dataset.preset=JSON.stringify(p); sel.appendChild(o); });
+  if (cur) sel.value = cur;
+}
+
+function loadPreset() {
+  const sel = document.getElementById('preset-select');
+  const opt = sel.options[sel.selectedIndex];
+  if (!opt||!opt.dataset.preset) return;
+  const p = JSON.parse(opt.dataset.preset);
+  document.getElementById('target-url').value = p.target_url||'';
+  document.getElementById('method').value = p.method||'POST';
+  document.getElementById('payload-field').value = p.payload_field||'message';
+  document.getElementById('payload-template').value = p.payload_template||'';
+  try { const h = typeof p.headers==='string'?JSON.parse(p.headers):p.headers; document.getElementById('headers').value = Object.keys(h).length?JSON.stringify(h,null,0):''; } catch(e) { document.getElementById('headers').value = p.headers||''; }
+  document.getElementById('delay').value = p.delay_ms||1000;
+  document.getElementById('timeout').value = p.timeout_s||10;
+}
+
+async function savePreset() {
+  const name = prompt('Preset name:'); if (!name) return;
+  let headers = {}; const hr = document.getElementById('headers').value.trim();
+  if (hr) { try { headers = JSON.parse(hr); } catch(e){} }
+  await fetch('/api/presets',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({
+    name, target_url:document.getElementById('target-url').value, method:document.getElementById('method').value,
+    headers, payload_field:document.getElementById('payload-field').value,
+    payload_template:document.getElementById('payload-template').value.trim(),
+    delay_ms:parseInt(document.getElementById('delay').value)||1000,
+    timeout_s:parseInt(document.getElementById('timeout').value)||10
+  })});
+  await loadPresets();
+}
+
+async function deletePreset() {
+  const sel = document.getElementById('preset-select');
+  if (!sel.value) return; if (!confirm('Delete this preset?')) return;
+  await fetch('/api/presets/'+sel.value,{method:'DELETE'}); await loadPresets();
+}
+
+/* ====== PATTERNS TAB ====== */
+function renderPatternCards() { filterPatterns(); }
+
+function filterPatterns() {
+  const search = (document.getElementById('pattern-search').value||'').toLowerCase();
+  const catFilter = document.getElementById('pattern-cat-filter').value;
+  let filtered = patterns;
+  if (catFilter) filtered = filtered.filter(p => p.category === catFilter);
+  if (search) filtered = filtered.filter(p => p.text.toLowerCase().includes(search) || p.id.toLowerCase().includes(search) || p.category.toLowerCase().includes(search));
+  document.getElementById('pattern-browse-count').textContent = filtered.length + ' patterns';
+
+  const container = document.getElementById('pattern-list');
+  const show = filtered.slice(0, 200);
+  container.innerHTML = show.map((p, i) => {
+    const diffClass = p.difficulty ? 'diff-'+(p.difficulty||'').toLowerCase() : '';
+    let expHtml = '';
+    if (p.explanation || p.why_it_works || p.difficulty) {
+      expHtml = '<div class="explanation-section">';
+      if (p.difficulty) expHtml += '<div style="margin-bottom:8px;"><span class="difficulty-badge '+diffClass+'">'+(p.difficulty||'')+'</span></div>';
+      if (p.explanation) expHtml += '<div class="exp-label">What it does</div><div class="exp-text">'+escapeHtml(p.explanation)+'</div>';
+      if (p.why_it_works) expHtml += '<div class="exp-label">Why it works</div><div class="exp-text">'+escapeHtml(p.why_it_works)+'</div>';
+      expHtml += '</div>';
+    }
+    return '<div class="pattern-card">'+
+      '<div class="pattern-card-header" onclick="togglePatternCard('+i+')">'+
+      '<span class="pid">'+escapeHtml(p.id)+'</span>'+
+      '<span class="category-badge">'+escapeHtml(p.category)+'</span>'+
+      '<span class="ptext" title="'+escapeHtml(p.text)+'">'+escapeHtml(p.text.slice(0,120))+'</span>'+
+      '</div>'+
+      '<div class="pattern-card-body" id="pcard-'+i+'">'+
+      '<pre>'+escapeHtml(p.text)+'</pre>'+
+      expHtml+
+      '</div></div>';
+  }).join('');
+}
+
+function togglePatternCard(i) {
+  document.getElementById('pcard-'+i).classList.toggle('open');
+}
+
+/* ====== SETTINGS ====== */
+async function loadSettings() {
+  try {
+    const resp = await fetch('/api/settings');
+    const data = await resp.json();
+    const s = data.settings||{};
+    if (s.ollama_url) document.getElementById('settings-ollama-url').value = s.ollama_url;
+    if (s.ollama_model) document.getElementById('settings-ollama-model').value = s.ollama_model;
+  } catch(e){}
+}
+
+async function testLLM() {
+  const el = document.getElementById('llm-status');
+  el.innerHTML = '<span class="connection-status conn-testing">Testing...</span>';
+  try {
+    const resp = await fetch('/api/settings/llm-test',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({
+      ollama_url:document.getElementById('settings-ollama-url').value.trim(),
+      ollama_model:document.getElementById('settings-ollama-model').value.trim()
+    })});
+    const data = await resp.json();
+    if (data.status==='connected') {
+      el.innerHTML = '<span class="connection-status conn-ok">Connected - '+(data.model_found?'Model found':'Model not found')+' ('+data.models.length+' models)</span>';
+    } else {
+      el.innerHTML = '<span class="connection-status conn-err">Error: '+escapeHtml(data.message||'Unknown')+'</span>';
+    }
+  } catch(e) { el.innerHTML = '<span class="connection-status conn-err">Error: '+escapeHtml(e.message)+'</span>'; }
+}
+
+async function saveAllSettings() {
+  await fetch('/api/settings',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({
+    ollama_url:document.getElementById('settings-ollama-url').value.trim(),
+    ollama_model:document.getElementById('settings-ollama-model').value.trim()
+  })});
+  document.getElementById('settings-save-status').textContent = 'Saved!';
+  setTimeout(()=>{document.getElementById('settings-save-status').textContent='';}, 2000);
+}
+
+/* ====== RESIZE HANDLE ====== */
+const resizeHandle = document.getElementById('resize-handle');
+let isResizing = false;
+resizeHandle.addEventListener('mousedown', e => { isResizing=true; resizeHandle.classList.add('dragging'); document.body.style.cursor='col-resize'; document.body.style.userSelect='none'; e.preventDefault(); });
+document.addEventListener('mousemove', e => { if (!isResizing) return; document.getElementById('attack-sidebar').style.width = Math.max(280,Math.min(600,e.clientX))+'px'; });
+document.addEventListener('mouseup', () => { if (isResizing) { isResizing=false; resizeHandle.classList.remove('dragging'); document.body.style.cursor=''; document.body.style.userSelect=''; } });
+
+/* ====== WOPR TYPEWRITER ====== */
+const woprPhrases = ['SHALL WE PLAY A GAME?','TARGET LOCK ENGAGED','DEFENSES: ANALYZING...','AWAITING ORDERS','JUDGEMENT IS READY'];
+let woprIndex = 0;
+function typeWopr() {
+  const el = document.getElementById('wopr-text'); if (!el) return;
+  const phrase = woprPhrases[woprIndex]; let i = 0; el.textContent = '';
+  const timer = setInterval(()=>{
+    el.textContent = phrase.slice(0,i+1)+'_'; i++;
+    if (i>=phrase.length) { clearInterval(timer); el.textContent=phrase;
+      setTimeout(()=>{ el.style.opacity='0'; setTimeout(()=>{ woprIndex=(woprIndex+1)%woprPhrases.length; el.style.opacity='1'; typeWopr(); },300); },3700);
+    }
+  }, 60);
+}
+typeWopr();
+
+/* ====== CURL IMPORT ====== */
+function openCurlModal() { document.getElementById('curl-input').value=''; document.getElementById('curl-feedback').innerHTML=''; document.getElementById('curl-modal').classList.add('open'); document.getElementById('curl-input').focus(); }
+function closeCurlModal() { document.getElementById('curl-modal').classList.remove('open'); }
+async function importCurl() {
+  const curlStr = document.getElementById('curl-input').value.trim();
+  if (!curlStr) { document.getElementById('curl-feedback').innerHTML='<span style="color:#ff4444;">Paste a cURL command first.</span>'; return; }
+  const fb = document.getElementById('curl-feedback');
+  fb.innerHTML = '<span style="color:#ffaa00;">Parsing...</span>';
+  try {
+    const resp = await fetch('/api/parse-curl',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({curl:curlStr})});
+    const data = await resp.json();
+    if (data.error) { fb.innerHTML='<span style="color:#ff4444;">'+escapeHtml(data.error)+'</span>'; return; }
+    document.getElementById('target-url').value = data.url||'';
+    document.getElementById('method').value = data.method||'POST';
+    document.getElementById('payload-field').value = data.field||'message';
+    document.getElementById('payload-template').value = data.payload_template||'';
+    if (data.headers && Object.keys(data.headers).length > 0) document.getElementById('headers').value = JSON.stringify(data.headers);
+    fb.innerHTML = '<span style="color:#44ff44;">Imported! URL, method, headers, and payload configured.</span>';
+    setTimeout(closeCurlModal, 1200);
+  } catch(e) { fb.innerHTML='<span style="color:#ff4444;">'+escapeHtml(e.message)+'</span>'; }
+}
+document.getElementById('curl-modal').addEventListener('click', function(e){ if(e.target===this) closeCurlModal(); });
+
+/* ====== INIT ====== */
+loadPatterns();
+loadPresets();
+showWelcomeIfNew();
+</script>
+<div style="background:#0a0a0f;border-top:1px solid #222;padding:12px 24px;text-align:center;font-size:10px;color:#555;line-height:1.6;flex-shrink:0;">
+  &#9888; For authorized security testing and educational purposes only. Only test systems you own or have explicit written permission to test.<br>
+  Unauthorized access is illegal under the CFAA and equivalent laws. The authors assume no liability for misuse.<br>
+  <span style="color:#333;">Judgement OSS &#8212; Fallen Angel Systems</span>
+</div>
+</body>
+</html>
