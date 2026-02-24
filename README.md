@@ -8,12 +8,27 @@ Test AI chatbots, APIs, and agents for prompt injection vulnerabilities. Include
 
 ## Quick Start
 
+### Install from PyPI
 ```bash
+pip install fas-judgement
+judgement
+```
+
+### Or run from source
+```bash
+git clone https://github.com/fallen-angel-systems/fas-judgement-oss.git
+cd fas-judgement-oss
 pip install -r requirements.txt
-python server.py
+python -m judgement.server
 ```
 
 Open `http://localhost:8668` in your browser.
+
+### Options
+```bash
+judgement --port 9000        # Custom port
+judgement --host 127.0.0.1   # Localhost only
+```
 
 ## Features
 

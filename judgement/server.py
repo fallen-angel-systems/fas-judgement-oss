@@ -565,11 +565,20 @@ async def index():
     return HTMLResponse("<h1>Judgement OSS</h1><p>Frontend not found. Place index.html in static/</p>")
 
 
-if __name__ == "__main__":
+def main():
+    """Entry point for the judgement CLI command."""
     import uvicorn
+    import argparse
+    parser = argparse.ArgumentParser(description="Judgement OSS - Prompt Injection Attack Console")
+    parser.add_argument("--host", default="0.0.0.0", help="Host to bind to (default: 0.0.0.0)")
+    parser.add_argument("--port", type=int, default=8668, help="Port to bind to (default: 8668)")
+    args = parser.parse_args()
     print(BANNER)
-    print(f"  Starting Judgement OSS on http://localhost:8668")
+    print(f"  Starting Judgement OSS on http://localhost:{args.port}")
     print(f"  Database: {DB_PATH}")
     print(f"  Patterns loaded: {len(load_patterns())}")
     print()
-    uvicorn.run(app, host="0.0.0.0", port=8668, log_level="info")
+    uvicorn.run(app, host=args.host, port=args.port, log_level="info")
+
+if __name__ == "__main__":
+    main()
