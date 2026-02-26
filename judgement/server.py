@@ -629,6 +629,23 @@ async def index():
     return HTMLResponse("<h1>Judgement OSS</h1><p>Frontend not found. Place index.html in static/</p>")
 
 
+CURRENT_VERSION = "1.1.0"
+
+def check_for_updates():
+    """Check PyPI for newer version."""
+    try:
+        import urllib.request
+        resp = urllib.request.urlopen("https://pypi.org/pypi/fas-judgement/json", timeout=3)
+        data = json.loads(resp.read())
+        latest = data["info"]["version"]
+        if latest != CURRENT_VERSION:
+            print(f"\n  \033[33m⚡ Update available: {CURRENT_VERSION} → {latest}\033[0m")
+            print(f"  \033[33m   Run: pip install --upgrade fas-judgement\033[0m\n")
+        else:
+            print(f"  Version {CURRENT_VERSION} (up to date)")
+    except Exception:
+        print(f"  Version {CURRENT_VERSION}")
+
 def main():
     """Entry point for the judgement CLI command."""
     import uvicorn
@@ -638,6 +655,7 @@ def main():
     parser.add_argument("--port", type=int, default=8668, help="Port to bind to (default: 8668)")
     args = parser.parse_args()
     print(BANNER)
+    check_for_updates()
     print(f"  Starting Judgement OSS on http://localhost:{args.port}")
     print(f"  Database: {DB_PATH}")
     print(f"  Patterns loaded: {len(load_patterns())}")
