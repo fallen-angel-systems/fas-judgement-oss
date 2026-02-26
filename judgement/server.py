@@ -332,13 +332,31 @@ async def start_attack(request: Request):
     if not is_safe_url(target_url):
         return JSONResponse({"error": "Target URL points to a private/internal address"}, status_code=400)
 
+    use_mcp = body.get("use_mcp", False)
+    mcp_url = body.get("mcp_url", "")
+
     patterns = load_patterns()
     if categories:
         patterns = [p for p in patterns if p["category"] in categories]
     if pattern_ids:
         patterns = [p for p in patterns if p["id"] in pattern_ids]
+
+    # Append custom (My Patterns) from client
+    custom_patterns = body.get("custom_patterns", [])
+    if custom_patterns:
+        for cp in custom_patterns:
+            if isinstance(cp, dict) and cp.get("text"):
+                patterns.append({"id": cp.get("id", f"MY-{len(patterns)+1}"), "text": cp["text"], "category": "my_patterns"})
+
     if not patterns:
         return JSONResponse({"error": "No patterns match the selection"}, status_code=400)
+
+    # Enforce max patterns limit
+    max_patterns = body.get("max_patterns", 50)
+    if max_patterns and max_patterns > 0:
+        patterns = patterns[:max_patterns]
+
+    error_cutoff = body.get("error_cutoff", 5)
 
     session_id = str(uuid.uuid4())[:8]
     async with aiosqlite.connect(DB_PATH) as db:
@@ -349,6 +367,7 @@ async def start_attack(request: Request):
 
     async def event_generator():
         stats = {"blocked": 0, "partial": 0, "bypassed": 0, "errors": 0}
+        consecutive_errors = 0
         yield {"event": "session", "data": json.dumps({"session_id": session_id, "total": len(patterns)})}
 
         async with httpx.AsyncClient(timeout=timeout_s, verify=False) as client:
@@ -383,13 +402,36 @@ async def start_attack(request: Request):
                 except Exception as e:
                     elapsed = (time.time() - start) * 1000; response_text = str(e)[:500]; verdict = "ERROR"; status_code = 0
 
-                stats[verdict.lower() if verdict.lower() in stats else "errors"] += 1
+                # MCP analysis
+                mcp_result = ""
+                if use_mcp and mcp_url:
+                    try:
+                        mcp_resp = await client.post(mcp_url, json={
+                            "payload": pattern["text"][:500], "response": response_text[:500],
+                            "verdict": verdict, "category": pattern["category"]
+                        }, timeout=10)
+                        if mcp_resp.status_code == 200:
+                            mcp_data = mcp_resp.json()
+                            mcp_result = mcp_data.get("analysis", mcp_data.get("result", str(mcp_data)[:200]))
+                            if mcp_data.get("verdict") and mcp_data["verdict"].upper() in ("BLOCKED", "BYPASS", "PARTIAL"):
+                                verdict = mcp_data["verdict"].upper()
+                    except Exception:
+                        mcp_result = "MCP error"
+
+                verdict_key = verdict.lower() if verdict.lower() in stats else "errors"
+                stats[verdict_key] += 1
+                if verdict_key == "errors":
+                    consecutive_errors += 1
+                else:
+                    consecutive_errors = 0
                 result = {
                     "index": i + 1, "total": len(patterns), "pattern_id": pattern["id"],
                     "pattern_text": pattern["text"][:100], "category": pattern["category"],
                     "status_code": status_code, "response_preview": response_text[:300],
                     "response_time_ms": round(elapsed, 1), "verdict": verdict,
-                    "llm_reason": llm_reason if body.get("use_llm") else "", "stats": stats.copy()
+                    "llm_reason": llm_reason if body.get("use_llm") else "",
+                    "mcp_result": mcp_result if use_mcp else "",
+                    "stats": stats.copy()
                 }
                 yield {"event": "result", "data": json.dumps(result)}
 
@@ -402,6 +444,14 @@ async def start_attack(request: Request):
                          json.dumps(payload), status_code, response_text, elapsed, verdict,
                          datetime.utcnow().isoformat()))
                     await db.commit()
+
+                # Auto-stop on consecutive errors (rate limited, key expired, etc.)
+                if error_cutoff and consecutive_errors >= error_cutoff:
+                    yield {"event": "error_cutoff", "data": json.dumps({
+                        "message": f"Stopped: {consecutive_errors} consecutive errors. Target may be rate limiting or key may be invalid.",
+                        "stats": stats.copy()
+                    })}
+                    break
 
                 if delay_ms > 0 and i < len(patterns) - 1:
                     await asyncio.sleep(delay_ms / 1000)
@@ -530,6 +580,20 @@ async def test_llm(request: Request):
                 models = [m["name"] for m in resp.json().get("models", [])]
                 return {"status": "connected", "models": models, "model_found": any(model in m for m in models)}
             return {"status": "error", "message": f"HTTP {resp.status_code}"}
+    except Exception as e:
+        return {"status": "error", "message": str(e)[:200]}
+
+
+@app.post("/api/settings/mcp-test")
+async def test_mcp(request: Request):
+    body = await request.json()
+    url = body.get("mcp_url", "")
+    if not url:
+        return {"status": "error", "message": "URL required"}
+    try:
+        async with httpx.AsyncClient(timeout=5) as client:
+            resp = await client.post(url, json={"payload": "test", "response": "test", "verdict": "BLOCKED", "category": "test"})
+            return {"status": "connected", "http_status": resp.status_code}
     except Exception as e:
         return {"status": "error", "message": str(e)[:200]}
 
