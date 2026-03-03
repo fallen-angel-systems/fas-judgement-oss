@@ -8,8 +8,8 @@
 
 [![PyPI Version](https://img.shields.io/pypi/v/fas-judgement?color=blue)](https://pypi.org/project/fas-judgement/)
 [![Downloads](https://img.shields.io/pypi/dm/fas-judgement?color=green)](https://pypi.org/project/fas-judgement/)
-[![License](https://img.shields.io/github/license/fallen-angel-systems/fas-judgement-oss)](LICENSE)
-[![Stars](https://img.shields.io/github/stars/fallen-angel-systems/fas-judgement-oss?style=social)](https://github.com/fallen-angel-systems/fas-judgement-oss)
+[![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
+[![GitHub Stars](https://img.shields.io/github/stars/fallen-angel-systems/fas-judgement-oss?style=social&v=2)](https://github.com/fallen-angel-systems/fas-judgement-oss)
 
 [Live Demo](https://judgement.fallenangelsystems.com) · [Documentation](#features) · [Install](#quick-start) · [Contributing](#contributing)
 
