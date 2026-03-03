@@ -154,7 +154,7 @@ Place your patterns in `patterns.json` in the project root:
 | 240K+ curated patterns | ❌ | ✅ |
 | Weekly pattern updates | ❌ | ✅ |
 | Campaigns & leaderboard | ❌ | ✅ |
-| MCP server integration | ❌ | ✅ |
+| MCP server integration | ✅ | ✅ |
 | Multi-turn attack chains | ❌ | ✅ |
 | Priority support | ❌ | ✅ |
 
