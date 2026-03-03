@@ -149,7 +149,7 @@ Place your patterns in `patterns.json` in the project root:
 | Attack console | ✅ | ✅ |
 | Education tab | ✅ | ✅ |
 | Pattern browser | ✅ | ✅ |
-| LLM verdict | ✅ (bring your own Ollama) | ✅ (built-in) |
+| LLM verdict | ✅ (bring your own Ollama) | ✅ (bring your own Ollama) |
 | Starter patterns | ✅ | ✅ |
 | 240K+ curated patterns | ❌ | ✅ |
 | Weekly pattern updates | ❌ | ✅ |
