@@ -1,6 +1,6 @@
 <div align="center">
 
-# ⚖️ Judgement OSS
+# Judgement OSS
 
 ### Prompt Injection Attack Console
 
@@ -11,21 +11,21 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 [![GitHub Stars](https://img.shields.io/github/stars/fallen-angel-systems/fas-judgement-oss?style=social&v=2)](https://github.com/fallen-angel-systems/fas-judgement-oss)
 
-[Live Demo](https://judgement.fallenangelsystems.com) · [Documentation](#features) · [Install](#quick-start) · [Contributing](#contributing)
+[Live Demo](https://judgement.fallenangelsystems.com) | [Documentation](#features) | [Install](#quick-start) | [Contributing](#contributing)
 
 </div>
 
 ---
 
-![Judgement — Shall We Play a Game?](docs/images/judgement-hero.png)
+![Judgement - Shall We Play a Game?](docs/images/judgement-hero.png)
 
 ## Why Judgement?
 
 Your AI chatbot, API, or agent is probably vulnerable to prompt injection. Most are. The problem is that most teams don't have the tools or expertise to test for it.
 
-Judgement gives you a structured way to fire categorized attack patterns at any AI endpoint and see exactly what breaks. No security background required — the built-in education tab teaches you as you go.
+Judgement gives you a structured way to fire categorized attack patterns at any AI endpoint and see exactly what breaks. No security background required - the built-in education tab teaches you as you go.
 
-Built by [Fallen Angel Systems](https://fallenangelsystems.com), the team behind [Guardian](https://fallenangelsystems.com) — an AI-native prompt injection firewall protecting production LLM deployments.
+Built by [Fallen Angel Systems](https://fallenangelsystems.com), the team behind [Guardian](https://fallenangelsystems.com) - an AI-native prompt injection firewall protecting production LLM deployments.
 
 ## Quick Start
 
@@ -57,12 +57,12 @@ judgement --host 0.0.0.0     # Expose to network
 
 ## Features
 
-### 🎯 Attack Console
+### Attack Console
 Configure your target (URL, headers, body template), import directly from cURL commands, and fire pattern-based attacks with **live streaming results**. Watch in real-time as each payload hits and see exactly how your AI responds.
 
 ![Attack Console](docs/images/attack-console.png)
 
-### 📚 Education Tab
+### Education Tab
 New to prompt injection? The built-in education tab covers:
 - What prompt injection is and why it matters
 - How to find testable AI endpoints
@@ -73,46 +73,46 @@ New to prompt injection? The built-in education tab covers:
 
 ![Education Tab](docs/images/education-tab.png)
 
-### 🔍 Pattern Browser
+### Pattern Browser
 Browse, search, and explore attack patterns organized by category. Each pattern includes:
 - The attack payload
 - What it does and why it works
-- Difficulty level (beginner → advanced)
+- Difficulty level (beginner to advanced)
 - Category (jailbreak, data extraction, instruction override, etc.)
 
 ![Pattern Browser](docs/images/pattern-browser.png)
 
-### 🤖 LLM Verdict (Optional)
+### LLM Verdict (Optional)
 Connect a local [Ollama](https://ollama.ai) instance to get AI-powered classification of responses. Judgement will analyze whether the target was successfully exploited, partially resistant, or fully defended.
 
-### 💾 Session History
+### Session History
 All scan sessions and results are stored locally in SQLite. Review past scans, compare results across targets, and track your testing progress.
 
-### 🔒 Built-in Safety
-- **SSRF Protection** — Target URL validation prevents scanning internal/private networks
-- **Local-only by default** — Binds to localhost, no accidental exposure
-- **Zero telemetry** — Nothing phones home, ever
-- **Responsible use disclaimer** — Prominent warnings on every page
+### Built-in Safety
+- **SSRF Protection** - Target URL validation prevents scanning internal/private networks
+- **Local-only by default** - Binds to localhost, no accidental exposure
+- **Zero telemetry** - Nothing phones home, ever
+- **Responsible use disclaimer** - Prominent warnings on every page
 
 ## How It Works
 
 ```
-┌─────────────┐     ┌──────────────┐     ┌─────────────┐
-│   You pick   │────▶│  Judgement    │────▶│  Your AI    │
-│   patterns   │     │  fires them  │     │  endpoint   │
-└─────────────┘     └──────┬───────┘     └──────┬──────┘
-                           │                     │
-                    ┌──────▼───────┐     ┌──────▼──────┐
-                    │  Results     │◀────│  Response   │
-                    │  + Verdict   │     │  captured   │
-                    └──────────────┘     └─────────────┘
++--------------+     +---------------+     +--------------+
+|   You pick   |---->|  Judgement     |---->|  Your AI     |
+|   patterns   |     |  fires them   |     |  endpoint    |
++--------------+     +-------+-------+     +-------+------+
+                             |                     |
+                      +------v-------+     +-------v------+
+                      |  Results     |<----|  Response    |
+                      |  + Verdict   |     |  captured    |
+                      +--------------+     +--------------+
 ```
 
-1. **Configure** — Point Judgement at your AI endpoint (URL + headers + body template)
-2. **Select** — Choose attack patterns by category or difficulty
-3. **Fire** — Watch results stream in real-time
-4. **Analyze** — Review responses, optional LLM verdict classifies each result
-5. **Fix** — Use the findings to harden your AI's defenses
+1. **Configure** - Point Judgement at your AI endpoint (URL + headers + body template)
+2. **Select** - Choose attack patterns by category or difficulty
+3. **Fire** - Watch results stream in real-time
+4. **Analyze** - Review responses, optional LLM verdict classifies each result
+5. **Fix** - Use the findings to harden your AI's defenses
 
 ## Custom Patterns
 
@@ -146,43 +146,43 @@ Place your patterns in `patterns.json` in the project root:
 
 | Feature | OSS (Free) | Pro (Hosted) |
 |---------|:----------:|:------------:|
-| Attack console | ✅ | ✅ |
-| Education tab | ✅ | ✅ |
-| Pattern browser | ✅ | ✅ |
-| LLM verdict | ✅ (bring your own Ollama) | ✅ (bring your own Ollama) |
-| Starter patterns | ✅ | ✅ |
-| 240K+ curated patterns | ❌ | ✅ |
-| Weekly pattern updates | ❌ | ✅ |
-| Campaigns & leaderboard | ❌ | ✅ |
-| MCP server integration | ✅ | ✅ |
-| Multi-turn attack chains | ❌ | ✅ |
-| Priority support | ❌ | ✅ |
+| Attack console | Yes | Yes |
+| Education tab | Yes | Yes |
+| Pattern browser | Yes | Yes |
+| LLM verdict | Yes (bring your own Ollama) | Yes (bring your own Ollama) |
+| Starter patterns | Yes | Yes |
+| 240K+ curated patterns | - | Yes |
+| Weekly pattern updates | - | Yes |
+| Campaigns and leaderboard | - | Yes |
+| MCP server integration | Yes | Yes |
+| Multi-turn attack chains | - | Yes |
+| Priority support | - | Yes |
 
-**[Try Judgement Pro →](https://judgement.fallenangelsystems.com)**
+**[Try Judgement Pro](https://judgement.fallenangelsystems.com)**
 
 ## Contributing
 
 Contributions are welcome! Here's how to help:
 
-- 🐛 **Bug reports** — [Open an issue](https://github.com/fallen-angel-systems/fas-judgement-oss/issues)
-- 💡 **Feature requests** — [Open an issue](https://github.com/fallen-angel-systems/fas-judgement-oss/issues) with the `enhancement` label
-- 🔧 **Pull requests** — Fork, branch, PR. Keep changes focused and include a description.
-- 📝 **Pattern contributions** — Submit new attack patterns via PR to `patterns.json`
+- **Bug reports** - [Open an issue](https://github.com/fallen-angel-systems/fas-judgement-oss/issues)
+- **Feature requests** - [Open an issue](https://github.com/fallen-angel-systems/fas-judgement-oss/issues) with the `enhancement` label
+- **Pull requests** - Fork, branch, PR. Keep changes focused and include a description.
+- **Pattern contributions** - Submit new attack patterns via PR to `patterns.json`
 
 ## Related Projects
 
-- **[Guardian](https://fallenangelsystems.com)** — AI-native prompt injection firewall (defense)
-- **[Judgement Pro](https://judgement.fallenangelsystems.com)** — Full-featured hosted version with 240K+ patterns
+- **[Guardian](https://fallenangelsystems.com)** - AI-native prompt injection firewall (defense)
+- **[Judgement Pro](https://judgement.fallenangelsystems.com)** - Full-featured hosted version with 240K+ patterns
 
 ## License
 
-MIT — see [LICENSE](LICENSE) for details.
+MIT - see [LICENSE](LICENSE) for details.
 
 ---
 
 <div align="center">
 
-Built with 🔥 by [Fallen Angel Systems](https://fallenangelsystems.com)
+Built by [Fallen Angel Systems](https://fallenangelsystems.com)
 
 *If Judgement found a vulnerability in your AI, imagine what an attacker would find.*
 
