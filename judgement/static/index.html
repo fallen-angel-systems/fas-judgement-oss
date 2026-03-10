@@ -15,6 +15,53 @@
     flex-direction: column;
   }
 
+  /* Tier Badge */
+  .tier-badge {
+    font-size: 10px; padding: 2px 8px; border-radius: 3px;
+    letter-spacing: 2px; vertical-align: middle; margin-left: 8px;
+    font-weight: bold;
+  }
+  .tier-free { background: #333; color: #888; }
+  .tier-elite_home { background: #ff4444; color: #fff; text-shadow: 0 0 10px rgba(255,68,68,0.5); }
+  .tier-elite_business { background: linear-gradient(135deg, #ff4444, #ff8800); color: #fff; text-shadow: 0 0 10px rgba(255,136,0,0.5); }
+
+  /* Locked Nav Tabs */
+  .nav-tab-elite { position: relative; }
+  .nav-tab-elite.locked { color: #444 !important; cursor: pointer; }
+  .nav-tab-elite.locked:hover { color: #666 !important; }
+  .elite-lock { font-size: 10px; vertical-align: middle; }
+  .nav-tab-elite.unlocked .elite-lock { display: none; }
+
+  /* Elite Locked Pages */
+  .elite-locked-page {
+    display: none !important; flex-direction: column;
+    align-items: center; justify-content: center; text-align: center;
+  }
+  .elite-locked-page.active { display: flex !important; }
+  .elite-gate {
+    max-width: 500px; padding: 48px; border: 1px solid #222;
+    border-radius: 8px; background: #0d0d14;
+  }
+  .elite-gate-icon { font-size: 48px; margin-bottom: 16px; opacity: 0.5; }
+  .elite-gate h2 { color: #ff4444; margin-bottom: 12px; font-size: 22px; letter-spacing: 2px; }
+  .elite-gate p { color: #888; font-size: 13px; line-height: 1.6; margin-bottom: 20px; }
+  .elite-features { text-align: left; margin-bottom: 24px; }
+  .elite-feature { color: #666; font-size: 12px; padding: 4px 0; }
+  .elite-feature::before { color: #ff4444; }
+  .btn-upgrade {
+    background: linear-gradient(135deg, #ff2222, #ff4444);
+    color: #fff; border: none; padding: 12px 32px; border-radius: 4px;
+    font-family: inherit; font-size: 14px; cursor: pointer;
+    letter-spacing: 2px; font-weight: bold;
+    transition: all 0.2s; text-transform: uppercase;
+  }
+  .btn-upgrade:hover {
+    background: linear-gradient(135deg, #ff4444, #ff6666);
+    box-shadow: 0 0 20px rgba(255,68,68,0.4);
+    transform: translateY(-1px);
+  }
+  .elite-price { color: #555; font-size: 11px; margin-top: 12px; }
+
   /* Header */
   .header {
     background: linear-gradient(135deg, #1a0a0a 0%, #0a0a1a 100%);
@@ -41,11 +88,15 @@
   .top-nav {
     background: #0d0d14; border-bottom: 1px solid #222;
     display: flex; padding: 0 20px; flex-shrink: 0;
+    align-items: stretch;
   }
   .top-nav .nav-tab {
     padding: 10px 24px; cursor: pointer; color: #888; font-size: 13px;
     letter-spacing: 1px; border-bottom: 2px solid transparent;
     transition: color 0.2s, border-color 0.2s; user-select: none;
+    flex: 1; text-align: center;
+    display: flex; align-items: center; justify-content: center;
+    line-height: 1;
   }
   .top-nav .nav-tab:hover { color: #ccc; }
   .top-nav .nav-tab.active { color: #ff4444; border-bottom-color: #ff4444; }
@@ -92,6 +143,10 @@
   input[type="checkbox"] { width: auto; margin: 0; accent-color: #ff4444; }
 
   .category-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 2px 12px; }
+  @media (max-width: 600px) { .category-grid { grid-template-columns: 1fr; } }
+  .category-grid > div input[type="number"] { background: #0a0a12; border: 1px solid #333; color: #ff4444; border-radius: 3px; }
+  .category-grid > div input[type="number"]:focus { border-color: #ff4444; outline: none; }
+  .cat-count { color: #666; font-size: 11px; }
   .cat-count { color: #666; font-size: 11px; }
 
   .btn-row { display: flex; gap: 8px; margin-bottom: 8px; }
@@ -188,6 +243,94 @@
 
   .empty-state { color: #444; text-align: center; padding: 60px 20px; font-size: 14px; }
   .empty-state .icon { font-size: 36px; margin-bottom: 10px; color: #333; }
+
+  /* Docs page */
+  #page-docs.active { display: block !important; overflow-y: auto; }
+  .docs-section { border: 1px solid #1e1e2a; margin-bottom: 8px; width: 100%; box-sizing: border-box; }
+  .docs-header { padding: 14px 16px; cursor: pointer; display: flex; align-items: center; gap: 10px; color: #ccc; font-size: 13px; letter-spacing: 0.5px; transition: all 0.2s; user-select: none; }
+  .docs-header:hover { background: #12121a; color: #ff4444; }
+  .docs-arrow { font-size: 10px; transition: transform 0.2s; display: inline-block; }
+  .docs-header.open .docs-arrow { transform: rotate(90deg); }
+  .docs-content { display: none; padding: 16px 20px; color: #aaa; font-size: 12px; line-height: 1.8; border-top: 1px solid #1e1e2a; }
+  .docs-content.open { display: block; }
+  .docs-content h4 { color: #e0e0e0; font-size: 13px; margin: 16px 0 8px; letter-spacing: 0.5px; }
+  .docs-content h4:first-child { margin-top: 0; }
+  .docs-content ul, .docs-content ol { padding-left: 20px; margin-bottom: 12px; }
+  .docs-content li { margin-bottom: 4px; }
+  .docs-content p { margin-bottom: 12px; }
+  .docs-content code { background: #0a0a14; padding: 2px 6px; color: #4488ff; font-size: 11px; }
+  .docs-content pre { margin-bottom: 12px; }
+  .docs-table { width: 100%; border-collapse: collapse; margin-bottom: 16px; font-size: 12px; }
+  .docs-table th, .docs-table td { padding: 8px 12px; border: 1px solid #1e1e2a; text-align: left; }
+  .docs-table th { color: #ff4444; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; }
+  .docs-table td { color: #aaa; }
+
+  /* Reports page */
+  #page-reports.elite-locked-page { display: none !important; }
+  #page-reports.elite-locked-page.active { display: flex !important; overflow-y: auto; }
+  .reports-header { text-align: center; margin-bottom: 24px; }
+  .reports-header h2 { color: #ff4444; letter-spacing: 2px; margin-bottom: 4px; }
+  .reports-header p { color: #666; font-size: 12px; }
+  .reports-grid { display: grid; grid-template-columns: 340px 1fr; gap: 20px; min-height: 500px; }
+  @media (max-width: 800px) { .reports-grid { grid-template-columns: 1fr; } }
+  .reports-sessions { background: #0d0d14; border: 1px solid #1e1e2a; padding: 0; overflow-y: auto; max-height: 70vh; }
+  .reports-sessions .panel-title { padding: 12px 16px; border-bottom: 1px solid #1e1e2a; color: #888; font-size: 11px; letter-spacing: 1px; text-transform: uppercase; position: sticky; top: 0; background: #0d0d14; z-index: 1; }
+  .session-item { padding: 12px 16px; border-bottom: 1px solid #111118; cursor: pointer; transition: background 0.15s; }
+  .session-item:hover { background: #111118; }
+  .session-item.selected { background: #1a1020; border-left: 3px solid #ff4444; }
+  .session-item .target { font-size: 12px; color: #ccc; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .session-item .meta { font-size: 11px; color: #555; margin-top: 4px; }
+  .session-item .stats { font-size: 11px; margin-top: 4px; }
+  .session-item .stats .bypass { color: #ff4444; }
+  .session-item .stats .partial { color: #ffaa00; }
+  .session-item .stats .blocked { color: #44ff44; }
+  .session-item .risk-badge { display: inline-block; font-size: 9px; padding: 1px 6px; letter-spacing: 0.5px; font-weight: bold; margin-left: 8px; }
+  .session-item .risk-badge.critical { color: #ff2222; border: 1px solid #ff2222; }
+  .session-item .risk-badge.high { color: #ff6622; border: 1px solid #ff6622; }
+  .session-item .risk-badge.medium { color: #ffaa00; border: 1px solid #ffaa00; }
+  .session-item .risk-badge.low { color: #44cc44; border: 1px solid #44cc44; }
+  .session-item .risk-badge.info { color: #666; border: 1px solid #444; }
+  .reports-config { background: #0d0d14; border: 1px solid #1e1e2a; padding: 20px; }
+  .reports-config .config-title { color: #ccc; font-size: 13px; letter-spacing: 1px; margin-bottom: 16px; border-bottom: 1px solid #1e1e2a; padding-bottom: 8px; }
+  .reports-config label { display: block; font-size: 11px; color: #888; letter-spacing: 0.5px; margin-bottom: 4px; margin-top: 12px; text-transform: uppercase; }
+  .reports-config label:first-of-type { margin-top: 0; }
+  .reports-config input, .reports-config select, .reports-config textarea { width: 100%; background: #0a0a0f; border: 1px solid #222; color: #e0e0e0; font-family: inherit; font-size: 12px; padding: 8px 10px; outline: none; transition: border 0.2s; }
+  .reports-config input:focus, .reports-config select:focus, .reports-config textarea:focus { border-color: #ff4444; }
+  .reports-config textarea { min-height: 60px; resize: vertical; }
+  .reports-config select option { background: #0a0a0f; }
+  .client-preset-row { display: flex; gap: 8px; align-items: center; margin-bottom: 12px; }
+  .client-preset-row select { flex: 1; }
+  .client-preset-row button { background: none; border: 1px solid #333; color: #888; font-family: inherit; font-size: 11px; padding: 7px 12px; cursor: pointer; white-space: nowrap; }
+  .client-preset-row button:hover { border-color: #ff4444; color: #ff4444; }
+  .export-section { margin-top: 24px; border-top: 1px solid #1e1e2a; padding-top: 16px; }
+  .export-section .section-label { font-size: 11px; color: #888; letter-spacing: 0.5px; text-transform: uppercase; margin-bottom: 10px; }
+  .export-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .export-btn { background: none; border: 1px solid #333; color: #ccc; font-family: inherit; font-size: 12px; padding: 10px 14px; cursor: pointer; transition: all 0.2s; text-align: left; display: flex; flex-direction: column; gap: 2px; }
+  .export-btn:hover { border-color: #ff4444; color: #ff4444; }
+  .export-btn .fmt-name { font-weight: bold; }
+  .export-btn .fmt-desc { font-size: 10px; color: #666; }
+  .export-btn:hover .fmt-desc { color: #aa4444; }
+  .export-btn.primary { border-color: #ff4444; color: #ff4444; }
+  .export-btn.primary:hover { background: rgba(255,68,68,0.1); }
+  .no-session-selected { text-align: center; padding: 60px 20px; color: #444; font-size: 12px; }
+  .no-session-selected .icon { font-size: 36px; margin-bottom: 12px; }
+
+  /* Pattern table */
+  .pattern-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+  .pattern-table th { text-align: left; color: #ff4444; font-size: 11px; text-transform: uppercase; letter-spacing: 1px; padding: 8px 10px; border-bottom: 2px solid #222; }
+  .pattern-table td { padding: 8px 10px; border-bottom: 1px solid #1a1a1a; vertical-align: top; }
+  .pattern-table tr:hover td { background: #111118; }
+  .pattern-table .text-preview { max-width: 400px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: #aaa; }
+
+  /* Patterns sub-tabs */
+  .patterns-sub-tabs { display: flex; gap: 0; margin-bottom: 16px; border-bottom: 2px solid #222; justify-content: center; width: 100%; }
+  .patterns-sub-tab { padding: 8px 20px; cursor: pointer; color: #888; border-bottom: 2px solid transparent; margin-bottom: -2px; font-size: 13px; }
+  .patterns-sub-tab:hover { color: #ccc; }
+  .patterns-sub-tab.active { color: #ff4444; border-bottom-color: #ff4444; }
+
+  /* Form styles for modals */
+  .form-group { margin-bottom: 12px; }
+  .form-label { color: #aaa; font-size: 12px; margin-bottom: 4px; display: block; }
 
   /* Patterns page */
   .patterns-page { flex: 1; overflow-y: auto; padding: 20px; flex-direction: column; }
@@ -336,14 +479,14 @@
 <!-- Header -->
 <div class="header">
   <div class="header-left">
-    <div class="version-line">JUDGEMENT OSS -- ATTACK CONSOLE v1.0.0</div>
+    <div class="version-line">JUDGEMENT -- ATTACK CONSOLE v2.0.0</div>
     <div id="wopr-text"></div>
     <div class="tagline">OPEN-SOURCE PROMPT INJECTION TESTING</div>
   </div>
   <div class="header-right">
     <div>
-      <h1>JUDGEMENT</h1>
-      <div class="subtitle">Prompt Injection Attack Console -- OSS</div>
+      <h1>JUDGEMENT <span id="tier-badge" class="tier-badge tier-free">FREE</span></h1>
+      <div class="subtitle">Prompt Injection Attack Console</div>
     </div>
   </div>
 </div>
@@ -351,8 +494,12 @@
 <!-- Top Navigation -->
 <div class="top-nav">
   <div class="nav-tab active" data-page="attack" onclick="switchPage('attack')">&#9876; Attack</div>
+  <div class="nav-tab nav-tab-elite" data-page="reports" onclick="switchPage('reports')">&#9638; Reports <span class="elite-lock">&#128274;</span></div>
   <div class="nav-tab" data-page="education" onclick="switchPage('education')">&#9670; Education</div>
   <div class="nav-tab" data-page="patterns" onclick="switchPage('patterns')">&#9638; Patterns</div>
+  <div class="nav-tab nav-tab-elite" data-page="campaigns" onclick="switchPage('campaigns')">&#9733; Campaigns <span class="elite-lock">&#128274;</span></div>
+  <div class="nav-tab nav-tab-elite" data-page="multiturn" onclick="switchPage('multiturn')">&#8644; Multi-Turn <span class="elite-lock">&#128274;</span></div>
+  <div class="nav-tab" data-page="docs" onclick="switchPage('docs')">&#9776; Docs</div>
   <div class="nav-tab" data-page="settings" onclick="switchPage('settings')">&#9881; Settings</div>
 </div>
 
@@ -374,7 +521,11 @@
     <div class="section">
       <div class="section-title collapsible" onclick="toggleSection('target')">&#9656; Target</div>
       <div class="section-content" id="section-target">
-        <input type="text" id="target-url" placeholder="https://api.example.com/v1/chat">
+        <div style="display:flex;gap:8px;">
+          <input type="text" id="target-url" placeholder="https://api.example.com/v1/chat" style="flex:1;">
+          <button class="btn-small" onclick="scanTarget()" title="Auto-detect endpoint config" id="scan-target-btn">&#128269; Scan</button>
+        </div>
+        <div id="scan-target-status" style="font-size:11px;color:#888;margin-bottom:6px;display:none;"></div>
         <div style="display:flex;gap:8px;">
           <select id="method" style="width:100px;"><option>POST</option><option>GET</option><option>PUT</option><option>PATCH</option></select>
           <input type="text" id="payload-field" placeholder="Payload field" value="message" style="flex:1;">
@@ -403,33 +554,46 @@
     <div class="section">
       <div class="section-title collapsible" onclick="toggleSection('categories')">&#9656; Attack Categories</div>
       <div class="section-content" id="section-categories">
+        <!-- Select/Deselect/Reset -->
         <div class="btn-row">
           <button class="btn-small" onclick="selectAll()">Select All</button>
           <button class="btn-small" onclick="deselectAll()">Deselect All</button>
+          <button class="btn-small" onclick="resetLimits()" title="Reset all limits to max">Reset Limits</button>
         </div>
+        <!-- Quick Presets -->
+        <div style="display:flex;align-items:center;gap:6px;margin-bottom:8px;flex-wrap:wrap;">
+          <span style="color:#888;font-size:11px;margin-right:2px;">Quick:</span>
+          <button class="btn-small" onclick="applyQuickPreset('smoke')" title="15 patterns across top categories">&#9889; Smoke Test</button>
+          <button class="btn-small" onclick="applyQuickPreset('sweep')" title="50 patterns across all categories">&#9876; Full Sweep</button>
+          <button class="btn-small" onclick="applyQuickPreset('deep')" title="100 patterns, heavy coverage">&#9888; Deep Dive</button>
+          <button class="btn-small" onclick="applyQuickPreset('critical')" title="All critical+high severity only">&#9760; Critical Only</button>
+        </div>
+        <!-- Severity Filter + Search -->
+        <div style="display:flex;gap:6px;align-items:center;margin-bottom:8px;">
+          <span style="color:#888;font-size:11px;">Severity:</span>
+          <select id="severity-filter" onchange="updatePatternCount()" style="width:auto;min-width:130px;padding:4px 6px;font-size:12px;margin-bottom:0;">
+            <option value="">All Severities</option>
+            <option value="critical,high">Critical + High</option>
+            <option value="critical">Critical Only</option>
+            <option value="high">High Only</option>
+            <option value="medium">Medium Only</option>
+            <option value="low">Low Only</option>
+          </select>
+          <input type="text" id="category-search" placeholder="Search patterns..." oninput="filterCategoryPatterns()" style="flex:1;padding:4px 6px;font-size:12px;margin-bottom:0;">
+        </div>
+        <div id="search-results" style="display:none;max-height:200px;overflow-y:auto;border:1px solid #222;border-radius:4px;padding:4px;margin-bottom:6px;"></div>
         <div id="categories" class="category-grid"></div>
         <div id="pattern-count" class="pattern-count">0 patterns selected</div>
       </div>
     </div>
 
-    <!-- My Patterns -->
-    <div class="section">
-      <div class="section-title collapsible" onclick="toggleSection('mypatterns')">&#9656; My Patterns</div>
-      <div class="section-content" id="section-mypatterns">
-        <label style="margin-bottom:6px;">
-          <input type="checkbox" id="use-mypatterns" onchange="updatePatternCount()">
-          <span>Include My Patterns <span class="cat-count" id="mypatterns-count">(0)</span></span>
-        </label>
-        <textarea id="mypatterns-input" rows="4" placeholder="Paste custom patterns (one per line)..." style="font-size:11px;"></textarea>
-        <div class="btn-row">
-          <button class="btn-small" onclick="addMyPatterns()">+ Add</button>
-          <button class="btn-small" onclick="clearMyPatterns()" style="border-color:#aa2222;color:#ff4444;">Clear All</button>
-          <button class="btn-small" onclick="exportMyPatterns()">Export</button>
-          <button class="btn-small" onclick="document.getElementById('mypatterns-file').click()">Import</button>
-          <input type="file" id="mypatterns-file" accept=".json,.txt,.csv" style="display:none;" onchange="handleMyPatternsImport(event)">
-        </div>
-        <div id="mypatterns-list" style="max-height:150px;overflow-y:auto;font-size:11px;color:#888;margin-top:4px;"></div>
-      </div>
+    <!-- My Patterns toggle -->
+    <div class="section" id="custom-patterns-toggle">
+      <label style="padding:4px 0;">
+        <input type="checkbox" id="use-mypatterns" onchange="updatePatternCount()">
+        <span style="color:#4488ff;font-size:12px;">&#9733; Include My Patterns <span class="cat-count" id="mypatterns-count">(0)</span></span>
+      </label>
+      <div style="font-size:10px;color:#555;margin-top:2px;">Manage patterns in <a href="#" onclick="switchPage('patterns');switchPatternsTab('custom');return false;" style="color:#4488ff;">Patterns &rarr; My Patterns</a></div>
     </div>
   </div>
 
@@ -665,12 +829,522 @@ async def analyze(request: Request):
 
 <!-- ==================== PATTERNS PAGE ==================== -->
 <div id="page-patterns" class="page patterns-page">
-  <div class="patterns-toolbar">
-    <input type="text" id="pattern-search" placeholder="Search patterns..." oninput="filterPatterns()">
-    <select id="pattern-cat-filter" onchange="filterPatterns()"><option value="">All Categories</option></select>
-    <span id="pattern-browse-count" style="color:#888;font-size:12px;"></span>
+  <div class="patterns-sub-tabs">
+    <div class="patterns-sub-tab active" data-ptab="browse" onclick="switchPatternsTab('browse')">&#9656; Browse</div>
+    <div class="patterns-sub-tab" data-ptab="custom" onclick="switchPatternsTab('custom')">&#9656; My Patterns <span id="custom-count-badge" style="color:#888;">(0)</span></div>
+    <div class="patterns-sub-tab" data-ptab="submit" onclick="switchPatternsTab('submit')">&#9656; Submit Pattern</div>
   </div>
-  <div id="pattern-list"></div>
+
+  <!-- Browse Tab -->
+  <div id="ptab-browse" class="attack-sub-content active">
+    <div class="patterns-toolbar">
+      <input type="text" id="pattern-search" placeholder="Search patterns..." oninput="filterPatterns()">
+      <select id="pattern-cat-filter" onchange="filterPatterns()"><option value="">All Categories</option></select>
+      <span id="pattern-browse-count" style="color:#888;font-size:12px;"></span>
+    </div>
+    <div style="overflow-x:auto;">
+      <table class="pattern-table">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Category</th>
+            <th>Pattern</th>
+            <th>Severity</th>
+          </tr>
+        </thead>
+        <tbody id="pattern-table-body"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Submit Pattern Tab -->
+  <div id="ptab-submit" class="attack-sub-content">
+    <div style="max-width:600px;">
+      <div style="color:#888;font-size:12px;margin-bottom:16px;line-height:1.6;">
+        &#9733; Contribute to the Judgement pattern library! Submissions are validated by <span style="color:#ff4444;">Guardian AI</span> and reviewed for inclusion.
+        High-scoring patterns are auto-approved.
+      </div>
+      <div class="form-group">
+        <span class="form-label">Category</span>
+        <select id="submit-category" style="margin-bottom:0;">
+          <option value="auto" selected>Auto-detect</option>
+          <option value="jailbreak">Jailbreak</option>
+          <option value="system_prompt_extraction">System Prompt Extraction</option>
+          <option value="data_exfiltration">Data Exfiltration</option>
+          <option value="indirect_injection">Indirect Injection</option>
+          <option value="encoding_evasion">Encoding Evasion</option>
+          <option value="social_engineering">Social Engineering</option>
+          <option value="privilege_escalation">Privilege Escalation</option>
+          <option value="multilingual">Multilingual</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <span class="form-label">Attack Payload *</span>
+        <textarea id="submit-text" rows="6" placeholder="Enter your attack payload..."></textarea>
+      </div>
+      <div class="form-group">
+        <span class="form-label">Target Type</span>
+        <select id="submit-target-type" style="margin-bottom:0;">
+          <option value="chatbot">Chatbot</option>
+          <option value="api">API</option>
+          <option value="agent">Agent</option>
+          <option value="other">Other</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <span class="form-label">Description / Notes</span>
+        <textarea id="submit-description" rows="3" placeholder="Describe the attack technique, what it targets, why it works..."></textarea>
+      </div>
+      <div class="form-group">
+        <span class="form-label">Your Name (optional)</span>
+        <input type="text" id="submit-name" placeholder="Anonymous" style="margin-bottom:0;">
+      </div>
+      <button class="btn-primary" onclick="submitPattern()">&#9656; Submit Pattern</button>
+      <div id="submit-result" style="margin-top:12px;font-size:12px;"></div>
+    </div>
+  </div>
+
+  <!-- My Custom Patterns Tab (localStorage-based) -->
+  <div id="ptab-custom" class="attack-sub-content">
+    <div id="custom-patterns-content">
+      <div class="patterns-toolbar" style="flex-wrap:wrap;">
+        <input type="text" id="custom-pattern-search" placeholder="Search your patterns..." oninput="filterCustomPatterns()" style="margin-bottom:0;">
+        <select id="custom-cat-filter" onchange="filterCustomPatterns()" style="margin-bottom:0;">
+          <option value="">All Categories</option>
+        </select>
+        <span id="custom-pattern-count" style="color:#888;font-size:12px;"></span>
+        <div style="margin-left:auto;display:flex;gap:6px;">
+          <button class="btn-small" onclick="showAddPatternModal()">+ Add Pattern</button>
+          <button class="btn-small" onclick="exportCustomPatterns()">&#8681; Export</button>
+          <button class="btn-small" onclick="document.getElementById('import-custom-file').click()">&#8679; Import</button>
+          <input type="file" id="import-custom-file" accept=".json,.txt" style="display:none;" onchange="importCustomPatterns(event)">
+        </div>
+      </div>
+      <div style="overflow-x:auto;">
+        <table class="pattern-table">
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Category</th>
+              <th>Pattern</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="custom-pattern-table-body"></tbody>
+        </table>
+      </div>
+      <div id="custom-empty" class="empty-state">
+        <div class="icon">&#9998;</div>
+        No custom patterns yet. Click <b>+ Add Pattern</b> to build your library.
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Add/Edit Pattern Modal -->
+<div id="pattern-modal" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.7);z-index:9999;align-items:center;justify-content:center;">
+  <div style="background:#0a0a12;border:1px solid #222;border-radius:8px;padding:24px;width:90%;max-width:520px;">
+    <div style="font-size:16px;color:#ccc;margin-bottom:16px;" id="pattern-modal-title">Add Custom Pattern</div>
+    <input type="hidden" id="edit-pattern-id">
+    <div class="form-group">
+      <span class="form-label">Name (optional)</span>
+      <input type="text" id="cp-name" placeholder="e.g. My DAN bypass v3">
+    </div>
+    <div class="form-group">
+      <span class="form-label">Category</span>
+      <input type="text" id="cp-category" placeholder="e.g. jailbreak, custom, recon" value="custom" list="cp-category-list">
+      <datalist id="cp-category-list">
+        <option value="jailbreak">
+        <option value="system_prompt_extraction">
+        <option value="data_exfiltration">
+        <option value="indirect_injection">
+        <option value="encoding_evasion">
+        <option value="social_engineering">
+        <option value="privilege_escalation">
+        <option value="multilingual">
+        <option value="custom">
+      </datalist>
+    </div>
+    <div class="form-group">
+      <span class="form-label">Attack Payload *</span>
+      <textarea id="cp-text" rows="6" placeholder="Enter your attack pattern..."></textarea>
+    </div>
+    <div class="form-group">
+      <span class="form-label">Notes (optional)</span>
+      <textarea id="cp-notes" rows="2" placeholder="Where it works, what it targets..."></textarea>
+    </div>
+    <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:16px;">
+      <button class="btn-small" onclick="closePatternModal()">Cancel</button>
+      <button class="btn-primary" onclick="saveCustomPattern()">Save</button>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== CAMPAIGNS PAGE (Elite) ==================== -->
+<div id="page-campaigns" class="page elite-locked-page">
+  <!-- Locked gate (Free tier) -->
+  <div class="elite-gate elite-gate-locked">
+    <div class="elite-gate-icon">&#9733;</div>
+    <h2>Attack Campaigns</h2>
+    <p>Run automated multi-target campaigns across endpoints. Schedule recurring attacks, track success rates over time, and compare model resilience side-by-side.</p>
+    <div class="elite-features">
+      <div class="elite-feature">&#10003; Multi-target automation</div>
+      <div class="elite-feature">&#10003; Scheduled recurring attacks</div>
+      <div class="elite-feature">&#10003; Model comparison matrices</div>
+      <div class="elite-feature">&#10003; Campaign history and analytics</div>
+    </div>
+    <button class="btn-upgrade" onclick="window.open('https://fallenangelsystems.com/#judgement-pricing','_blank')">Upgrade to Elite</button>
+    <div class="elite-price">Starting at $10/mo - or activate a key in Settings</div>
+  </div>
+  <!-- Coming soon (Elite tier) -->
+  <div class="elite-gate elite-gate-unlocked" style="display:none;">
+    <div class="elite-gate-icon" style="opacity:0.8;">&#9733;</div>
+    <h2 style="color:#ff8844;">Attack Campaigns</h2>
+    <p style="color:#aaa;">Multi-target campaign automation is coming in a future update. Your Elite license will unlock this automatically when it ships.</p>
+    <div style="color:#ff4444;font-size:28px;font-weight:bold;letter-spacing:4px;margin:20px 0;">COMING SOON</div>
+    <div style="color:#555;font-size:11px;">Your license is active and ready.</div>
+  </div>
+</div>
+
+<!-- ==================== MULTI-TURN PAGE (Elite) ==================== -->
+<div id="page-multiturn" class="page elite-locked-page">
+  <div class="elite-gate elite-gate-locked">
+    <div class="elite-gate-icon">&#8644;</div>
+    <h2>Multi-Turn Attacks</h2>
+    <p>Chain prompt injections across conversation turns. Test how models handle sustained manipulation, context poisoning, and progressive trust exploitation.</p>
+    <div class="elite-features">
+      <div class="elite-feature">&#10003; Multi-turn conversation chains</div>
+      <div class="elite-feature">&#10003; Context window poisoning</div>
+      <div class="elite-feature">&#10003; Progressive jailbreak sequences</div>
+      <div class="elite-feature">&#10003; Turn-by-turn success tracking</div>
+    </div>
+    <button class="btn-upgrade" onclick="window.open('https://fallenangelsystems.com/#judgement-pricing','_blank')">Upgrade to Elite</button>
+    <div class="elite-price">Starting at $10/mo - or activate a key in Settings</div>
+  </div>
+  <div class="elite-gate elite-gate-unlocked" style="display:none;">
+    <div class="elite-gate-icon" style="opacity:0.8;">&#8644;</div>
+    <h2 style="color:#ff8844;">Multi-Turn Attacks</h2>
+    <p style="color:#aaa;">Multi-turn conversation chain attacks are coming in a future update. Your Elite license will unlock this automatically when it ships.</p>
+    <div style="color:#ff4444;font-size:28px;font-weight:bold;letter-spacing:4px;margin:20px 0;">COMING SOON</div>
+    <div style="color:#555;font-size:11px;">Your license is active and ready.</div>
+  </div>
+</div>
+
+<!-- ==================== REPORTS PAGE (Elite) ==================== -->
+<div id="page-reports" class="page elite-locked-page">
+  <!-- Locked gate (Free tier) -->
+  <div class="elite-gate elite-gate-locked">
+    <div class="elite-gate-icon">&#9638;</div>
+    <h2>Security Reports</h2>
+    <p>Generate professional vulnerability reports from your attack results. Export as PDF or Markdown for clients, compliance teams, or internal security reviews.</p>
+    <div class="elite-features">
+      <div class="elite-feature">&#10003; PDF and Markdown export</div>
+      <div class="elite-feature">&#10003; CVSS scoring integration</div>
+      <div class="elite-feature">&#10003; Executive summary generation</div>
+      <div class="elite-feature">&#10003; Client-ready formatting</div>
+    </div>
+    <button class="btn-upgrade" onclick="window.open('https://fallenangelsystems.com/#judgement-pricing','_blank')">Upgrade to Elite</button>
+    <div class="elite-price">Starting at $10/mo - or activate a key in Settings</div>
+  </div>
+  <!-- Report Generator (Elite tier) -->
+  <div class="elite-gate-unlocked reports-page" style="display:none;width:100%;">
+    <div class="reports-header">
+      <h2>REPORTS</h2>
+      <p>Generate professional security assessment reports from attack sessions.</p>
+    </div>
+    <div class="reports-grid">
+      <div class="reports-sessions">
+        <div class="panel-title">Attack Sessions</div>
+        <div id="report-session-list"></div>
+      </div>
+      <div class="reports-config" id="report-config-panel">
+        <div id="report-no-session" class="no-session-selected">
+          <div class="icon">&#9776;</div>
+          Select an attack session to generate a report.
+        </div>
+        <div id="report-form" style="display:none;">
+          <div class="config-title">REPORT SETTINGS</div>
+          <label>Client Preset</label>
+          <div class="client-preset-row">
+            <select id="rpt-client-preset" onchange="loadClientPreset()">
+              <option value="">-- New client --</option>
+            </select>
+            <button onclick="saveClientPreset()">Save</button>
+            <button onclick="deleteClientPreset()">Del</button>
+          </div>
+          <label>Client / Company Name</label>
+          <input type="text" id="rpt-client-name" placeholder="e.g., ExampleCorp">
+          <label>Product / Service Tested</label>
+          <input type="text" id="rpt-product-name" placeholder="e.g., Customer Support Chatbot">
+          <label>Assessor / Researcher</label>
+          <input type="text" id="rpt-assessor" placeholder="e.g., Your Company Name" value="Fallen Angel Systems">
+          <label>Classification</label>
+          <select id="rpt-classification">
+            <option value="CONFIDENTIAL">Confidential</option>
+            <option value="INTERNAL USE ONLY">Internal Use Only</option>
+            <option value="PUBLIC">Public</option>
+          </select>
+          <label>Scope Notes (optional)</label>
+          <textarea id="rpt-scope" placeholder="Additional context about the scope of this assessment..."></textarea>
+          <div style="margin-top:16px;padding:12px;background:#0a0a0f;border:1px solid #1e1e2a;font-size:11px;">
+            <div style="color:#888;margin-bottom:6px;text-transform:uppercase;letter-spacing:0.5px;">Selected Session</div>
+            <div id="rpt-session-target" style="color:#ccc;"></div>
+            <div id="rpt-session-stats" style="color:#666;margin-top:4px;"></div>
+          </div>
+          <div class="export-section">
+            <div class="section-label">Export Format</div>
+            <div class="export-grid">
+              <button class="export-btn primary" onclick="exportReport('html')">
+                <span class="fmt-name">HTML Report</span>
+                <span class="fmt-desc">Professional, print to PDF</span>
+              </button>
+              <button class="export-btn" onclick="exportReport('markdown')">
+                <span class="fmt-name">Markdown</span>
+                <span class="fmt-desc">GitHub, Jira, Notion</span>
+              </button>
+              <button class="export-btn" onclick="exportReport('json')">
+                <span class="fmt-name">JSON</span>
+                <span class="fmt-desc">Structured data, API</span>
+              </button>
+              <button class="export-btn" onclick="exportReport('sarif')">
+                <span class="fmt-name">SARIF</span>
+                <span class="fmt-desc">CI/CD, GitHub Security</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== DOCS PAGE ==================== -->
+<div id="page-docs" class="page" style="padding:20px;overflow-y:auto;">
+  <div style="text-align:center;margin-bottom:24px;">
+    <h2 style="color:#ff4444;letter-spacing:2px;margin-bottom:4px;">JUDGEMENT DOCS</h2>
+    <p style="color:#666;font-size:12px;">Everything you need to weaponize this console.</p>
+  </div>
+
+  <div class="docs-section" style="border-color:#ff2222;">
+    <div class="docs-header" onclick="toggleDoc(this)" style="border-left:3px solid #ff2222;">
+      <span class="docs-arrow">&#9656;</span> <span style="color:#ff4444;">&#9876; Red Team Playbook</span> <span style="color:#666;font-size:10px;margin-left:auto;">by Volt</span>
+    </div>
+    <div class="docs-content">
+      <p style="color:#666;border-left:2px solid #ff2222;padding-left:12px;font-style:italic;margin-bottom:16px;">You have a thousand rounds. Don't waste them spraying into the dark.</p>
+      <h4 style="color:#ff4444;">1. Before You Fire</h4>
+      <p>You don't start a network pen test by running Nmap with every flag. Same principle here.</p>
+      <p><strong>Understand what you're pointing at.</strong> Before you configure a single payload, answer these:</p>
+      <ul>
+        <li><strong>What is the target?</strong> Customer-facing chatbot? Internal agent with tool access? RAG pipeline? Code assistant?</li>
+        <li><strong>What's the system prompt doing?</strong> Send a few benign queries manually. Watch the refusal language.</li>
+        <li><strong>What does the target have access to?</strong> A chatbot that can only generate text is different from an agent that calls APIs.</li>
+        <li><strong>Is there a content filter in front?</strong> A 50ms rejection is a regex filter. A 2-second rejection is an LLM-based guard.</li>
+      </ul>
+      <h4 style="color:#ff4444;">2. Setting Up the Engagement</h4>
+      <p><strong>Don't select "All Categories."</strong> Use this decision matrix:</p>
+      <table class="docs-table">
+        <tr><th>Target Type</th><th>Start With</th><th>Add If Relevant</th><th>Skip</th></tr>
+        <tr><td>Customer chatbot</td><td>Jailbreak, Social Engineering</td><td>Multilingual, Encoding Evasion</td><td>Priv Esc, Data Exfil</td></tr>
+        <tr><td>Agent with tools</td><td>Priv Esc, Indirect Injection</td><td>Data Exfil, Jailbreak</td><td>--</td></tr>
+        <tr><td>RAG pipeline</td><td>Indirect Injection, Data Exfil</td><td>Sys Prompt Extraction</td><td>Social Engineering</td></tr>
+        <tr><td>Internal API</td><td>Sys Prompt Extraction, Jailbreak</td><td>Encoding Evasion</td><td>Multilingual</td></tr>
+        <tr><td>Code assistant</td><td>Priv Esc, Jailbreak</td><td>Indirect Injection</td><td>Social Engineering</td></tr>
+      </table>
+      <h4 style="color:#ff4444;">3. Attack Strategy</h4>
+      <p><strong>Phase 1: Probe (50-100 patterns)</strong> -- Pick 10-15 from each selected category. You're mapping the defense topology.</p>
+      <p><strong>Phase 2: Focus (100-300 patterns)</strong> -- Run the full category for whatever showed weakness.</p>
+      <p><strong>Phase 3: Chain</strong> -- Take PARTIAL results and compose them into full bypasses.</p>
+      <h4 style="color:#ff4444;">4. Reading the Results</h4>
+      <table class="docs-table">
+        <tr><td style="color:#44ff44;font-weight:bold;">BLOCKED</td><td>Defense working. Move on unless you see inconsistent blocking.</td></tr>
+        <tr><td style="color:#ff4444;font-weight:bold;">BYPASSED</td><td>The attack landed. Document it.</td></tr>
+        <tr><td style="color:#666;font-weight:bold;">ERROR</td><td>Config issue or rate limit. Fix before burning more patterns.</td></tr>
+        <tr><td style="color:#ffaa00;font-weight:bold;">PARTIAL</td><td><strong>This is where the real work happens.</strong></td></tr>
+      </table>
+      <h4 style="color:#ff4444;">5. The Chain</h4>
+      <ul>
+        <li><strong>Rephrase</strong> -- If a roleplay jailbreak got PARTIAL, try as a hypothetical or debugging request.</li>
+        <li><strong>Layer categories</strong> -- Social engineering frame + encoding evasion payload.</li>
+        <li><strong>Shift language</strong> -- If an English attack got PARTIAL, run multilingual patterns.</li>
+        <li><strong>Decompose</strong> -- Split across a conversation. First message establishes context, third extracts.</li>
+      </ul>
+      <h4 style="color:#ff4444;">6. Common Mistakes</h4>
+      <ul>
+        <li><strong>Spraying all patterns at once.</strong> You'll get noise and learn nothing about specific weaknesses.</li>
+        <li><strong>Ignoring PARTIAL results.</strong> PARTIAL is where the exploitable intelligence lives.</li>
+        <li><strong>Not reading actual responses.</strong> The verdict is classification. The response text is intelligence.</li>
+        <li><strong>Skipping recon.</strong> Running Judgement against a target you don't understand is pen testing cosplay.</li>
+        <li><strong>No credit protection against paid APIs.</strong> Use the settings.</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="docs-section">
+    <div class="docs-header" onclick="toggleDoc(this)"><span class="docs-arrow">&#9656;</span> Getting Started</div>
+    <div class="docs-content">
+      <h4>Quick Start -- API Endpoint</h4>
+      <ol>
+        <li><strong>Paste your target URL</strong> -- the AI API endpoint you want to test</li>
+        <li><strong>Click Scan</strong> -- auto-detects method, payload format, and headers</li>
+        <li><strong>Select attack categories</strong></li>
+        <li><strong>Hit FIRE</strong></li>
+      </ol>
+      <h4>Quick Start -- Web Chatbot</h4>
+      <ol>
+        <li>Open the chatbot in your browser and start a conversation</li>
+        <li>Open DevTools (F12) and click the Network tab</li>
+        <li>Send a message to the chatbot</li>
+        <li>Find the chat request in the Network list</li>
+        <li>Right-click > Copy > Copy as cURL (bash)</li>
+        <li>Click <strong>cURL Import</strong> in Judgement and paste</li>
+        <li>Select categories and hit FIRE</li>
+      </ol>
+      <h4>CLI Usage</h4>
+      <pre style="background:#0a0a14;padding:12px;border:1px solid #222;font-size:11px;overflow-x:auto;">pip install fas-judgement    # Install
+judgement                   # Start the console
+judgement activate FAS-XXXX # Activate Elite license
+judgement status            # Check tier and pattern count
+judgement deactivate        # Revert to free tier</pre>
+    </div>
+  </div>
+
+  <div class="docs-section">
+    <div class="docs-header" onclick="toggleDoc(this)"><span class="docs-arrow">&#9656;</span> Attack Console</div>
+    <div class="docs-content">
+      <h4>Target Configuration</h4>
+      <ul>
+        <li><strong>Target URL</strong> -- the endpoint receiving attack payloads</li>
+        <li><strong>Method</strong> -- HTTP method (POST, GET, PUT, PATCH)</li>
+        <li><strong>Headers</strong> -- JSON object for auth headers</li>
+        <li><strong>Payload Field</strong> -- the JSON key for the message (e.g., "message", "prompt", "input")</li>
+        <li><strong>Payload Template</strong> -- full JSON body with <code>{{PAYLOAD}}</code> placeholder</li>
+      </ul>
+      <h4>Quick Presets</h4>
+      <table class="docs-table">
+        <tr><td style="color:#e0e0e0;">&#9889; Smoke Test</td><td>~15 patterns, critical+high severity, 1 per category</td></tr>
+        <tr><td style="color:#e0e0e0;">&#9876; Full Sweep</td><td>~50 patterns, proportional spread across all categories</td></tr>
+        <tr><td style="color:#e0e0e0;">&#9888; Deep Dive</td><td>~100 patterns, heavy coverage, min 2 per category</td></tr>
+        <tr><td style="color:#e0e0e0;">&#9760; Critical Only</td><td>All critical+high severity patterns, no limits</td></tr>
+      </table>
+    </div>
+  </div>
+
+  <div class="docs-section">
+    <div class="docs-header" onclick="toggleDoc(this)"><span class="docs-arrow">&#9656;</span> Patterns &amp; Categories</div>
+    <div class="docs-content">
+      <h4>Categories</h4>
+      <ul>
+        <li><strong>Jailbreak</strong> -- override system instructions, bypass safety filters</li>
+        <li><strong>System Prompt Extraction</strong> -- trick the AI into revealing its system prompt</li>
+        <li><strong>Data Exfiltration</strong> -- extract training data, user info, or internal context</li>
+        <li><strong>Indirect Injection</strong> -- payloads injected via external content</li>
+        <li><strong>Encoding Evasion</strong> -- base64, ROT13, unicode tricks to bypass text filters</li>
+        <li><strong>Social Engineering</strong> -- emotional manipulation, authority impersonation</li>
+        <li><strong>Privilege Escalation</strong> -- gain elevated access or admin functionality</li>
+        <li><strong>Multilingual</strong> -- attacks in non-English languages</li>
+      </ul>
+      <h4>Tiers</h4>
+      <table class="docs-table">
+        <tr><th>Tier</th><th>Patterns</th><th>Access</th></tr>
+        <tr><td style="color:#888;">Free</td><td>100</td><td><code>pip install fas-judgement</code></td></tr>
+        <tr><td style="color:#ff4444;">Elite Home</td><td>34,838+</td><td>$10/mo or $99/year</td></tr>
+        <tr><td style="color:#ff8844;">Elite Business</td><td>34,838+ (5 seats)</td><td>$500/mo or $5,000/year</td></tr>
+      </table>
+      <h4>Custom Patterns</h4>
+      <p>Build a private library in <strong>Patterns > My Patterns</strong>. Stored in browser localStorage (never touches servers). Export regularly as backup. Up to 500 patterns, 10,000 chars each.</p>
+    </div>
+  </div>
+
+  <div class="docs-section">
+    <div class="docs-header" onclick="toggleDoc(this)"><span class="docs-arrow">&#9656;</span> Verdicts</div>
+    <div class="docs-content">
+      <table class="docs-table">
+        <tr><td style="color:#44ff44;font-weight:bold;">BLOCKED</td><td>Target correctly refused the attack. Defensive win.</td></tr>
+        <tr><td style="color:#ffaa00;font-weight:bold;">PARTIAL</td><td>Partial compliance -- some refusal mixed with actual content. Weak spot.</td></tr>
+        <tr><td style="color:#ff4444;font-weight:bold;">BYPASSED</td><td>Target fully complied. Vulnerability confirmed.</td></tr>
+        <tr><td style="color:#666;font-weight:bold;">ERROR</td><td>Request failed -- timeout, rate limit, or server error.</td></tr>
+      </table>
+      <h4>LLM Verdict (Ollama)</h4>
+      <p>Enable LLM Verdict to use a local AI model for more accurate response classification. Configure Ollama URL and model in Settings.</p>
+    </div>
+  </div>
+
+  <div class="docs-section">
+    <div class="docs-header" onclick="toggleDoc(this)"><span class="docs-arrow">&#9656;</span> Reports (Elite)</div>
+    <div class="docs-content">
+      <p>Generate professional security assessment reports from attack sessions.</p>
+      <h4>Export Formats</h4>
+      <table class="docs-table">
+        <tr><td style="color:#e0e0e0;font-weight:bold;">HTML</td><td>Professional, print-ready. Use Ctrl+P to save as PDF. Includes executive summary, CWE/OWASP references.</td></tr>
+        <tr><td style="color:#e0e0e0;font-weight:bold;">Markdown</td><td>Bug-bounty-grade. Ready for HackerOne, Bugcrowd, GitHub Issues, Jira.</td></tr>
+        <tr><td style="color:#e0e0e0;font-weight:bold;">JSON</td><td>Structured data export for custom tooling or API consumers.</td></tr>
+        <tr><td style="color:#e0e0e0;font-weight:bold;">SARIF</td><td>Static Analysis Results Interchange Format. Upload to GitHub Code Scanning or Azure DevOps.</td></tr>
+      </table>
+      <h4>Client Presets</h4>
+      <p>Save client details for repeat engagements. Stored in browser localStorage.</p>
+    </div>
+  </div>
+
+  <div class="docs-section">
+    <div class="docs-header" onclick="toggleDoc(this)"><span class="docs-arrow">&#9656;</span> Credit Protection</div>
+    <div class="docs-content">
+      <table class="docs-table">
+        <tr><td style="color:#e0e0e0;font-weight:bold;">Max Patterns Per Run</td><td>Caps how many patterns fire in a single attack. Default: 50.</td></tr>
+        <tr><td style="color:#e0e0e0;font-weight:bold;">Auto-Stop on Errors</td><td>Stops after N consecutive errors. Default: 5.</td></tr>
+      </table>
+      <p>Disable credit protection when testing against your own free/local endpoint.</p>
+    </div>
+  </div>
+
+  <div class="docs-section">
+    <div class="docs-header" onclick="toggleDoc(this)"><span class="docs-arrow">&#9656;</span> MCP Server Integration</div>
+    <div class="docs-content">
+      <p>Connect an external MCP analysis server to receive each attack result for custom processing.</p>
+      <h4>Setup</h4>
+      <ol>
+        <li>Run your MCP server (any HTTP endpoint that accepts POST)</li>
+        <li>Enter the URL in Settings > MCP Server</li>
+        <li>Click "Test Connection" to verify</li>
+        <li>Enable "MCP Server" in the Attack sidebar</li>
+      </ol>
+      <h4>Request Format</h4>
+      <pre style="background:#0a0a14;padding:12px;border:1px solid #222;font-size:11px;overflow-x:auto;">{"text": "attack payload...", "verdict": "BYPASSED", "response": "target response...", "category": "jailbreak"}</pre>
+    </div>
+  </div>
+
+  <div class="docs-section">
+    <div class="docs-header" onclick="toggleDoc(this)"><span class="docs-arrow">&#9656;</span> Legal &amp; Ethics</div>
+    <div class="docs-content">
+      <p style="border:1px solid #aa2222;padding:12px;background:rgba(255,34,34,0.05);color:#ff6666;">&#9888; Judgement is for <strong>authorized security research only</strong>. You are responsible for ensuring you have permission to test any target.</p>
+      <h4>Acceptable Use</h4>
+      <ul>
+        <li>&#10003; Testing your own AI applications</li>
+        <li>&#10003; Authorized penetration testing (with written permission)</li>
+        <li>&#10003; Bug bounty programs with AI/ML scope</li>
+        <li>&#10003; Security research on your own infrastructure</li>
+      </ul>
+      <h4>Not Acceptable</h4>
+      <ul>
+        <li>&#10007; Attacking systems you don't own or have permission to test</li>
+        <li>&#10007; Using patterns for actual exploitation (not research)</li>
+        <li>&#10007; Reselling or redistributing pattern content</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="docs-section">
+    <div class="docs-header" onclick="toggleDoc(this)"><span class="docs-arrow">&#9656;</span> FAQ</div>
+    <div class="docs-content">
+      <h4>Can I test against ChatGPT/Claude/Gemini?</h4>
+      <p>Yes -- if you have API access and the target is in scope for a bug bounty or authorized assessment. Use credit protection since API calls add up fast.</p>
+      <h4>Is there a free version?</h4>
+      <p>Yes. <code>pip install fas-judgement</code> gives you 100 free patterns and a local attack console.</p>
+      <h4>What's Guardian?</h4>
+      <p><a href="https://fallenangelsystems.com" style="color:#4488ff;" target="_blank">FAS Guardian</a> is the defense product. It scans inputs for prompt injection attacks. Judgement is the offense tool -- it proves why you need Guardian.</p>
+      <h4>Can I export results?</h4>
+      <p>Yes. Use the Reports tab (Elite) for HTML/Markdown/JSON/SARIF, or the Report button after any attack for a basic markdown download.</p>
+    </div>
+  </div>
 </div>
 
 <!-- ==================== SETTINGS PAGE ==================== -->
@@ -732,12 +1406,39 @@ async def analyze(request: Request):
   </div>
 
   <div class="settings-section">
+    <h3>&#9670; License</h3>
+    <div id="license-section">
+      <div id="license-status" style="font-size:12px;color:#888;line-height:1.8;margin-bottom:12px;">
+        <span id="license-tier-display">Tier: Free</span><br>
+        <span id="license-pattern-count">Patterns: --</span><br>
+        <span id="license-expires" style="display:none;">Expires: <span id="license-expires-date"></span></span>
+      </div>
+      <div id="license-activate-form">
+        <div class="form-group" style="margin-bottom:8px;">
+          <span style="color:#888;font-size:12px;">License Key</span>
+          <div style="display:flex;gap:8px;">
+            <input type="text" id="license-key-input" placeholder="FAS-XXXX-XXXX-XXXX-XXXX" style="text-transform:uppercase;letter-spacing:2px;">
+            <button class="btn-primary" onclick="activateLicense()" style="white-space:nowrap;">Activate</button>
+          </div>
+        </div>
+        <div id="license-feedback" style="font-size:12px;margin-top:4px;"></div>
+      </div>
+      <div id="license-deactivate-section" style="display:none;margin-top:8px;">
+        <button class="btn-secondary" onclick="deactivateLicense()" style="font-size:11px;">Deactivate License</button>
+      </div>
+      <div style="margin-top:12px;">
+        <a href="https://fallenangelsystems.com/#judgement-pricing" target="_blank" style="color:#ff4444;font-size:11px;letter-spacing:1px;">GET A LICENSE KEY &#8594;</a>
+      </div>
+    </div>
+  </div>
+
+  <div class="settings-section">
     <h3>&#9670; About</h3>
     <div style="font-size:12px;color:#888;line-height:1.8;">
-      <strong style="color:#ff4444;">Judgement OSS v1.0.0</strong><br>
-      Open-Source Prompt Injection Attack Console<br>
-      <a href="https://judgement.fallenangelsystems.com" style="color:#4488ff;" target="_blank">judgement.fallenangelsystems.com</a><br>
-      <span style="color:#555;">Want the full experience? 240K+ training data powering thousands of curated attack patterns, with weekly and monthly updates. Plus leaderboard, campaigns, and premium features.</span>
+      <strong style="color:#ff4444;">Judgement v2.0.0</strong><br>
+      Prompt Injection Attack Console<br>
+      <a href="https://fallenangelsystems.com" style="color:#4488ff;" target="_blank">fallenangelsystems.com</a><br>
+      <span style="color:#555;">Free: 100 patterns. Elite: 34,000+ patterns, multi-turn attacks, campaigns, and reports.</span>
     </div>
   </div>
 </div>
@@ -780,7 +1481,8 @@ function switchPage(page) {
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
   document.querySelector('.nav-tab[data-page="'+page+'"]').classList.add('active');
   document.getElementById('page-'+page).classList.add('active');
-  if (page === 'patterns') renderPatternCards();
+  if (page === 'patterns') { filterPatterns(); loadCustomPatterns(); }
+  if (page === 'reports') { loadReportSessions(); }
   if (page === 'settings') loadSettings();
 }
 
@@ -823,19 +1525,76 @@ const catNames = {
 };
 
 function renderCategories() {
-  const c = document.getElementById('categories');
-  c.innerHTML = '';
+  const container = document.getElementById('categories');
+  container.innerHTML = '';
   for (const [cat, count] of Object.entries(allCategories)) {
-    const l = document.createElement('label');
-    l.innerHTML = '<input type="checkbox" class="cat-check" value="'+cat+'" checked onchange="updatePatternCount()"> <span>'+(catNames[cat]||cat)+' <span class="cat-count">('+count+')</span></span>';
-    c.appendChild(l);
+    const div = document.createElement('div');
+    div.style.cssText = 'display:flex;align-items:center;gap:4px;padding:2px 0;';
+    div.innerHTML = '<input type="checkbox" class="cat-check" value="'+cat+'" checked onchange="updatePatternCount()" style="width:auto;margin:0;">'+
+      '<span style="flex:1;font-size:11px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" title="'+(catNames[cat]||cat)+'">'+(catNames[cat]||cat)+'</span>'+
+      '<input type="number" class="cat-limit" data-cat="'+cat+'" min="0" max="'+count+'" value="'+count+'" '+
+        'style="width:48px;padding:1px 2px;font-size:10px;text-align:center;" onchange="updatePatternCount()" title="Use N of '+count+'">'+
+      '<span class="cat-pool" data-cat="'+cat+'" style="color:#666;font-size:9px;">/'+count+'</span>';
+    container.appendChild(div);
   }
 }
 
 function getSelectedCategories() { return [...document.querySelectorAll('.cat-check:checked')].map(c => c.value); }
+function getSelectedSeverities() {
+  const el = document.getElementById('severity-filter');
+  if (!el) return [];
+  const val = el.value;
+  if (!val || val === 'all') return [];
+  return val.split(',');
+}
+function getCategoryLimits() {
+  const limits = {};
+  document.querySelectorAll('.cat-limit').forEach(input => {
+    const cat = input.dataset.cat;
+    const max = parseInt(input.max);
+    const val = parseInt(input.value) || max;
+    if (val < max) limits[cat] = val;
+  });
+  return limits;
+}
+function resetLimits() {
+  document.querySelectorAll('.cat-limit').forEach(input => { input.value = input.max; });
+  updatePatternCount();
+}
+function updateCategoryPools() {
+  const sevFilter = getSelectedSeverities();
+  for (const [cat, totalCount] of Object.entries(allCategories)) {
+    let poolCount = totalCount;
+    if (sevFilter.length > 0) {
+      poolCount = patterns.filter(p => p.category === cat && sevFilter.includes(p.severity || 'medium')).length;
+    }
+    const poolEl = document.querySelector('.cat-pool[data-cat="'+cat+'"]');
+    const limitEl = document.querySelector('.cat-limit[data-cat="'+cat+'"]');
+    if (poolEl) poolEl.textContent = '/ ' + poolCount;
+    if (limitEl) {
+      limitEl.max = poolCount;
+      if (parseInt(limitEl.value) > poolCount) limitEl.value = poolCount;
+    }
+  }
+}
 function updatePatternCount() {
+  updateCategoryPools();
   const sel = getSelectedCategories();
-  let count = patterns.filter(p => sel.includes(p.category)).length;
+  const sev = getSelectedSeverities();
+  const limits = getCategoryLimits();
+
+  let filtered = patterns.filter(p => sel.includes(p.category));
+  if (sev.length) filtered = filtered.filter(p => sev.includes(p.severity || 'medium'));
+
+  // Apply per-category limits for count display
+  const byCat = {};
+  for (const p of filtered) { byCat[p.category] = (byCat[p.category] || 0) + 1; }
+  let count = 0;
+  for (const [cat, total] of Object.entries(byCat)) {
+    const limit = limits[cat];
+    count += (limit !== undefined && limit < total) ? limit : total;
+  }
+
   if (document.getElementById('use-mypatterns') && document.getElementById('use-mypatterns').checked) {
     count += getMyPatterns().length;
   }
@@ -843,6 +1602,108 @@ function updatePatternCount() {
 }
 function selectAll() { document.querySelectorAll('.cat-check').forEach(c => c.checked = true); updatePatternCount(); }
 function deselectAll() { document.querySelectorAll('.cat-check').forEach(c => c.checked = false); updatePatternCount(); }
+
+/* ====== CATEGORY SEARCH ====== */
+function filterCategoryPatterns() {
+  const query = (document.getElementById('category-search').value || '').toLowerCase().trim();
+  const container = document.getElementById('search-results');
+  if (!query || query.length < 2) { container.style.display = 'none'; container.innerHTML = ''; return; }
+  const matches = patterns.filter(p =>
+    p.text.toLowerCase().includes(query) ||
+    (p.name || '').toLowerCase().includes(query) ||
+    p.id.toLowerCase().includes(query)
+  ).slice(0, 20);
+  if (matches.length === 0) { container.style.display = 'block'; container.innerHTML = '<div style="color:#555;font-size:11px;padding:4px;">No matches</div>'; return; }
+  container.style.display = 'block';
+  container.innerHTML = matches.map(p =>
+    '<div style="padding:3px 6px;border-bottom:1px solid #1a1a1a;font-size:11px;cursor:pointer;" onclick="highlightCategory(\''+p.category+'\')" title="'+escapeHtml(p.text)+'">'+
+    '<span class="category-badge" style="font-size:9px;">'+escapeHtml(p.category)+'</span> '+
+    '<span style="color:#aaa;">'+escapeHtml((p.name || p.text).slice(0,80))+'</span></div>'
+  ).join('');
+}
+function highlightCategory(cat) {
+  // Ensure category is checked and flash it
+  const checks = document.querySelectorAll('.cat-check');
+  checks.forEach(c => { if (c.value === cat) { c.checked = true; c.parentElement.style.background = '#2a1a1a'; setTimeout(() => { c.parentElement.style.background = ''; }, 1500); }});
+  updatePatternCount();
+  document.getElementById('category-search').value = '';
+  document.getElementById('search-results').style.display = 'none';
+}
+
+/* ====== QUICK PRESETS ====== */
+function applyQuickPreset(type) {
+  const severitySelect = document.getElementById('severity-filter');
+
+  if (type === 'smoke') {
+    // ~15 patterns: 1 from each category, critical+high only
+    severitySelect.value = 'critical,high';
+    document.querySelectorAll('.cat-check').forEach(c => c.checked = true);
+    document.querySelectorAll('.cat-limit').forEach(input => { input.value = 1; });
+  } else if (type === 'sweep') {
+    // ~50 patterns: proportional spread, min 1 per category
+    severitySelect.value = '';
+    document.querySelectorAll('.cat-check').forEach(c => c.checked = true);
+    const total = Object.values(allCategories).reduce((a, b) => a + b, 0);
+    document.querySelectorAll('.cat-limit').forEach(input => {
+      const cat = input.dataset.cat;
+      const catCount = allCategories[cat] || 1;
+      const share = Math.max(1, Math.round((catCount / total) * 50));
+      input.value = Math.min(share, parseInt(input.max));
+    });
+  } else if (type === 'deep') {
+    // ~100 patterns: proportional spread, min 2 per category
+    severitySelect.value = '';
+    document.querySelectorAll('.cat-check').forEach(c => c.checked = true);
+    const total = Object.values(allCategories).reduce((a, b) => a + b, 0);
+    document.querySelectorAll('.cat-limit').forEach(input => {
+      const cat = input.dataset.cat;
+      const catCount = allCategories[cat] || 1;
+      const share = Math.max(2, Math.round((catCount / total) * 100));
+      input.value = Math.min(share, parseInt(input.max));
+    });
+  } else if (type === 'critical') {
+    // All critical+high severity, no limits
+    severitySelect.value = 'critical,high';
+    document.querySelectorAll('.cat-check').forEach(c => c.checked = true);
+    document.querySelectorAll('.cat-limit').forEach(input => { input.value = input.max; });
+  }
+  updatePatternCount();
+}
+
+/* ====== SCAN TARGET ====== */
+async function scanTarget() {
+  const url = document.getElementById('target-url').value.trim();
+  if (!url) { alert('Enter a target URL first'); return; }
+  const statusEl = document.getElementById('scan-target-status');
+  const btn = document.getElementById('scan-target-btn');
+  statusEl.style.display = 'block';
+  statusEl.innerHTML = '<span style="color:#ffaa00;">Scanning...</span>';
+  btn.disabled = true;
+  try {
+    const resp = await fetch('/api/scan-target', {
+      method: 'POST', headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({url: url})
+    });
+    const data = await resp.json();
+    if (data.error) {
+      statusEl.innerHTML = '<span style="color:#ff4444;">'+escapeHtml(data.error)+'</span>';
+    } else {
+      // Apply detected settings
+      if (data.method) document.getElementById('method').value = data.method;
+      if (data.field) document.getElementById('payload-field').value = data.field;
+      if (data.payload_template) document.getElementById('payload-template').value = data.payload_template;
+      if (data.headers && Object.keys(data.headers).length) document.getElementById('headers').value = JSON.stringify(data.headers);
+      if (data.endpoints_found && data.endpoints_found.length && data.endpoints_found[0] !== url) {
+        document.getElementById('target-url').value = data.endpoints_found[0];
+      }
+      const conf = data.confidence === 'high' ? '#44ff44' : data.confidence === 'medium' ? '#ffaa00' : '#ff8844';
+      statusEl.innerHTML = '<span style="color:'+conf+';">'+escapeHtml(data.info || 'Scan complete')+'</span>';
+    }
+  } catch(e) {
+    statusEl.innerHTML = '<span style="color:#ff4444;">Scan failed: '+escapeHtml(e.message)+'</span>';
+  }
+  btn.disabled = false;
+}
 
 /* ====== COLLAPSIBLE SECTIONS ====== */
 function toggleSection(name) {
@@ -854,7 +1715,10 @@ function toggleSection(name) {
 async function fireAttack() {
   const url = document.getElementById('target-url').value.trim();
   if (!url) { alert('Enter a target URL'); return; }
-  if (!confirm('WARNING: Only test systems you own or have explicit written permission to test. Unauthorized access is illegal.\n\nDo you confirm you have authorization to test this target?')) return;
+  if (!sessionStorage.getItem('judgement_auth_confirmed')) {
+    if (!confirm('WARNING: Only test systems you own or have explicit written permission to test. Unauthorized access is illegal.\n\nDo you confirm you have authorization to test this target?')) return;
+    sessionStorage.setItem('judgement_auth_confirmed', '1');
+  }
 
   // Credit protection checks
   const creditProtection = document.getElementById('settings-credit-protection').checked;
@@ -890,10 +1754,8 @@ async function fireAttack() {
     document.getElementById(id).textContent = id === 'stat-progress' ? '0/0' : '0';
   });
 
-  let customPatterns = [];
-  if (document.getElementById('use-mypatterns') && document.getElementById('use-mypatterns').checked) {
-    customPatterns = getMyPatterns();
-  }
+  const useMyPatterns = document.getElementById('use-mypatterns') && document.getElementById('use-mypatterns').checked;
+  const myPatterns = useMyPatterns ? getMyPatterns() : [];
 
   const body = {
     target_url: url, method: document.getElementById('method').value,
@@ -902,7 +1764,12 @@ async function fireAttack() {
     use_llm: document.getElementById('use-llm').checked,
     use_mcp: document.getElementById('use-mcp').checked,
     mcp_url: document.getElementById('settings-mcp-url').value.trim(),
-    categories: categories, custom_patterns: customPatterns,
+    categories: categories,
+    severity_filter: getSelectedSeverities(),
+    category_limits: getCategoryLimits(),
+    include_custom: useMyPatterns,
+    custom_patterns_data: myPatterns,
+    custom_patterns: myPatterns,  // backward compat
     delay_ms: parseInt(document.getElementById('delay').value) || 200,
     timeout_s: parseInt(document.getElementById('timeout').value) || 10,
     max_patterns: document.getElementById('settings-credit-protection').checked ? (parseInt(document.getElementById('settings-max-patterns').value) || 50) : 0,
@@ -933,7 +1800,8 @@ async function fireAttack() {
 }
 
 function handleEvent(data) {
-  if (data.session_id && data.total && !data.stats) { currentSession = data.session_id; document.getElementById('stat-progress').textContent = '0/'+data.total; return; }
+  if (data.session_id) currentSession = data.session_id;
+  if (data.session_id && data.total && !data.stats) { document.getElementById('stat-progress').textContent = '0/'+data.total; return; }
   if (data.stats && data.index) {
     const s = data.stats;
     document.getElementById('stat-progress').textContent = data.index+'/'+data.total;
@@ -1034,12 +1902,160 @@ async function viewSession(id) {
 
 async function generateReport() {
   if (!currentSession) return;
+  // If Elite, go to Reports page with this session selected
+  if (currentTier !== 'free') {
+    switchPage('reports');
+    selectReportSession(currentSession);
+    return;
+  }
+  // Free tier: download basic markdown
   const resp = await fetch('/api/sessions/'+currentSession+'/report');
   const data = await resp.json();
   const blob = new Blob([data.report],{type:'text/markdown'});
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a'); a.href = url; a.download = 'judgment-report-'+currentSession+'.md'; a.click();
   URL.revokeObjectURL(url);
+}
+
+/* ====== REPORTS PAGE ====== */
+let selectedReportSession = null;
+
+function _riskLevel(s) {
+  const total = s.total_patterns || 0;
+  if (total === 0) return { level: 'INFO', cls: 'info' };
+  const rate = (s.bypassed / total) * 100;
+  if (rate >= 50) return { level: 'CRITICAL', cls: 'critical' };
+  if (rate >= 25) return { level: 'HIGH', cls: 'high' };
+  if (rate >= 10) return { level: 'MEDIUM', cls: 'medium' };
+  if (rate > 0) return { level: 'LOW', cls: 'low' };
+  return { level: 'NONE', cls: 'info' };
+}
+
+async function loadReportSessions() {
+  const resp = await fetch('/api/sessions');
+  const data = await resp.json();
+  const list = document.getElementById('report-session-list');
+  if (!data.sessions || data.sessions.length === 0) {
+    list.innerHTML = '<div style="padding:30px;text-align:center;color:#444;font-size:12px;">No attack sessions yet.<br>Run an attack first.</div>';
+    return;
+  }
+  list.innerHTML = data.sessions.map(s => {
+    const risk = _riskLevel(s);
+    const rate = s.total_patterns > 0 ? ((s.bypassed / s.total_patterns) * 100).toFixed(1) : '0';
+    const selected = selectedReportSession && selectedReportSession.id === s.id ? ' selected' : '';
+    return '<div class="session-item'+selected+'" onclick="selectReportSession(\''+s.id+'\')">'+
+      '<div class="target">'+escapeHtml(s.target_url)+'<span class="risk-badge '+risk.cls+'">'+risk.level+'</span></div>'+
+      '<div class="meta">'+s.created_at.replace('T',' ').slice(0,19)+'</div>'+
+      '<div class="stats">'+
+      '<span class="blocked">'+s.blocked+' blocked</span> &middot; '+
+      '<span class="partial">'+s.partial+' partial</span> &middot; '+
+      '<span class="bypass">'+s.bypassed+' bypass</span> &middot; '+
+      rate+'% bypass rate'+
+      '</div></div>';
+  }).join('');
+  loadClientPresets();
+}
+
+async function selectReportSession(id) {
+  const resp = await fetch('/api/sessions/'+id);
+  const data = await resp.json();
+  selectedReportSession = data.session;
+  document.getElementById('report-no-session').style.display = 'none';
+  document.getElementById('report-form').style.display = 'block';
+  const s = data.session;
+  const risk = _riskLevel(s);
+  document.getElementById('rpt-session-target').textContent = s.target_url;
+  document.getElementById('rpt-session-stats').innerHTML =
+    s.total_patterns+' patterns &middot; '+
+    '<span style="color:#ff4444">'+s.bypassed+' bypass</span> &middot; '+
+    '<span style="color:#ffaa00">'+s.partial+' partial</span> &middot; '+
+    '<span style="color:#44ff44">'+s.blocked+' blocked</span> &middot; '+
+    'Risk: <span style="color:#ff4444">'+risk.level+'</span>';
+  document.querySelectorAll('.session-item').forEach(el => el.classList.remove('selected'));
+  loadReportSessions();
+}
+
+async function exportReport(format) {
+  if (!selectedReportSession) return;
+  const id = selectedReportSession.id;
+  const params = new URLSearchParams({
+    format: format,
+    client_name: document.getElementById('rpt-client-name').value || 'Target Organization',
+    product_name: document.getElementById('rpt-product-name').value || '',
+    assessor: document.getElementById('rpt-assessor').value || 'Fallen Angel Systems',
+    classification: document.getElementById('rpt-classification').value || 'CONFIDENTIAL',
+    scope_notes: document.getElementById('rpt-scope').value || ''
+  });
+  try {
+    const resp = await fetch('/api/sessions/'+id+'/report?'+params.toString());
+    if (format === 'html') {
+      const text = await resp.text();
+      const win = window.open('','_blank');
+      win.document.write(text);
+      win.document.close();
+    } else if (format === 'sarif') {
+      const data = await resp.json();
+      const blob = new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
+      downloadBlob(blob, 'judgment-'+id+'.sarif.json');
+    } else if (format === 'json') {
+      const data = await resp.json();
+      const blob = new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
+      downloadBlob(blob, 'judgment-'+id+'.json');
+    } else {
+      const data = await resp.json();
+      const blob = new Blob([data.report],{type:'text/markdown'});
+      downloadBlob(blob, 'judgment-'+id+'.md');
+    }
+  } catch(e) { alert('Error generating report: '+e.message); }
+}
+
+function downloadBlob(blob, filename) {
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a'); a.href = url; a.download = filename; a.click();
+  URL.revokeObjectURL(url);
+}
+
+/* ====== CLIENT PRESETS ====== */
+function getClientPresets() { try { return JSON.parse(localStorage.getItem('judgment_client_presets')||'[]'); } catch(e) { return []; } }
+
+function loadClientPresets() {
+  const presets = getClientPresets();
+  const select = document.getElementById('rpt-client-preset');
+  if (!select) return;
+  const current = select.value;
+  select.innerHTML = '<option value="">-- New client --</option>';
+  presets.forEach((p,i) => { const opt = document.createElement('option'); opt.value = i; opt.textContent = p.client_name + (p.product_name ? ' ('+p.product_name+')' : ''); select.appendChild(opt); });
+  if (current) select.value = current;
+}
+
+function loadClientPreset() {
+  const select = document.getElementById('rpt-client-preset');
+  const idx = parseInt(select.value);
+  if (isNaN(idx)) { document.getElementById('rpt-client-name').value=''; document.getElementById('rpt-product-name').value=''; document.getElementById('rpt-assessor').value='Fallen Angel Systems'; document.getElementById('rpt-classification').value='CONFIDENTIAL'; document.getElementById('rpt-scope').value=''; return; }
+  const p = getClientPresets()[idx]; if (!p) return;
+  document.getElementById('rpt-client-name').value = p.client_name||'';
+  document.getElementById('rpt-product-name').value = p.product_name||'';
+  document.getElementById('rpt-assessor').value = p.assessor||'Fallen Angel Systems';
+  document.getElementById('rpt-classification').value = p.classification||'CONFIDENTIAL';
+  document.getElementById('rpt-scope').value = p.scope_notes||'';
+}
+
+function saveClientPreset() {
+  const name = document.getElementById('rpt-client-name').value.trim();
+  if (!name) { alert('Enter a client name first.'); return; }
+  const preset = { client_name: name, product_name: document.getElementById('rpt-product-name').value.trim(), assessor: document.getElementById('rpt-assessor').value.trim(), classification: document.getElementById('rpt-classification').value, scope_notes: document.getElementById('rpt-scope').value.trim() };
+  const presets = getClientPresets(); const select = document.getElementById('rpt-client-preset'); const idx = parseInt(select.value);
+  if (!isNaN(idx) && presets[idx]) { presets[idx] = preset; } else { presets.push(preset); }
+  localStorage.setItem('judgment_client_presets', JSON.stringify(presets));
+  loadClientPresets(); select.value = isNaN(idx) ? presets.length-1 : idx;
+}
+
+function deleteClientPreset() {
+  const select = document.getElementById('rpt-client-preset'); const idx = parseInt(select.value);
+  if (isNaN(idx)) return; const presets = getClientPresets();
+  if (!confirm('Delete client preset "' + (presets[idx]?.client_name||'') + '"?')) return;
+  presets.splice(idx,1); localStorage.setItem('judgment_client_presets', JSON.stringify(presets));
+  select.value = ''; loadClientPreset(); loadClientPresets();
 }
 
 async function clearHistory() {
@@ -1105,36 +2121,74 @@ function filterPatterns() {
   const catFilter = document.getElementById('pattern-cat-filter').value;
   let filtered = patterns;
   if (catFilter) filtered = filtered.filter(p => p.category === catFilter);
-  if (search) filtered = filtered.filter(p => p.text.toLowerCase().includes(search) || p.id.toLowerCase().includes(search) || p.category.toLowerCase().includes(search));
+  if (search) filtered = filtered.filter(p =>
+    (p.text||'').toLowerCase().includes(search) || p.id.toLowerCase().includes(search) ||
+    (p.name||'').toLowerCase().includes(search) || p.category.toLowerCase().includes(search) ||
+    (p.severity||'').toLowerCase().includes(search) || (p.description||'').toLowerCase().includes(search)
+  );
   document.getElementById('pattern-browse-count').textContent = filtered.length + ' patterns';
 
-  const container = document.getElementById('pattern-list');
+  const tbody = document.getElementById('pattern-table-body');
   const show = filtered.slice(0, 200);
-  container.innerHTML = show.map((p, i) => {
-    const diffClass = p.difficulty ? 'diff-'+(p.difficulty||'').toLowerCase() : '';
-    let expHtml = '';
-    if (p.explanation || p.why_it_works || p.difficulty) {
-      expHtml = '<div class="explanation-section">';
-      if (p.difficulty) expHtml += '<div style="margin-bottom:8px;"><span class="difficulty-badge '+diffClass+'">'+(p.difficulty||'')+'</span></div>';
-      if (p.explanation) expHtml += '<div class="exp-label">What it does</div><div class="exp-text">'+escapeHtml(p.explanation)+'</div>';
-      if (p.why_it_works) expHtml += '<div class="exp-label">Why it works</div><div class="exp-text">'+escapeHtml(p.why_it_works)+'</div>';
-      expHtml += '</div>';
-    }
-    return '<div class="pattern-card">'+
-      '<div class="pattern-card-header" onclick="togglePatternCard('+i+')">'+
-      '<span class="pid">'+escapeHtml(p.id)+'</span>'+
-      '<span class="category-badge">'+escapeHtml(p.category)+'</span>'+
-      '<span class="ptext" title="'+escapeHtml(p.text)+'">'+escapeHtml(p.text.slice(0,120))+'</span>'+
-      '</div>'+
-      '<div class="pattern-card-body" id="pcard-'+i+'">'+
-      '<pre>'+escapeHtml(p.text)+'</pre>'+
-      expHtml+
-      '</div></div>';
+  tbody.innerHTML = show.map(p => {
+    const preview = p.text || '';
+    const nameDisplay = p.name ? '<div style="color:#ccc;font-weight:bold;font-size:11px;">'+escapeHtml(p.name)+'</div>' : '';
+    const descDisplay = p.description ? '<div style="color:#888;font-size:10px;margin-top:2px;">'+escapeHtml(p.description)+'</div>' : '';
+    const sevColor = {'critical':'#ff4444','high':'#ff8844','medium':'#ffaa00','low':'#888'}[p.severity] || '#666';
+    const sevBadge = p.severity ? '<span style="color:'+sevColor+';font-size:10px;text-transform:uppercase;">'+p.severity+'</span>' : '';
+    return '<tr>'+
+      '<td style="color:#4488ff;font-size:11px;white-space:nowrap;">'+escapeHtml(p.id)+'</td>'+
+      '<td><span class="category-badge">'+escapeHtml(p.category)+'</span></td>'+
+      '<td class="text-preview" title="'+escapeHtml(preview)+'">'+nameDisplay+escapeHtml(preview.slice(0,120))+(preview.length>120?'...':'')+descDisplay+'</td>'+
+      '<td style="text-align:center;">'+sevBadge+'</td>'+
+      '</tr>';
   }).join('');
 }
 
-function togglePatternCard(i) {
-  document.getElementById('pcard-'+i).classList.toggle('open');
+/* ====== DOCS ====== */
+function toggleDoc(header) {
+  header.classList.toggle('open');
+  const content = header.nextElementSibling;
+  content.classList.toggle('open');
+}
+
+/* ====== SUBMIT PATTERN ====== */
+async function submitPattern() {
+  const text = document.getElementById('submit-text').value.trim();
+  if (!text) { alert('Enter an attack payload'); return; }
+  const resultEl = document.getElementById('submit-result');
+  resultEl.innerHTML = '<span style="color:#ffaa00;">Submitting...</span>';
+  try {
+    const resp = await fetch('/api/patterns/submit', {
+      method: 'POST', headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({
+        text: text,
+        category: document.getElementById('submit-category').value,
+        target_type: document.getElementById('submit-target-type').value,
+        description: document.getElementById('submit-description').value.trim(),
+        submitter_name: document.getElementById('submit-name').value.trim() || 'anonymous'
+      })
+    });
+    const data = await resp.json();
+    if (data.error) {
+      resultEl.innerHTML = '<span style="color:#ff4444;">'+escapeHtml(data.error)+'</span>';
+    } else {
+      const statusColor = data.status === 'approved' ? '#44ff44' : data.status === 'duplicate' ? '#ffaa00' : '#4488ff';
+      let msg = '<span style="color:'+statusColor+';font-weight:bold;">'+data.status.toUpperCase()+'</span>';
+      if (data.guardian_score !== null && data.guardian_score !== undefined) msg += ' -- Guardian Score: '+data.guardian_score+'%';
+      if (data.category) msg += ' -- Category: '+data.category;
+      if (data.status === 'approved') msg += '<br><span style="color:#44ff44;">Pattern auto-approved and added to the library!</span>';
+      else if (data.status === 'duplicate') msg += '<br><span style="color:#ffaa00;">This pattern already exists in the library.</span>';
+      else msg += '<br><span style="color:#888;">Submitted for review. Thank you!</span>';
+      resultEl.innerHTML = msg;
+      if (data.status !== 'duplicate') {
+        document.getElementById('submit-text').value = '';
+        document.getElementById('submit-description').value = '';
+      }
+    }
+  } catch(e) {
+    resultEl.innerHTML = '<span style="color:#ff4444;">Submission failed: '+escapeHtml(e.message)+'</span>';
+  }
 }
 
 /* ====== SETTINGS ====== */
@@ -1183,53 +2237,220 @@ async function testMCP() {
   } catch(e) { el.innerHTML = '<span class="connection-status conn-err">Error: '+escapeHtml(e.message)+'</span>'; }
 }
 
-/* ====== MY PATTERNS (localStorage) ====== */
-function getMyPatterns() { try { return JSON.parse(localStorage.getItem('fas_my_patterns')||'[]'); } catch(e) { return []; } }
-function saveMyPatternsStore(list) { localStorage.setItem('fas_my_patterns',JSON.stringify(list)); renderMyPatterns(); updatePatternCount(); }
-function addMyPatterns() {
-  const text = document.getElementById('mypatterns-input').value.trim(); if (!text) return;
-  const lines = text.split('\n').map(l=>l.trim()).filter(l=>l.length>0);
-  const existing = getMyPatterns(); const existingSet = new Set(existing.map(p=>p.text));
-  for (const line of lines) { if (!existingSet.has(line)) { existing.push({id:'MY-'+(existing.length+1),text:line,category:'my_patterns'}); existingSet.add(line); } }
-  saveMyPatternsStore(existing); document.getElementById('mypatterns-input').value='';
+/* ====== PATTERNS PAGE SUB-TABS ====== */
+function switchPatternsTab(tab) {
+  if (tab === 'custom') loadCustomPatterns();
+  document.querySelectorAll('.patterns-sub-tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('#page-patterns .attack-sub-content').forEach(t => t.classList.remove('active'));
+  document.querySelector('.patterns-sub-tab[data-ptab="'+tab+'"]').classList.add('active');
+  document.getElementById('ptab-'+tab).classList.add('active');
 }
-function clearMyPatterns() { if (!confirm('Clear all custom patterns?')) return; saveMyPatternsStore([]); }
-function renderMyPatterns() {
-  const list = getMyPatterns();
-  document.getElementById('mypatterns-count').textContent = '('+list.length+')';
-  const container = document.getElementById('mypatterns-list');
-  if (list.length===0) { container.innerHTML='<span style="color:#444;">No custom patterns yet.</span>'; return; }
-  container.innerHTML = list.map((p,i) =>
-    '<div style="display:flex;align-items:center;gap:6px;padding:2px 0;border-bottom:1px solid #1a1a1a;">'+
-    '<span style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="'+escapeHtml(p.text)+'">'+escapeHtml(p.text.slice(0,80))+'</span>'+
-    '<button class="btn-small" onclick="removeMyPattern('+i+')" style="padding:1px 6px;font-size:10px;border-color:#aa2222;color:#ff4444;">&times;</button></div>'
-  ).join('');
-}
-function removeMyPattern(i) { const list=getMyPatterns(); list.splice(i,1); list.forEach((p,j)=>{p.id='MY-'+(j+1);}); saveMyPatternsStore(list); }
-function exportMyPatterns() {
-  const list=getMyPatterns(); if(!list.length){alert('No patterns to export');return;}
-  const blob=new Blob([JSON.stringify(list,null,2)],{type:'application/json'});
-  const url=URL.createObjectURL(blob); const a=document.createElement('a'); a.href=url; a.download='my-patterns.json'; a.click(); URL.revokeObjectURL(url);
-}
-function handleMyPatternsImport(event) {
-  const file=event.target.files[0]; if(!file) return;
-  const reader=new FileReader();
-  reader.onload=function(e){
-    const text=e.target.result;
-    try {
-      const data=JSON.parse(text); const items=Array.isArray(data)?data:(data.patterns||[]);
-      const existing=getMyPatterns(); const existingSet=new Set(existing.map(p=>p.text)); let added=0;
-      for(const item of items){ const payload=typeof item==='string'?item:(item.text||item.payload||'');
-        if(payload&&!existingSet.has(payload)){existing.push({id:'MY-'+(existing.length+1),text:payload,category:'my_patterns'});existingSet.add(payload);added++;}}
-      saveMyPatternsStore(existing); alert('Imported '+added+' patterns');
-    } catch(err) {
-      const lines=text.split('\n').map(l=>l.trim()).filter(l=>l.length>0);
-      const existing=getMyPatterns(); const existingSet=new Set(existing.map(p=>p.text)); let added=0;
-      for(const line of lines){if(!existingSet.has(line)){existing.push({id:'MY-'+(existing.length+1),text:line,category:'my_patterns'});existingSet.add(line);added++;}}
-      saveMyPatternsStore(existing); alert('Imported '+added+' patterns');
+
+/* ====== CUSTOM PATTERNS (localStorage — never touches server) ====== */
+const CP_STORAGE_KEY = 'fas_custom_patterns';
+const CP_MAX_PATTERNS = 500;
+let customPatterns = [];
+let customCategories = {};
+
+function getStoredCustomPatterns() { try { return JSON.parse(localStorage.getItem(CP_STORAGE_KEY)||'[]'); } catch(e) { return []; } }
+function saveStoredCustomPatterns(pats) { localStorage.setItem(CP_STORAGE_KEY, JSON.stringify(pats)); }
+
+// Backward compat: migrate old fas_my_patterns to new format on first load
+function migrateOldMyPatterns() {
+  const oldKey = 'fas_my_patterns';
+  const old = localStorage.getItem(oldKey);
+  if (!old) return;
+  try {
+    const oldPats = JSON.parse(old);
+    if (!Array.isArray(oldPats) || oldPats.length === 0) return;
+    const existing = getStoredCustomPatterns();
+    const existingTexts = new Set(existing.map(p => p.text));
+    let migrated = 0;
+    for (const p of oldPats) {
+      if (p.text && !existingTexts.has(p.text)) {
+        existing.push({
+          id: 'cp-' + Math.random().toString(36).substr(2,8),
+          text: p.text, category: p.category || 'custom',
+          name: '', notes: '',
+          created_at: new Date().toISOString(), updated_at: new Date().toISOString()
+        });
+        existingTexts.add(p.text);
+        migrated++;
+      }
     }
-  };
-  reader.readAsText(file); event.target.value='';
+    if (migrated > 0) { saveStoredCustomPatterns(existing); console.log('Migrated', migrated, 'patterns from old format'); }
+    localStorage.removeItem(oldKey);
+  } catch(e) {}
+}
+
+// getMyPatterns() returns patterns in the format the attack endpoint expects
+function getMyPatterns() { return getStoredCustomPatterns(); }
+
+function loadCustomPatterns() {
+  customPatterns = getStoredCustomPatterns();
+  customCategories = {};
+  customPatterns.forEach(p => { const cat = p.category || 'custom'; customCategories[cat] = (customCategories[cat]||0) + 1; });
+  const badge = document.getElementById('custom-count-badge');
+  if (badge) badge.textContent = '(' + customPatterns.length + ')';
+  populateCustomCatFilter();
+  renderCustomPatternTable();
+}
+
+function populateCustomCatFilter() {
+  const sel = document.getElementById('custom-cat-filter');
+  if (!sel) return;
+  sel.innerHTML = '<option value="">All Categories</option>';
+  for (const cat of Object.keys(customCategories).sort()) {
+    sel.innerHTML += '<option value="'+escapeHtml(cat)+'">'+escapeHtml(cat)+' ('+customCategories[cat]+')</option>';
+  }
+}
+
+function filterCustomPatterns() { renderCustomPatternTable(); }
+
+function renderCustomPatternTable() {
+  const search = (document.getElementById('custom-pattern-search')?.value || '').toLowerCase();
+  const catFilter = document.getElementById('custom-cat-filter')?.value || '';
+  let filtered = customPatterns;
+  if (catFilter) filtered = filtered.filter(p => p.category === catFilter);
+  if (search) filtered = filtered.filter(p =>
+    (p.text||'').toLowerCase().includes(search) || (p.name||'').toLowerCase().includes(search) || (p.category||'').toLowerCase().includes(search));
+
+  const countEl = document.getElementById('custom-pattern-count');
+  if (countEl) countEl.textContent = filtered.length + ' pattern' + (filtered.length !== 1 ? 's' : '');
+
+  const emptyEl = document.getElementById('custom-empty');
+  const tbody = document.getElementById('custom-pattern-table-body');
+  if (filtered.length === 0) { if(emptyEl) emptyEl.style.display = 'block'; if(tbody) tbody.innerHTML = ''; return; }
+  if(emptyEl) emptyEl.style.display = 'none';
+  if (!tbody) return;
+  tbody.innerHTML = filtered.map(p => {
+    const name = p.name ? escapeHtml(p.name) : '<span style="color:#555;">unnamed</span>';
+    return '<tr>'+
+      '<td style="color:#4488ff;font-size:12px;max-width:150px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">'+name+'</td>'+
+      '<td><span class="category-badge">'+escapeHtml(p.category||'custom')+'</span></td>'+
+      '<td class="text-preview" title="'+escapeHtml(p.text)+'">'+escapeHtml(p.text.slice(0,120))+'</td>'+
+      '<td style="white-space:nowrap;">'+
+        '<button class="btn-small" onclick="editCustomPattern(\''+p.id+'\')" style="padding:2px 8px;font-size:11px;">Edit</button> '+
+        '<button class="btn-small" onclick="deleteCustomPattern(\''+p.id+'\')" style="padding:2px 8px;font-size:11px;color:#ff4444;">Del</button>'+
+      '</td></tr>';
+  }).join('');
+}
+
+function showAddPatternModal() {
+  document.getElementById('pattern-modal-title').textContent = 'Add Custom Pattern';
+  document.getElementById('edit-pattern-id').value = '';
+  document.getElementById('cp-name').value = '';
+  document.getElementById('cp-category').value = 'custom';
+  document.getElementById('cp-text').value = '';
+  document.getElementById('cp-notes').value = '';
+  document.getElementById('pattern-modal').style.display = 'flex';
+}
+
+function editCustomPattern(id) {
+  const p = customPatterns.find(x => x.id === id);
+  if (!p) return;
+  document.getElementById('pattern-modal-title').textContent = 'Edit Pattern';
+  document.getElementById('edit-pattern-id').value = p.id;
+  document.getElementById('cp-name').value = p.name || '';
+  document.getElementById('cp-category').value = p.category || 'custom';
+  document.getElementById('cp-text').value = p.text || '';
+  document.getElementById('cp-notes').value = p.notes || '';
+  document.getElementById('pattern-modal').style.display = 'flex';
+}
+
+function closePatternModal() { document.getElementById('pattern-modal').style.display = 'none'; }
+
+function saveCustomPattern() {
+  const text = document.getElementById('cp-text').value.trim();
+  if (!text) { alert('Pattern text is required'); return; }
+  if (text.length > 10000) { alert('Pattern text too long (max 10,000 chars)'); return; }
+  const editId = document.getElementById('edit-pattern-id').value;
+  const stored = getStoredCustomPatterns();
+  if (editId) {
+    const idx = stored.findIndex(p => p.id === editId);
+    if (idx >= 0) {
+      stored[idx].text = text;
+      stored[idx].category = document.getElementById('cp-category').value.trim() || 'custom';
+      stored[idx].name = document.getElementById('cp-name').value.trim();
+      stored[idx].notes = document.getElementById('cp-notes').value.trim();
+      stored[idx].updated_at = new Date().toISOString();
+    }
+  } else {
+    if (stored.length >= CP_MAX_PATTERNS) { alert('Pattern limit reached ('+CP_MAX_PATTERNS+'). Delete some first.'); return; }
+    stored.push({
+      id: 'cp-' + Math.random().toString(36).substr(2,8),
+      text: text,
+      category: document.getElementById('cp-category').value.trim() || 'custom',
+      name: document.getElementById('cp-name').value.trim(),
+      notes: document.getElementById('cp-notes').value.trim(),
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString()
+    });
+  }
+  saveStoredCustomPatterns(stored);
+  closePatternModal();
+  loadCustomPatterns();
+}
+
+function deleteCustomPattern(id) {
+  if (!confirm('Delete this custom pattern?')) return;
+  const stored = getStoredCustomPatterns().filter(p => p.id !== id);
+  saveStoredCustomPatterns(stored);
+  loadCustomPatterns();
+}
+
+function exportCustomPatterns() {
+  const stored = getStoredCustomPatterns();
+  if (stored.length === 0) { alert('No patterns to export'); return; }
+  const data = { version: '1.0', exported_at: new Date().toISOString(), patterns: stored };
+  const blob = new Blob([JSON.stringify(data,null,2)], {type:'application/json'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a'); a.href = url; a.download = 'judgement-custom-patterns.json'; a.click();
+  URL.revokeObjectURL(url);
+}
+
+function importCustomPatterns(event) {
+  const file = event.target.files[0]; if (!file) return;
+  file.text().then(text => {
+    try {
+      const data = JSON.parse(text);
+      const pats = data.patterns || data;
+      if (!Array.isArray(pats)) { alert('Invalid format'); return; }
+      const stored = getStoredCustomPatterns();
+      const remaining = CP_MAX_PATTERNS - stored.length;
+      if (remaining <= 0) { alert('Pattern limit reached ('+CP_MAX_PATTERNS+')'); return; }
+      let imported = 0;
+      for (let i = 0; i < pats.length && imported < remaining && imported < 200; i++) {
+        const p = pats[i];
+        const t = (typeof p === 'string' ? p : (p.text||'')).trim();
+        if (!t || t.length > 10000) continue;
+        stored.push({
+          id: 'cp-' + Math.random().toString(36).substr(2,8),
+          text: t, category: (p.category || 'custom').trim(),
+          name: (p.name || '').trim(), notes: (p.notes || '').trim(),
+          created_at: new Date().toISOString(), updated_at: new Date().toISOString()
+        });
+        imported++;
+      }
+      saveStoredCustomPatterns(stored);
+      alert('Imported '+imported+' patterns');
+      loadCustomPatterns();
+    } catch(e) {
+      // Try line-by-line for txt files
+      const lines = text.split('\n').map(l=>l.trim()).filter(l=>l.length>0);
+      const stored = getStoredCustomPatterns(); let imported = 0;
+      for (const line of lines) {
+        if (stored.length >= CP_MAX_PATTERNS) break;
+        stored.push({id:'cp-'+Math.random().toString(36).substr(2,8), text:line, category:'custom', name:'', notes:'',
+          created_at:new Date().toISOString(), updated_at:new Date().toISOString()});
+        imported++;
+      }
+      saveStoredCustomPatterns(stored);
+      alert('Imported '+imported+' patterns');
+      loadCustomPatterns();
+    }
+  });
+  event.target.value = '';
 }
 
 async function saveAllSettings() {
@@ -1290,17 +2511,152 @@ async function importCurl() {
   } catch(e) { fb.innerHTML='<span style="color:#ff4444;">'+escapeHtml(e.message)+'</span>'; }
 }
 document.getElementById('curl-modal').addEventListener('click', function(e){ if(e.target===this) closeCurlModal(); });
+document.getElementById('pattern-modal').addEventListener('click', function(e){ if(e.target===this) closePatternModal(); });
+
+/* ====== TIER / LICENSE MANAGEMENT ====== */
+let currentTier = 'free';
+let tierFeatures = {};
+
+async function loadTierInfo() {
+  try {
+    const resp = await fetch('/api/tier');
+    const data = await resp.json();
+    currentTier = data.tier || 'free';
+    tierFeatures = data.features || {};
+    updateTierUI(data);
+  } catch(e) {
+    console.warn('Tier check failed:', e);
+    currentTier = 'free';
+    updateTierUI({tier:'free',tier_display:'Free',pattern_count:100,is_elite:false,features:{}});
+  }
+}
+
+function updateTierUI(data) {
+  // Update header badge
+  const badge = document.getElementById('tier-badge');
+  if (badge) {
+    badge.className = 'tier-badge tier-' + data.tier;
+    if (data.tier === 'free') {
+      badge.textContent = 'FREE';
+    } else if (data.tier === 'elite_home') {
+      badge.textContent = 'ELITE';
+    } else if (data.tier === 'elite_business') {
+      badge.textContent = 'ELITE BIZ';
+    }
+  }
+
+  // Update version line
+  const vl = document.querySelector('.version-line');
+  if (vl) {
+    if (data.is_elite) {
+      vl.textContent = 'JUDGEMENT ELITE -- ATTACK CONSOLE v2.0.0';
+    } else {
+      vl.textContent = 'JUDGEMENT -- ATTACK CONSOLE v2.0.0';
+    }
+  }
+
+  // Update nav tabs - lock/unlock elite features
+  document.querySelectorAll('.nav-tab-elite').forEach(tab => {
+    if (data.is_elite) {
+      tab.classList.remove('locked');
+      tab.classList.add('unlocked');
+    } else {
+      tab.classList.add('locked');
+      tab.classList.remove('unlocked');
+    }
+  });
+
+  // Toggle locked/unlocked gate pages
+  document.querySelectorAll('.elite-gate-locked').forEach(el => {
+    el.style.display = data.is_elite ? 'none' : 'block';
+  });
+  document.querySelectorAll('.elite-gate-unlocked').forEach(el => {
+    el.style.display = data.is_elite ? 'block' : 'none';
+  });
+
+  // Update settings license section
+  const tierDisplay = document.getElementById('license-tier-display');
+  if (tierDisplay) tierDisplay.innerHTML = 'Tier: <strong style="color:' + (data.is_elite ? '#ff4444' : '#888') + ';">' + (data.tier_display || 'Free') + '</strong>';
+
+  const patCount = document.getElementById('license-pattern-count');
+  if (patCount) patCount.textContent = 'Patterns: ' + (data.pattern_count || 0).toLocaleString();
+
+  const expiresEl = document.getElementById('license-expires');
+  const expiresDate = document.getElementById('license-expires-date');
+  if (data.expires_at && expiresEl && expiresDate) {
+    expiresEl.style.display = 'inline';
+    expiresDate.textContent = data.expires_at.slice(0, 10);
+  }
+
+  // Show/hide activate vs deactivate
+  const activateForm = document.getElementById('license-activate-form');
+  const deactivateSection = document.getElementById('license-deactivate-section');
+  if (data.is_elite) {
+    if (activateForm) activateForm.style.display = 'none';
+    if (deactivateSection) deactivateSection.style.display = 'block';
+  } else {
+    if (activateForm) activateForm.style.display = 'block';
+    if (deactivateSection) deactivateSection.style.display = 'none';
+  }
+}
+
+async function activateLicense() {
+  const input = document.getElementById('license-key-input');
+  const fb = document.getElementById('license-feedback');
+  const key = input.value.trim().toUpperCase();
+  if (!key || !key.startsWith('FAS-') || key.length !== 23) {
+    fb.innerHTML = '<span style="color:#ff4444;">Invalid format. Expected: FAS-XXXX-XXXX-XXXX-XXXX</span>';
+    return;
+  }
+  fb.innerHTML = '<span style="color:#ffaa00;">Activating...</span>';
+  try {
+    const resp = await fetch('/api/license/activate', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({key: key})
+    });
+    const data = await resp.json();
+    if (data.valid) {
+      fb.innerHTML = '<span style="color:#44ff44;">License activated! Syncing patterns...</span>';
+      // Reload tier info and patterns
+      await loadTierInfo();
+      await loadPatterns();
+      fb.innerHTML = '<span style="color:#44ff44;">Activated - ' + (data.tier||'').replace('_',' ') + '. Restart recommended for full effect.</span>';
+    } else {
+      fb.innerHTML = '<span style="color:#ff4444;">' + escapeHtml(data.error || 'Activation failed') + '</span>';
+    }
+  } catch(e) {
+    fb.innerHTML = '<span style="color:#ff4444;">Error: ' + escapeHtml(e.message) + '</span>';
+  }
+}
+
+async function deactivateLicense() {
+  if (!confirm('Deactivate your license? You will revert to Free tier (100 patterns).')) return;
+  try {
+    await fetch('/api/license/deactivate', {method:'POST'});
+    await loadTierInfo();
+    await loadPatterns();
+  } catch(e) {
+    console.warn('Deactivate error:', e);
+  }
+}
 
 /* ====== INIT ====== */
+migrateOldMyPatterns();
+loadTierInfo();
 loadPatterns();
 loadPresets();
-renderMyPatterns();
+loadCustomPatterns();
+// Update sidebar custom patterns count
+const cpCount = getStoredCustomPatterns().length;
+const mpCountEl = document.getElementById('mypatterns-count');
+if (mpCountEl) mpCountEl.textContent = '(' + cpCount + ')';
 showWelcomeIfNew();
 </script>
 <div style="background:#0a0a0f;border-top:1px solid #222;padding:12px 24px;text-align:center;font-size:10px;color:#555;line-height:1.6;flex-shrink:0;">
   &#9888; For authorized security testing and educational purposes only. Only test systems you own or have explicit written permission to test.<br>
   Unauthorized access is illegal under the CFAA and equivalent laws. The authors assume no liability for misuse.<br>
-  <span style="color:#333;">Judgement OSS &#8212; Fallen Angel Systems</span>
+  <span style="color:#333;">Judgement - Fallen Angel Systems</span>
 </div>
 </body>
 </html>

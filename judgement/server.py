@@ -74,7 +74,7 @@ BANNER = r"""
 DB_PATH = Path(__file__).parent / "judgment.db"
 PATTERNS_PATH = Path(__file__).parent / "patterns.json"
 
-app = FastAPI(title="Judgement OSS", version="1.0.0")
+app = FastAPI(title="Judgement OSS", version="2.0.0")
 
 
 # --- Database ---
@@ -136,10 +136,16 @@ async def init_db():
 # --- Pattern Loading ---
 
 def load_patterns():
-    if PATTERNS_PATH.exists():
-        with open(PATTERNS_PATH) as f:
-            return json.load(f)
-    return []
+    """Load patterns - uses license-aware loader if available, falls back to bundled."""
+    try:
+        from . import license_client
+        return license_client.load_patterns()
+    except (ImportError, Exception):
+        # Fall back to bundled patterns
+        if PATTERNS_PATH.exists():
+            with open(PATTERNS_PATH) as f:
+                return json.load(f)
+        return []
 
 
 # --- Verdict Classification ---
@@ -305,6 +311,65 @@ async def parse_curl(request: Request):
         return JSONResponse({"error": str(e)}, status_code=400)
 
 
+@app.get("/api/tier")
+async def get_tier_info():
+    """Return current license tier and feature flags for the frontend."""
+    try:
+        from . import license_client
+        tier = license_client.get_tier()
+        features = license_client.get_features()
+        config = license_client.load_config()
+        return {
+            "tier": tier,
+            "tier_display": tier.replace("_", " ").title(),
+            "features": features,
+            "pattern_count": len(load_patterns()),
+            "expires_at": config.get("expires_at"),
+            "is_elite": tier.startswith("elite"),
+        }
+    except Exception:
+        return {
+            "tier": "free",
+            "tier_display": "Free",
+            "features": {"multi_turn": False, "teams": False},
+            "pattern_count": len(load_patterns()),
+            "is_elite": False,
+        }
+
+
+@app.post("/api/license/activate")
+async def activate_license_endpoint(request: Request):
+    """Activate a license key from the frontend."""
+    try:
+        from . import license_client
+        body = await request.json()
+        key = body.get("key", "").strip().upper()
+        if not key:
+            return JSONResponse({"valid": False, "error": "No key provided"}, status_code=400)
+
+        result = license_client.validate_license(key)
+        if result.get("valid"):
+            # Sync patterns immediately
+            sync = license_client.sync_patterns(key)
+            result["patterns_synced"] = sync.get("success", False)
+            result["pattern_count"] = sync.get("count", 0)
+
+        return result
+    except Exception as e:
+        return JSONResponse({"valid": False, "error": str(e)}, status_code=500)
+
+
+@app.post("/api/license/deactivate")
+async def deactivate_license_endpoint():
+    """Deactivate the current license."""
+    try:
+        from . import license_client
+        license_client.deactivate()
+        return {"status": "deactivated", "tier": "free"}
+    except Exception as e:
+        return JSONResponse({"error": str(e)}, status_code=500)
+
+
 @app.get("/api/patterns")
 async def get_patterns():
     patterns = load_patterns()
@@ -324,7 +389,7 @@ async def start_attack(request: Request):
     payload_field = body.get("payload_field", "message")
     categories = body.get("categories", [])
     pattern_ids = body.get("pattern_ids", [])
-    delay_ms = body.get("delay_ms", 200)
+    delay_ms = max(body.get("delay_ms", 200), 100)  # Enforce minimum 100ms
     timeout_s = body.get("timeout_s", 10)
 
     if not target_url:
@@ -334,16 +399,57 @@ async def start_attack(request: Request):
 
     use_mcp = body.get("use_mcp", False)
     mcp_url = body.get("mcp_url", "")
+    severity_filter = body.get("severity_filter", [])  # e.g. ["critical", "high"]
+    category_limits = body.get("category_limits", {})  # e.g. {"jailbreak": 10}
+    include_custom = body.get("include_custom", False)
 
     patterns = load_patterns()
     if categories:
         patterns = [p for p in patterns if p["category"] in categories]
+    elif not categories and include_custom:
+        # No categories selected but custom patterns requested - skip library patterns
+        patterns = []
     if pattern_ids:
         patterns = [p for p in patterns if p["id"] in pattern_ids]
 
-    # Append custom (My Patterns) from client
+    # Severity filter
+    if severity_filter:
+        patterns = [p for p in patterns if p.get("severity", "medium") in severity_filter]
+
+    # Per-category limits: randomly sample N patterns from each category
+    if category_limits and not pattern_ids:
+        import random
+        limited = []
+        by_cat = {}
+        for p in patterns:
+            cat = p.get("category", "unknown")
+            by_cat.setdefault(cat, []).append(p)
+        for cat, cat_patterns in by_cat.items():
+            limit = category_limits.get(cat)
+            if limit and limit > 0 and limit < len(cat_patterns):
+                limited.extend(random.sample(cat_patterns, limit))
+            else:
+                limited.extend(cat_patterns)
+        patterns = limited
+
+    # Merge custom patterns (sent from browser localStorage - never stored server-side)
+    custom_patterns_data = body.get("custom_patterns_data", [])
+    if include_custom and custom_patterns_data:
+        for cp in custom_patterns_data[:500]:
+            cp_text = (cp.get("text") or "").strip()
+            if not cp_text or len(cp_text) > 10000:
+                continue
+            patterns.append({
+                "id": cp.get("id", "cp-unknown"),
+                "text": cp_text,
+                "category": (cp.get("category") or "custom").strip(),
+                "tier": "custom",
+                "source": "custom"
+            })
+
+    # Legacy custom_patterns format (backward compat)
     custom_patterns = body.get("custom_patterns", [])
-    if custom_patterns:
+    if custom_patterns and not custom_patterns_data:
         for cp in custom_patterns:
             if isinstance(cp, dict) and cp.get("text"):
                 patterns.append({"id": cp.get("id", f"MY-{len(patterns)+1}"), "text": cp["text"], "category": "my_patterns"})
@@ -352,7 +458,7 @@ async def start_attack(request: Request):
         return JSONResponse({"error": "No patterns match the selection"}, status_code=400)
 
     # Enforce max patterns limit
-    max_patterns = body.get("max_patterns", 50)
+    max_patterns = body.get("max_patterns", 0)
     if max_patterns and max_patterns > 0:
         patterns = patterns[:max_patterns]
 
@@ -528,44 +634,207 @@ async def get_session(session_id: str):
 
 
 @app.get("/api/sessions/{session_id}/report")
-async def generate_report(session_id: str):
+async def generate_report_endpoint(session_id: str, format: str = "markdown",
+                                    client_name: str = "Target Organization",
+                                    product_name: str = "",
+                                    assessor: str = "Fallen Angel Systems",
+                                    classification: str = "CONFIDENTIAL",
+                                    scope_notes: str = ""):
     async with aiosqlite.connect(DB_PATH) as db:
         db.row_factory = aiosqlite.Row
         cursor = await db.execute("SELECT * FROM sessions WHERE id=?", (session_id,))
         session = await cursor.fetchone()
         if not session:
             return JSONResponse({"error": "Session not found"}, status_code=404)
-        cursor = await db.execute("SELECT * FROM results WHERE session_id=? AND verdict='BYPASS' ORDER BY id", (session_id,))
-        bypasses = await cursor.fetchall()
-        cursor = await db.execute("SELECT * FROM results WHERE session_id=? AND verdict='PARTIAL' ORDER BY id", (session_id,))
-        partials = await cursor.fetchall()
-
+        cursor = await db.execute("SELECT * FROM results WHERE session_id=? ORDER BY id", (session_id,))
+        all_results = [dict(r) for r in await cursor.fetchall()]
         session = dict(session)
-        report_lines = [
-            f"# Judgement -- Attack Report", "",
-            f"**Target:** {session['target_url']}", f"**Method:** {session['method']}",
-            f"**Date:** {session['created_at']}", f"**Session:** {session_id}", "",
-            f"## Summary",
-            f"- Total patterns tested: {session['total_patterns']}",
-            f"- Blocked: {session['blocked']}", f"- Partial: {session['partial']}",
-            f"- Bypassed: {session['bypassed']}", f"- Errors: {session['errors']}", "",
-        ]
-        if bypasses:
-            report_lines.append("## Successful Bypasses\n")
-            for b in [dict(b) for b in bypasses]:
-                report_lines.extend([
-                    f"### {b['pattern_id']} ({b['category']})",
-                    f"**Payload:**\n```\n{b['pattern_text']}\n```",
-                    f"**Response ({b['response_status']}, {b['response_time_ms']:.0f}ms):**\n```\n{b['response_body'][:500]}\n```\n"])
-        if partials:
-            report_lines.append("## Partial Bypasses\n")
-            for p in [dict(p) for p in partials]:
-                report_lines.extend([
-                    f"### {p['pattern_id']} ({p['category']})",
-                    f"**Payload:**\n```\n{p['pattern_text']}\n```",
-                    f"**Response ({p['response_status']}, {p['response_time_ms']:.0f}ms):**\n```\n{p['response_body'][:500]}\n```\n"])
-        report_lines.extend(["---", "*Generated by Judgement OSS*"])
-        return {"report": "\n".join(report_lines), "session": session}
+
+        config = {
+            "client_name": client_name,
+            "product_name": product_name,
+            "assessor_name": assessor,
+            "classification": classification,
+            "scope_notes": scope_notes,
+        }
+
+        if format == "html":
+            from judgement.report_generator import generate_professional_html
+            html = generate_professional_html(session, all_results, config)
+            return HTMLResponse(html)
+        elif format == "json":
+            from judgement.report_generator import generate_json_report
+            return JSONResponse(generate_json_report(session, all_results))
+        elif format == "sarif":
+            from judgement.report_generator import generate_sarif_report
+            return JSONResponse(generate_sarif_report(session, all_results))
+        else:
+            from judgement.report_generator import generate_markdown_report
+            md = generate_markdown_report(session, all_results)
+            return {"report": md, "session": session}
+
+
+SUBMIT_API_URL = os.environ.get("JUDGEMENT_SUBMIT_URL", "https://judgement-app.fallenangelsystems.com")
+
+@app.post("/api/patterns/submit")
+async def submit_pattern(request: Request):
+    """Proxy pattern submissions to the hosted Judgement API for review."""
+    body = await request.json()
+    text = (body.get("text") or "").strip()
+    if not text:
+        return JSONResponse({"error": "text required"}, status_code=400)
+    if len(text) > 10000:
+        return JSONResponse({"error": "Pattern too long (max 10,000 chars)"}, status_code=400)
+
+    submission = {
+        "text": text,
+        "category": body.get("category", "auto"),
+        "target_type": body.get("target_type", "chatbot"),
+        "description": body.get("description", ""),
+        "submitter_name": body.get("submitter_name", "anonymous"),
+        "source": "oss"
+    }
+
+    try:
+        async with httpx.AsyncClient(timeout=15) as client:
+            resp = await client.post(
+                f"{SUBMIT_API_URL}/api/patterns/submit",
+                json=submission
+            )
+            if resp.status_code == 200:
+                return resp.json()
+            return JSONResponse({"error": "Submission failed", "status": resp.status_code}, status_code=resp.status_code)
+    except Exception as e:
+        return JSONResponse({"error": f"Could not reach submission server: {str(e)[:200]}"}, status_code=503)
+
+
+@app.post("/api/scan-target")
+async def scan_target(request: Request):
+    """Scan a target URL to auto-detect AI endpoint configuration."""
+    body = await request.json()
+    url = body.get("url", "").strip()
+    if not url:
+        return JSONResponse({"error": "url required"}, status_code=400)
+    if not is_safe_url(url):
+        return JSONResponse({"error": "Target URL points to a private/internal address"}, status_code=400)
+
+    result = {
+        "method": "POST", "field": "message", "headers": {},
+        "payload_template": "", "detected_provider": "",
+        "endpoints_found": [], "confidence": "low", "info": ""
+    }
+
+    common_paths = ["/chat", "/v1/chat/completions", "/api/chat", "/completions", "/generate", "/ask"]
+    probe_payloads = [
+        ("messages", {"messages": [{"role": "user", "content": "hello"}]}),
+        ("prompt", {"prompt": "hello"}),
+        ("text", {"text": "hello"}),
+        ("message", {"message": "hello"}),
+        ("input", {"input": "hello"}),
+        ("query", {"query": "hello"}),
+    ]
+
+    async with httpx.AsyncClient(timeout=10, verify=False, follow_redirects=True) as client:
+        # Step 1: Fetch URL to determine if webpage or API
+        is_webpage = False
+        try:
+            resp = await client.get(url)
+            ct = resp.headers.get("content-type", "")
+            if "text/html" in ct:
+                is_webpage = True
+        except Exception as e:
+            return JSONResponse({"error": f"Could not reach target: {str(e)[:200]}"}, status_code=400)
+
+        # Step 2: If webpage, scan for AI chat indicators
+        if is_webpage:
+            html_lower = resp.text.lower()
+            indicators = []
+            if any(x in html_lower for x in ["chatwidget", "chat-widget", "intercom", "drift", "crisp", "tidio", "zendesk"]):
+                indicators.append("chat widget detected")
+            if any(x in html_lower for x in ["openai", "api.openai.com", "anthropic", "claude"]):
+                indicators.append("AI API references found")
+            if any(x in html_lower for x in ["/v1/chat/completions", "/api/chat", "/completions"]):
+                indicators.append("AI endpoint paths in source")
+            result["info"] = ("Webpage with AI indicators: " + ", ".join(indicators)) if indicators else "Webpage detected but no AI chat indicators found."
+            return result
+
+        # Step 3: API endpoint - probe with different payloads
+        base_url = url.rstrip("/")
+
+        async def probe_endpoint(probe_url):
+            for field_name, payload in probe_payloads:
+                try:
+                    r = await client.post(probe_url, json=payload, headers={"Content-Type": "application/json"})
+                    if r.status_code < 500:
+                        resp_text = r.text[:2000].lower()
+                        provider = ""
+                        if any(x in resp_text for x in ['"choices"', '"model"', "gpt-", "openai"]):
+                            provider = "openai"
+                        elif any(x in resp_text for x in ['"completion"', "anthropic", "claude"]):
+                            provider = "anthropic"
+                        elif any(x in resp_text for x in ['"response"', '"output"', '"text"', '"result"', '"generated']):
+                            provider = "custom"
+
+                        is_auth_error = r.status_code in (401, 403)
+                        is_validation = r.status_code == 422
+                        is_success = r.status_code < 400 and (provider or len(r.text.strip()) > 2)
+
+                        if is_auth_error:
+                            resp_raw = r.text[:2000]
+                            if "x-api-key" in resp_raw.lower():
+                                result["headers"] = {"Content-Type": "application/json", "X-API-Key": "YOUR_API_KEY"}
+                            else:
+                                result["headers"] = {"Content-Type": "application/json", "Authorization": "Bearer YOUR_API_KEY"}
+
+                        if is_success or is_auth_error or is_validation:
+                            template = ""
+                            if field_name == "messages":
+                                template = '{"messages":[{"role":"user","content":"{{PAYLOAD}}"}]}'
+                            elif field_name != "message":
+                                template = '{"%s":"{{PAYLOAD}}"}' % field_name
+                            return field_name, template, provider, r.status_code
+                except Exception:
+                    pass
+            return None
+
+        direct = await probe_endpoint(base_url)
+        if direct:
+            field_name, template, provider, status = direct
+            result["field"] = field_name
+            result["payload_template"] = template
+            result["detected_provider"] = provider or "unknown"
+            result["endpoints_found"].append(base_url)
+            result["confidence"] = "high" if provider else "medium"
+            auth_note = " (API key required)" if status in (401, 403) else ""
+            result["info"] = f"Detected {provider or 'API'} at {base_url}, {field_name} format{auth_note}"
+            if not result.get("headers"):
+                result["headers"] = {"Content-Type": "application/json"}
+            return result
+
+        # Probe common paths
+        parsed = urlparse(base_url)
+        origin = f"{parsed.scheme}://{parsed.netloc}"
+        for path in common_paths:
+            probe_url = origin + path
+            try:
+                found = await probe_endpoint(probe_url)
+                if found:
+                    result["endpoints_found"].append(probe_url)
+                    if not result["detected_provider"]:
+                        field_name, template, provider, status = found
+                        result["field"] = field_name
+                        result["payload_template"] = template
+                        result["detected_provider"] = provider or "unknown"
+                        result["confidence"] = "medium" if provider else "low"
+                        result["info"] = f"Detected {provider or 'unknown'} API at {probe_url}, {field_name} format"
+            except Exception:
+                pass
+
+        if result["endpoints_found"]:
+            return result
+
+        result["info"] = "Could not auto-detect config. Please configure manually."
+        return result
 
 
 @app.post("/api/settings/llm-test")
@@ -629,7 +898,7 @@ async def index():
     return HTMLResponse("<h1>Judgement OSS</h1><p>Frontend not found. Place index.html in static/</p>")
 
 
-CURRENT_VERSION = "1.1.0"
+CURRENT_VERSION = "2.0.0"
 
 def check_for_updates():
     """Check PyPI for newer version."""
@@ -650,15 +919,58 @@ def main():
     """Entry point for the judgement CLI command."""
     import uvicorn
     import argparse
-    parser = argparse.ArgumentParser(description="Judgement OSS - Prompt Injection Attack Console")
+    from . import license_client
+
+    parser = argparse.ArgumentParser(
+        description="FAS Judgement - Prompt Injection Attack Console"
+    )
+    subparsers = parser.add_subparsers(dest="command")
+
+    # Default: run the server
     parser.add_argument("--host", default="0.0.0.0", help="Host to bind to (default: 0.0.0.0)")
     parser.add_argument("--port", type=int, default=8668, help="Port to bind to (default: 8668)")
+
+    # Subcommands
+    activate_parser = subparsers.add_parser("activate", help="Activate a license key")
+    activate_parser.add_argument("key", help="License key (FAS-XXXX-XXXX-XXXX-XXXX)")
+
+    subparsers.add_parser("deactivate", help="Deactivate current license")
+    subparsers.add_parser("status", help="Show license status")
+
     args = parser.parse_args()
+
+    # Handle subcommands
+    if args.command == "activate":
+        license_client.activate(args.key)
+        return
+    elif args.command == "deactivate":
+        license_client.deactivate()
+        return
+    elif args.command == "status":
+        license_client.status()
+        return
+
+    # Default: run the server
     print(BANNER)
     check_for_updates()
-    print(f"  Starting Judgement OSS on http://localhost:{args.port}")
+
+    # License check on startup
+    print("  Checking license...")
+    license_status = license_client.startup_check()
+    tier = license_status.get("tier", "free")
+    tier_display = tier.replace("_", " ").title()
+    pattern_count = license_status.get("patterns", 0)
+    print(f"  Tier: {tier_display}")
+    print(f"  {license_status.get('message', '')}")
+    print()
+
+    # Override pattern loading with license-aware version
+    global PATTERNS
+    PATTERNS = license_client.load_patterns()
+
+    print(f"  Starting Judgement on http://localhost:{args.port}")
     print(f"  Database: {DB_PATH}")
-    print(f"  Patterns loaded: {len(load_patterns())}")
+    print(f"  Patterns loaded: {len(PATTERNS):,}")
     print()
     uvicorn.run(app, host=args.host, port=args.port, log_level="info")
 
