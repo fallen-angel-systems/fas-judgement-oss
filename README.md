@@ -187,7 +187,6 @@ All scan sessions and results are stored locally in SQLite. Review past scans, c
 | `--host` | `127.0.0.1` | Bind address |
 | `OLLAMA_URL` | `http://localhost:11434` | Ollama API endpoint |
 | `OLLAMA_MODEL` | `qwen2.5:14b` | Model for LLM verdict |
-| `SUBMIT_API_URL` | `https://judgement-app.fallenangelsystems.com` | Pattern submission API |
 
 ## Free vs Elite
 
