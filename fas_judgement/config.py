@@ -37,6 +37,14 @@ OLLAMA_URL = os.environ.get("OLLAMA_URL", "http://localhost:11434")
 OLLAMA_MODEL = os.environ.get("OLLAMA_MODEL", "qwen2.5:14b")
 
 
+# === SECTION: NETWORK SAFETY === #
+
+# Allow scanning localhost/private IP targets (demo bot, local AI endpoints).
+# WHY default True for OSS: the whole point of self-hosted Judgement is scanning
+# local targets. The hosted app (VPS) sets this to False via env.
+ALLOW_LOCAL_TARGETS = os.environ.get("ALLOW_LOCAL_TARGETS", "true").lower() in ("true", "1", "yes")
+
+
 # === SECTION: PATTERN SUBMISSION PROXY === #
 
 # Where OSS pattern submissions are proxied to (hosted Judgement API).

@@ -35,7 +35,7 @@ def sanitize_text(text: str) -> str:
 
 # === SECTION: SSRF PROTECTION === #
 
-def is_safe_url(url: str) -> bool:
+def is_safe_url(url: str, allow_local: bool = False) -> bool:
     """
     Check that a URL does NOT point to private/internal addresses.
 
@@ -43,9 +43,16 @@ def is_safe_url(url: str) -> bool:
     an attacker could use our scanner to probe internal services by
     supplying `target_url=http://169.254.169.254/` (AWS metadata) etc.
 
+    Args:
+        url: The URL to validate.
+        allow_local: If True, skip private/loopback checks. Used for
+                     self-hosted installs where scanning local targets
+                     (demo bot, local AI endpoints) is the whole point.
+                     Still blocks link-local and metadata IPs.
+
     Strategy:
       1. Parse the URL and check scheme is http/https
-      2. Block known dangerous hostnames by name
+      2. Block known dangerous hostnames by name (unless allow_local)
       3. Resolve the hostname to IP and reject private/loopback/reserved ranges
       4. If DNS resolution fails, block (unknown = dangerous)
     """
@@ -62,9 +69,16 @@ def is_safe_url(url: str) -> bool:
         return False
 
     # Block known dangerous hostnames by name (DNS rebinding resilience)
-    blocked_hosts = {"localhost", "metadata.google.internal"}
-    if hostname.lower() in blocked_hosts:
+    # WHY metadata.google.internal is ALWAYS blocked: cloud metadata endpoints
+    # can leak credentials regardless of allow_local setting.
+    always_blocked = {"metadata.google.internal"}
+    if hostname.lower() in always_blocked:
         return False
+
+    if not allow_local:
+        blocked_hosts = {"localhost"}
+        if hostname.lower() in blocked_hosts:
+            return False
 
     # Resolve hostname to IP and check every resolved address
     try:
@@ -72,11 +86,19 @@ def is_safe_url(url: str) -> bool:
         for info in infos:
             addr = info[4][0]
             ip = ipaddress.ip_address(addr)
-            if ip.is_private or ip.is_loopback or ip.is_link_local or ip.is_reserved:
+
+            # Always block link-local (169.254.x.x) and reserved — these are
+            # dangerous even for self-hosted (cloud metadata, APIPA).
+            if ip.is_link_local or ip.is_reserved:
                 return False
             # Explicitly block 0.0.0.0 (some OS quirks return this)
             if str(ip) == "0.0.0.0":
                 return False
+
+            # Private/loopback only blocked when allow_local is False
+            if not allow_local:
+                if ip.is_private or ip.is_loopback:
+                    return False
     except (socket.gaierror, ValueError):
         # DNS resolution failed → block (principle of least privilege)
         return False

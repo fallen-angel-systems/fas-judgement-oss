@@ -62,10 +62,12 @@ def _include_routers():
     from .router_core import router as core_router
     from .router_scan import router as scan_router
     from .router_patterns import router as patterns_router
+    from .router_demo import router as demo_router
 
     app.include_router(core_router)
     app.include_router(scan_router)
     app.include_router(patterns_router)
+    app.include_router(demo_router)
 
     # WHY import the package (not a class): the ai_security __init__.py is
     # responsible for calling registry.register(AiSecurityModule()). Importing

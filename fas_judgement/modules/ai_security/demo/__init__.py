@@ -15,4 +15,9 @@ USAGE:
      judgement demo vulnerable       → vulnerable persona (~10% block rate)
 
 LAYER: Module/Demo — sub-package of ai_security module.
+
+COMPONENTS:
+     target.py    — FastAPI app (the simulated chatbot server itself)
+     personas.py  — Persona definitions and trigger matching logic
+     service.py   — Subprocess lifecycle management (start/stop/status)
 """

@@ -27,7 +27,7 @@ from fastapi import APIRouter, Request
 from fastapi.responses import JSONResponse
 from sse_starlette.sse import EventSourceResponse
 
-from ..config import DB_PATH, OLLAMA_URL, OLLAMA_MODEL
+from ..config import DB_PATH, OLLAMA_URL, OLLAMA_MODEL, ALLOW_LOCAL_TARGETS
 from .deps import rate_limiter
 from ..utils.security import is_safe_url
 from ..modules.ai_security.scanner.scorer import classify_verdict, llm_classify
@@ -74,7 +74,7 @@ async def start_attack(request: Request):
     if not target_url:
         return JSONResponse({"error": "target_url required"}, status_code=400)
 
-    if not is_safe_url(target_url):
+    if not is_safe_url(target_url, allow_local=ALLOW_LOCAL_TARGETS):
         return JSONResponse(
             {"error": "Target URL points to a private/internal address"},
             status_code=400,
@@ -371,7 +371,7 @@ async def scan_target(request: Request):
     if not url:
         return JSONResponse({"error": "url required"}, status_code=400)
 
-    if not is_safe_url(url):
+    if not is_safe_url(url, allow_local=ALLOW_LOCAL_TARGETS):
         return JSONResponse(
             {"error": "Target URL points to a private/internal address"}, status_code=400
         )

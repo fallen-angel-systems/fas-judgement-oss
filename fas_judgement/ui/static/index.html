@@ -621,6 +621,16 @@
           <button class="btn-small" onclick="scanTarget()" title="Auto-detect endpoint config" id="scan-target-btn">&#128269; Scan</button>
         </div>
         <div id="scan-target-status" style="font-size:11px;color:#888;margin-bottom:6px;display:none;"></div>
+        <!-- Demo Target Controls -->
+        <div id="demo-controls" style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">
+          <button class="btn-small" id="demo-toggle-btn" onclick="toggleDemoTarget()" title="Launch the built-in demo chatbot on port 8667" style="font-size:11px;padding:4px 10px;">&#128640; Launch Demo</button>
+          <select id="demo-persona-select" style="width:110px;font-size:11px;padding:3px 4px;">
+            <option value="default">Default</option>
+            <option value="vulnerable">Vulnerable</option>
+            <option value="hardened">Hardened</option>
+          </select>
+          <span id="demo-status-indicator" style="font-size:11px;color:#555;">&#9679; Stopped</span>
+        </div>
         <div style="display:flex;gap:8px;">
           <select id="method" style="width:100px;"><option>POST</option><option>GET</option><option>PUT</option><option>PATCH</option></select>
           <input type="text" id="payload-field" placeholder="Payload field" value="message" style="flex:1;">
@@ -871,14 +881,16 @@ app = FastAPI()
 @app.post("/mcp")
 async def analyze(request: Request):
     data = await request.json()
-    payload = data["payload"]
-    response = data["response"]
+    attack_text = data["text"]       <span class="comment"># The attack payload that was sent</span>
+    response = data["response"]      <span class="comment"># The target's response (first 500 chars)</span>
+    verdict = data["verdict"]        <span class="comment"># Judgement's verdict: BYPASS/BLOCKED/PARTIAL</span>
+    category = data["category"]      <span class="comment"># Attack category (e.g. instruction_override)</span>
 
     <span class="comment"># Your custom logic here</span>
     if "system prompt" in response.lower():
         return {"analysis": "System prompt leaked!", "verdict": "BYPASS"}
 
-    return {"analysis": "Looks clean.", "verdict": data["verdict"]}
+    return {"analysis": "Looks clean.", "verdict": verdict}
 
 <span class="comment"># uvicorn server:app --port 3000</span></div>
   </div>
@@ -1139,6 +1151,7 @@ async def analyze(request: Request):
           <button onclick="mtCheckConnection()" style="flex:1;background:#ff4444;color:#fff;border:none;padding:10px;font-family:inherit;font-size:13px;cursor:pointer;border-radius:4px;letter-spacing:1px;">TEST CONNECTION</button>
           <button id="mt-connect-btn" onclick="mtConnect()" disabled style="flex:1;background:#222;color:#555;border:1px solid #333;padding:10px;font-family:inherit;font-size:13px;cursor:not-allowed;border-radius:4px;letter-spacing:1px;">CONNECT</button>
         </div>
+        <button onclick="mtSkipConnection()" style="width:100%;margin-top:12px;background:transparent;color:#555;border:1px solid #222;padding:8px;font-family:inherit;font-size:11px;cursor:pointer;border-radius:4px;letter-spacing:1px;transition:color 0.2s;" onmouseover="this.style.color='#888'" onmouseout="this.style.color='#555'">SKIP — I'll score manually</button>
       </div>
     </div>
 
@@ -2918,6 +2931,7 @@ async function importCurl() {
 }
 document.getElementById('curl-modal').addEventListener('click', function(e){ if(e.target===this) closeCurlModal(); });
 document.getElementById('pattern-modal').addEventListener('click', function(e){ if(e.target===this) closePatternModal(); });
+document.getElementById('mt-connection-modal').addEventListener('click', function(e){ if(e.target===this) mtSkipConnection(); });
 
 /* ====== TIER / LICENSE MANAGEMENT ====== */
 let currentTier = 'free';
@@ -3084,6 +3098,16 @@ async function mtConnect() {
   mtOllamaUrl = document.getElementById('mt-ollama-url').value.trim();
   mtScoringModel = document.getElementById('mt-scoring-model').value;
   mtConnected = true;
+  document.getElementById('mt-connection-modal').style.display = 'none';
+  await mtLoadCategories();
+}
+
+async function mtSkipConnection() {
+  // Skip Ollama setup — multi-turn works without it (manual scoring only).
+  // LLM auto-score button will show a warning if clicked without a connection.
+  mtConnected = false;
+  mtOllamaUrl = '';
+  mtScoringModel = '';
   document.getElementById('mt-connection-modal').style.display = 'none';
   await mtLoadCategories();
 }
@@ -3357,6 +3381,10 @@ async function mtManualScore(score) {
 
 async function mtAutoScore() {
   if (!mtSessionId) return;
+  if (!mtOllamaUrl || !mtScoringModel) {
+    alert('LLM auto-scoring requires an Ollama connection.\n\nGo to Settings or reconnect via the Multi-Turn tab to set up Ollama, or use the manual scoring buttons above.');
+    return;
+  }
   const responseText = document.getElementById('mt-response-input').value.trim();
   if (!responseText) { alert('Paste the target response first.'); return; }
   try {
@@ -3711,6 +3739,110 @@ const cpCount = getStoredCustomPatterns().length;
 const mpCountEl = document.getElementById('mypatterns-count');
 if (mpCountEl) mpCountEl.textContent = '(' + cpCount + ')';
 showWelcomeIfNew();
+
+// === DEMO TARGET CONTROLS === //
+
+// Check demo status on page load
+checkDemoStatus();
+
+async function checkDemoStatus() {
+  try {
+    const resp = await fetch('/api/demo/status');
+    const data = await resp.json();
+    updateDemoUI(data.running, data.persona, data.managed);
+  } catch(e) {
+    // API not available — demo controls stay in default state
+  }
+}
+
+function updateDemoUI(running, persona, managed) {
+  const btn = document.getElementById('demo-toggle-btn');
+  const indicator = document.getElementById('demo-status-indicator');
+  const select = document.getElementById('demo-persona-select');
+
+  if (running) {
+    btn.innerHTML = '&#9209; Stop Demo';
+    btn.style.background = '#441111';
+    btn.style.borderColor = '#ff4444';
+    btn.style.color = '#ff4444';
+    indicator.innerHTML = '&#9679; Running';
+    indicator.style.color = '#44ff44';
+    select.disabled = true;
+    if (persona) select.value = persona;
+  } else {
+    btn.innerHTML = '&#128640; Launch Demo';
+    btn.style.background = '';
+    btn.style.borderColor = '';
+    btn.style.color = '';
+    indicator.innerHTML = '&#9679; Stopped';
+    indicator.style.color = '#555';
+    select.disabled = false;
+  }
+}
+
+async function toggleDemoTarget() {
+  const btn = document.getElementById('demo-toggle-btn');
+  const indicator = document.getElementById('demo-status-indicator');
+
+  // Check current state
+  let statusResp;
+  try {
+    statusResp = await fetch('/api/demo/status');
+    statusResp = await statusResp.json();
+  } catch(e) {
+    indicator.innerHTML = '&#9679; Error';
+    indicator.style.color = '#ff4444';
+    return;
+  }
+
+  if (statusResp.running) {
+    // Stop the demo
+    btn.disabled = true;
+    indicator.innerHTML = '&#9679; Stopping...';
+    indicator.style.color = '#ffaa00';
+    try {
+      await fetch('/api/demo/stop', { method: 'POST' });
+      updateDemoUI(false, null, false);
+    } catch(e) {
+      indicator.innerHTML = '&#9679; Error stopping';
+      indicator.style.color = '#ff4444';
+    }
+    btn.disabled = false;
+  } else {
+    // Start the demo
+    const persona = document.getElementById('demo-persona-select').value;
+    btn.disabled = true;
+    indicator.innerHTML = '&#9679; Starting...';
+    indicator.style.color = '#ffaa00';
+    try {
+      const resp = await fetch('/api/demo/start', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ persona: persona })
+      });
+      const data = await resp.json();
+      if (data.success) {
+        updateDemoUI(true, persona, true);
+        // Auto-fill the target URL
+        const targetInput = document.getElementById('target-url');
+        if (!targetInput.value || targetInput.value.includes('localhost:8667')) {
+          targetInput.value = data.url || 'http://localhost:8667/demo/chat';
+        }
+        // Auto-set payload field to "message" (demo expects this)
+        document.getElementById('payload-field').value = 'message';
+      } else {
+        indicator.innerHTML = '&#9679; ' + (data.error || 'Failed');
+        indicator.style.color = '#ff4444';
+        setTimeout(() => updateDemoUI(false, null, false), 3000);
+      }
+    } catch(e) {
+      indicator.innerHTML = '&#9679; Error starting';
+      indicator.style.color = '#ff4444';
+      setTimeout(() => updateDemoUI(false, null, false), 3000);
+    }
+    btn.disabled = false;
+  }
+}
 </script>
 <div style="background:#0a0a0f;border-top:1px solid #222;padding:12px 24px;text-align:center;font-size:10px;color:#555;line-height:1.6;flex-shrink:0;">
   &#9888; For authorized security testing and educational purposes only. Only test systems you own or have explicit written permission to test.<br>
