@@ -1,6 +1,6 @@
 <div align="center">
 
-# Judgement OSS
+# FAS Judgement
 
 ### Prompt Injection Attack Console
 
@@ -11,7 +11,7 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 [![GitHub Stars](https://img.shields.io/github/stars/fallen-angel-systems/fas-judgement-oss?style=social&v=2)](https://github.com/fallen-angel-systems/fas-judgement-oss)
 
-[Live Demo](https://judgement.fallenangelsystems.com) | [Documentation](#features) | [Install](#quick-start) | [Contributing](#contributing)
+[Install](#quick-start) | [Demo Target](#demo-target) | [Features](#features) | [Elite](#free-vs-elite) | [Contributing](#contributing)
 
 </div>
 
@@ -27,17 +27,23 @@ Judgement gives you a structured way to fire categorized attack patterns at any 
 
 Built by [Fallen Angel Systems](https://fallenangelsystems.com), the team behind [Guardian](https://fallenangelsystems.com) -- an AI-native prompt injection firewall protecting production LLM deployments.
 
-## What's New in v2.0.0
+## What's New in v2.1.0
 
-- **Attack Presets** -- Smoke Test, Full Sweep, Deep Dive, and Critical Only modes for structured testing
-- **Severity Filter & Search** -- Filter patterns by severity level with a real-time search bar
-- **Per-Category Limits** -- Control exactly how many patterns fire per category with pool count indicators
-- **Custom Patterns** -- Build, edit, import, and export your own private pattern library (stored locally)
+**Architecture overhaul** -- Judgement has been restructured from a single-file monolith into a modular DDD (Domain-Driven Design) architecture with 52 Python files across 7 layers. This makes it extensible, testable, and ready for future security modules.
+
+### New Features
+- **Demo Target** -- Built-in vulnerable AI chatbot for practice. Run `judgement demo` and fire attacks at it without needing a real AI endpoint
+- **Multi-Turn Attack Engine** -- Chain attacks across multiple conversation turns with phase-aware scoring and session persistence
+- **Transport Layer** -- Attack targets via HTTP, Ollama, Discord, Telegram, Slack, or headless browser
+- **Module Registry** -- Pluggable security module system. AI Security is module one; future modules (Web Security, API Security, etc.) drop in without restructuring
 - **Professional Reports** -- Generate HTML, Markdown, JSON, and SARIF reports with CWE/OWASP references
-- **Scan Target** -- Auto-detect API format, method, headers, and payload field with one click
-- **License System** -- Activate Elite tier for 34,838+ patterns directly from the CLI
-- **Full Documentation** -- Built-in Docs page with Volt's Red Team Playbook and complete feature reference
-- **Pattern Submissions** -- Submit novel attack patterns to the community library
+
+### Improvements
+- DDD architecture: core (models, enums, errors, interfaces) / modules / transport / http / utils
+- Scanner scorer with keyword heuristics + optional LLM classification
+- SSRF protection, input sanitization, and cURL parser in dedicated utils
+- Phase-aware multi-turn scoring with data leak detection (19 regex patterns)
+- Persistent multi-turn sessions (SQLite, survive restarts)
 
 ## Quick Start
 
@@ -56,7 +62,19 @@ That's it. Open `http://localhost:8668` and start testing.
 git clone https://github.com/fallen-angel-systems/fas-judgement-oss.git
 cd fas-judgement-oss
 pip install -r requirements.txt
-python -m judgement.server
+python -m fas_judgement
+```
+
+### CLI Commands
+
+```bash
+judgement                    # Start the scanner (port 8668)
+judgement demo               # Start demo target (port 8667, default persona)
+judgement demo hardened       # Demo with hardened persona (~90% block rate)
+judgement demo vulnerable     # Demo with vulnerable persona (~10% block rate)
+judgement activate FAS-XXXX   # Activate Elite license
+judgement status              # Check license tier and pattern count
+judgement deactivate          # Revert to free tier
 ```
 
 ### Options
@@ -67,12 +85,31 @@ judgement --host 127.0.0.1   # Localhost only
 judgement --host 0.0.0.0     # Expose to network
 ```
 
-### Elite License Activation
+## Demo Target
+
+New to prompt injection? Start here. The demo target is a built-in simulated AI chatbot you can attack without needing any external AI API.
 
 ```bash
-judgement activate FAS-XXXX-XXXX-XXXX-XXXX   # Activate Elite license
-judgement status                               # Check tier and pattern count
-judgement deactivate                            # Revert to free tier
+# Terminal 1: Start the demo target
+judgement demo
+
+# Terminal 2: Start the scanner
+judgement
+```
+
+Point the scanner at `http://localhost:8667/demo/chat` and fire away.
+
+### Three Personas
+
+| Persona | Block Rate | What It Simulates |
+|---------|-----------|-------------------|
+| **hardened** | ~90% | Well-tuned safety layer. Blocks injections, DAN, role-play, emotional manipulation, token smuggling |
+| **default** | ~55% | Typical GPT-style deployment. Blocks obvious attacks, leaks secrets under social engineering |
+| **vulnerable** | ~10% | Raw model with no guardrails. Dumps API keys, passwords, system prompt on request |
+
+Switch personas at runtime:
+```bash
+curl -X POST http://localhost:8667/demo/persona -d '{"persona": "vulnerable"}'
 ```
 
 ## Features
@@ -87,97 +124,59 @@ Configure your target (URL, headers, body template), import directly from cURL c
 | Deep Dive | ~100 patterns, heavy coverage, min 2 per category |
 | Critical Only | All critical+high severity patterns, no limits |
 
-![Attack Console](docs/images/attack-console.png)
+### Multi-Turn Attack Engine (Elite)
+Chain attacks across multiple conversation turns. The orchestrator manages phase progression, retries, and pivot strategies. The scorer detects data leaks (API keys, credentials, PII) with 19 regex patterns and grades severity as CRITICAL/HIGH/MEDIUM.
 
-### Severity Filter & Search
-Filter the pattern library by severity (Critical, High, Medium, Low) or use the Critical+High combo for focused testing. Search patterns in real-time to find exactly what you need.
+Supports all transport types -- attack chatbots on Discord, Telegram, Slack, or any HTTP API.
 
-### Custom Patterns
-Build your own private attack library in the **My Patterns** tab:
-- Add, edit, and delete patterns with category and notes
-- Import/export as JSON for backup and sharing
-- Include custom patterns in attacks alongside the curated library
-- Stored locally in your browser -- never touches any server
-- Up to 500 patterns, 10,000 characters each
+### Scan Target Auto-Detect
+Point Judgement at any URL and it auto-detects:
+- HTTP method (POST, GET, PUT, PATCH)
+- Payload field name (message, prompt, input, query, etc.)
+- Required headers and auth format
+- AI provider (OpenAI, Anthropic, custom)
 
 ### Professional Reports (Elite)
 Generate security assessment reports from any attack session:
 
 | Format | Use Case |
 |--------|----------|
-| **HTML** | Print-ready professional report with executive summary, CWE/OWASP references, and remediation advice |
-| **Markdown** | Bug bounty submissions for HackerOne, Bugcrowd, GitHub Issues, or Jira |
-| **JSON** | Structured data for custom tooling, dashboards, or API consumers |
-| **SARIF** | Upload to GitHub Code Scanning, Azure DevOps, or any SARIF-compatible security dashboard |
-
-Reports include risk ratings, detailed findings with evidence, and prioritized remediation recommendations.
-
-### Pattern Browser
-Browse, search, and explore attack patterns organized by category in a sortable table view. Each pattern shows ID, category, payload text, and severity level.
-
-### Education Tab
-New to prompt injection? The built-in education tab covers:
-- What prompt injection is and why it matters
-- How to find testable AI endpoints
-- How to interpret scan results
-- Common vulnerability categories explained
-
-**No prior security experience needed.** The onboarding walkthrough guides you from zero to your first scan.
-
-### Documentation
-Built-in Docs page with expandable reference sections:
-- **Red Team Playbook** by Volt -- structured methodology for professional AI red teaming
-- Getting Started guides for API endpoints and web chatbots
-- Attack Console reference with preset explanations
-- Pattern categories and tier breakdown
-- Verdict classification guide
-- Credit protection and MCP integration docs
-- Legal and ethics guidelines
-- FAQ
-
-### Scan Target
-Point Judgement at any URL and click **Scan**. It auto-detects:
-- HTTP method (POST, GET, PUT, PATCH)
-- Payload field name (message, prompt, input, query, etc.)
-- Required headers and auth format
-- Response format and streaming support
+| **HTML** | Print-ready professional report with executive summary, CWE/OWASP references |
+| **Markdown** | Bug bounty submissions for HackerOne, Bugcrowd, GitHub Issues |
+| **JSON** | Structured data for custom tooling and dashboards |
+| **SARIF** | Upload to GitHub Code Scanning or Azure DevOps |
 
 ### LLM Verdict (Optional)
-Connect a local [Ollama](https://ollama.ai) instance to get AI-powered classification of responses. More accurate than keyword matching for detecting subtle bypasses where the target complies but wraps it in disclaimers.
+Connect a local [Ollama](https://ollama.ai) instance for AI-powered response classification. More accurate than keyword matching for detecting subtle bypasses.
 
 ### Pattern Submissions
-Found a novel attack technique? Submit it directly from the **Submit Pattern** tab. Guardian AI auto-verifies your submission -- if it scores 70%+ confidence and isn't a duplicate, it gets added to the community library.
-
-### Session History
-All scan sessions and results are stored locally in SQLite. Review past scans, compare results across targets, and track your testing progress.
+Found a novel attack technique? Submit it directly from the app. If it scores 70%+ confidence and isn't a duplicate, it gets added to the community library.
 
 ### Built-in Safety
 - **SSRF Protection** -- Target URL validation prevents scanning internal/private networks
 - **Local-only by default** -- Binds to localhost, no accidental exposure
 - **Zero telemetry** -- Nothing phones home, ever
-- **Auth confirmation** -- Warns before firing at authenticated endpoints
 - **Credit protection** -- Configurable pattern limits and auto-stop on consecutive errors
 
-## How It Works
+## Architecture (v2.1.0)
 
 ```
-+--------------+     +---------------+     +--------------+
-|   You pick   |---->|  Judgement     |---->|  Your AI     |
-|   patterns   |     |  fires them   |     |  endpoint    |
-+--------------+     +-------+-------+     +-------+------+
-                             |                     |
-                      +------v-------+     +-------v------+
-                      |  Results     |<----|  Response    |
-                      |  + Verdict   |     |  captured    |
-                      +--------------+     +--------------+
+fas_judgement/
+├── config.py              # Environment and app configuration
+├── core/                  # Domain models, enums, errors, interfaces, registry
+├── modules/
+│   └── ai_security/       # AI Security module (pluggable)
+│       ├── scanner/       # Single-shot attack engine
+│       ├── multi_turn/    # Multi-turn attack orchestrator
+│       ├── patterns/      # Pattern loading, filtering, repository
+│       └── demo/          # Built-in vulnerable chatbot
+├── transport/             # HTTP, Ollama, Discord, Telegram, Slack, Website
+├── http/                  # FastAPI app, routers, dependencies
+├── ui/                    # Frontend SPA
+└── utils/                 # License client, security, email, Ollama helpers
 ```
 
-1. **Configure** -- Point Judgement at your AI endpoint (URL + headers + body template)
-2. **Select** -- Choose attack presets or pick categories manually with severity filters
-3. **Fire** -- Watch results stream in real-time via SSE
-4. **Analyze** -- Review responses, optional LLM verdict classifies each result
-5. **Report** -- Export findings as HTML, Markdown, JSON, or SARIF
-6. **Fix** -- Use the findings to harden your AI's defenses
+Future security modules (Web Security, API Security, Network, etc.) plug into `modules/` without restructuring the app.
 
 ## Configuration
 
@@ -193,21 +192,20 @@ All scan sessions and results are stored locally in SQLite. Review past scans, c
 | Feature | Free | Elite |
 |---------|:----:|:-----:|
 | Attack console with presets | Yes | Yes |
+| Demo target (3 personas) | Yes | Yes |
 | Severity filter and search | Yes | Yes |
 | Education tab | Yes | Yes |
-| Pattern browser | Yes | Yes |
 | LLM verdict (Ollama) | Yes | Yes |
 | Scan Target auto-detect | Yes | Yes |
-| MCP server integration | Yes | Yes |
-| Built-in documentation | Yes | Yes |
 | Pattern submissions | Yes | Yes |
+| Built-in documentation | Yes | Yes |
 | Starter patterns | 100 | 34,838+ |
-| Custom patterns library | -- | Yes |
+| Multi-turn attack chains | -- | Yes |
 | Professional reports (HTML/MD/JSON/SARIF) | Basic MD | Full suite |
 | Per-category attack limits | -- | Yes |
+| Transport layer (Discord, Slack, etc.) | HTTP only | All |
+| Phase-aware scoring + data leak detection | -- | Yes |
 | Campaigns | -- | Coming Soon |
-| Multi-turn attack chains | -- | Coming Soon |
-| Credit protection controls | Yes | Yes |
 
 **[Get Elite Access](https://fallenangelsystems.com)**
 
@@ -223,7 +221,7 @@ Contributions are welcome! Here's how to help:
 ## Related Projects
 
 - **[Guardian](https://fallenangelsystems.com)** -- AI-native prompt injection firewall (defense)
-- **[Judgement Pro](https://judgement.fallenangelsystems.com)** -- Full-featured hosted version with all Elite features
+- **[Guardian Shield](https://github.com/jtil4201/Openclaw-Guardian-Shield)** -- Free local prompt injection scanner (OpenClaw skill)
 
 ## License
 
