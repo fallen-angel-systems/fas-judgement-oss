@@ -63,6 +63,48 @@ async def get_tier_info():
         }
 
 
+# === SECTION: LICENSE ACTIVATION (from UI) === #
+
+
+@router.post("/api/license/activate")
+async def activate_license_endpoint(request: Request):
+    """
+    Activate a license key from the frontend Settings panel.
+
+    WHY in the OSS build: Users can paste their Elite license key in the
+    browser UI instead of stopping the server and running the CLI command.
+    The license client handles validation + pattern sync.
+    """
+    try:
+        from ..utils.license import validate_license, sync_patterns
+        body = await request.json()
+        key = body.get("key", "").strip().upper()
+        if not key:
+            return JSONResponse({"valid": False, "error": "No key provided"}, status_code=400)
+
+        result = validate_license(key)
+        if result.get("valid"):
+            # Sync patterns immediately after successful validation
+            sync = sync_patterns(key)
+            result["patterns_synced"] = sync.get("success", False)
+            result["pattern_count"] = sync.get("count", 0)
+
+        return result
+    except Exception as e:
+        return JSONResponse({"valid": False, "error": str(e)}, status_code=500)
+
+
+@router.post("/api/license/deactivate")
+async def deactivate_license_endpoint():
+    """Deactivate the current license from the frontend Settings panel."""
+    try:
+        from ..utils.license import deactivate
+        deactivate()
+        return {"status": "deactivated", "tier": "free"}
+    except Exception as e:
+        return JSONResponse({"error": str(e)}, status_code=500)
+
+
 # === SECTION: CURL PARSER === #
 
 @router.post("/api/parse-curl")
