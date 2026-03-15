@@ -6,13 +6,22 @@
 <title>FAS Judgement - Open Source Attack Console</title>
 <style>
   * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  /* Custom scrollbars — thin, dark, matches the theme */
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: #333; border-radius: 3px; }
+  ::-webkit-scrollbar-thumb:hover { background: #555; }
+  * { scrollbar-width: thin; scrollbar-color: #333 transparent; }
   body {
     background: #0a0a0f;
     color: #e0e0e0;
     font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
-    min-height: 100vh;
+    height: 100vh;
+    max-height: 100vh;
     display: flex;
     flex-direction: column;
+    overflow: hidden;
   }
 
   /* Tier Badge */
@@ -62,6 +71,92 @@
   }
   .elite-price { color: #555; font-size: 11px; margin-top: 12px; }
 
+  /* Multi-Turn */
+  .mt-modal-overlay {
+    position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0,0,0,0.85); display: flex;
+    align-items: center; justify-content: center; z-index: 100;
+  }
+  .mt-modal {
+    background: #0d0d14; border: 1px solid #ff4444; border-radius: 8px;
+    padding: 32px; max-width: 420px; width: 90%; text-align: center;
+  }
+  .mt-chat-bubble {
+    max-width: 80%; padding: 10px 14px; border-radius: 8px;
+    font-size: 13px; line-height: 1.5; word-break: break-word;
+  }
+  .mt-bubble-attack {
+    background: #1a0a0a; border: 1px solid #331111; color: #e0e0e0;
+    align-self: flex-end; border-bottom-right-radius: 2px;
+  }
+  .mt-bubble-target {
+    background: #0a0a1a; border: 1px solid #111133; color: #aaaacc;
+    align-self: flex-start; border-bottom-left-radius: 2px;
+  }
+  .mt-bubble-system {
+    background: #111; border: 1px solid #222; color: #555;
+    align-self: center; font-size: 11px; text-align: center;
+    max-width: 90%; font-style: italic;
+  }
+  .mt-bubble-label {
+    font-size: 9px; letter-spacing: 1px; margin-bottom: 4px; opacity: 0.5;
+  }
+  .mt-score-badge {
+    display: inline-block; font-size: 9px; padding: 1px 6px;
+    border-radius: 3px; margin-top: 6px; letter-spacing: 1px;
+  }
+  .mt-score-comply { background: #1a2a1a; color: #44ff44; }
+  .mt-score-partial { background: #2a2a1a; color: #ffaa44; }
+  .mt-score-deflect { background: #1a1a2a; color: #8888ff; }
+  .mt-score-refuse { background: #2a1a1a; color: #ff8888; }
+  .mt-score-detect { background: #2a0a0a; color: #ff4444; }
+  .mt-suggestion-item {
+    padding: 8px 10px; background: #111; border: 1px solid #222;
+    border-radius: 4px; color: #888; font-size: 11px; cursor: pointer;
+    line-height: 1.4; transition: border-color 0.2s;
+  }
+  .mt-suggestion-item:hover { border-color: #ff4444; color: #ccc; }
+  .mt-transport-btn:hover { border-color: #ff4444 !important; color: #ff4444 !important; }
+  .mt-transport-config { transition: opacity 0.2s; }
+  .mt-left-panel, .mt-controls-panel { overflow-y: auto !important; min-height: 0 !important; }
+  #mt-scoring-panel { transition: border-color 0.3s; border-bottom: 1px solid #222; }
+  #page-multiturn.active {
+    flex-direction: column !important;
+    align-items: stretch !important;
+    justify-content: stretch !important;
+    text-align: left !important;
+  }
+  #page-multiturn.active {
+    overflow: hidden !important;
+    max-height: calc(100vh - 90px) !important;
+  }
+  #page-multiturn .mt-console {
+    flex: 1 !important;
+    display: flex !important;
+    flex-direction: column !important;
+    min-height: 0 !important;
+    max-height: 100% !important;
+    overflow: hidden !important;
+  }
+  #page-multiturn #mt-main {
+    flex: 1 !important;
+    min-height: 0 !important;
+    max-height: 100% !important;
+    overflow: hidden !important;
+  }
+  .mt-chat-panel {
+    overflow: hidden !important;
+    min-height: 0 !important;
+    display: flex !important;
+    flex-direction: column !important;
+  }
+  #mt-chat-messages {
+    overflow-y: auto !important;
+    flex: 1 1 0 !important;
+    min-height: 0 !important;
+    max-height: none !important;
+  }
+
   /* Header */
   .header {
     background: linear-gradient(135deg, #1a0a0a 0%, #0a0a1a 100%);
@@ -102,7 +197,7 @@
   .top-nav .nav-tab.active { color: #ff4444; border-bottom-color: #ff4444; }
 
   /* Pages */
-  .page { display: none !important; flex: 1; overflow: hidden; }
+  .page { display: none !important; flex: 1; overflow: hidden; min-height: 0; }
   .page.active { display: flex !important; }
 
   /* Attack page */
@@ -1008,25 +1103,264 @@ async def analyze(request: Request):
 
 <!-- ==================== MULTI-TURN PAGE (Elite) ==================== -->
 <div id="page-multiturn" class="page elite-locked-page">
+  <!-- Locked gate (Free tier) -->
   <div class="elite-gate elite-gate-locked">
     <div class="elite-gate-icon">&#8644;</div>
     <h2>Multi-Turn Attacks</h2>
     <p>Chain prompt injections across conversation turns. Test how models handle sustained manipulation, context poisoning, and progressive trust exploitation.</p>
     <div class="elite-features">
-      <div class="elite-feature">&#10003; Multi-turn conversation chains</div>
-      <div class="elite-feature">&#10003; Context window poisoning</div>
-      <div class="elite-feature">&#10003; Progressive jailbreak sequences</div>
-      <div class="elite-feature">&#10003; Turn-by-turn success tracking</div>
+      <div class="elite-feature">&#10003; 7 attack categories, 700+ messages</div>
+      <div class="elite-feature">&#10003; LLM-scored phase advancement</div>
+      <div class="elite-feature">&#10003; Hold &amp; Inject co-op mode</div>
+      <div class="elite-feature">&#10003; Post-Test Disarm for hardened models</div>
     </div>
     <button class="btn-upgrade" onclick="window.open('https://fallenangelsystems.com/#judgement-pricing','_blank')">Upgrade to Elite</button>
     <div class="elite-price">Starting at $10/mo - or activate a key in Settings</div>
   </div>
-  <div class="elite-gate elite-gate-unlocked" style="display:none;">
-    <div class="elite-gate-icon" style="opacity:0.8;">&#8644;</div>
-    <h2 style="color:#ff8844;">Multi-Turn Attacks</h2>
-    <p style="color:#aaa;">Multi-turn conversation chain attacks are coming in a future update. Your Elite license will unlock this automatically when it ships.</p>
-    <div style="color:#ff4444;font-size:28px;font-weight:bold;letter-spacing:4px;margin:20px 0;">COMING SOON</div>
-    <div style="color:#555;font-size:11px;">Your license is active and ready.</div>
+  <!-- Unlocked multi-turn console (Elite tier) -->
+  <div class="elite-gate-unlocked mt-console" style="display:none;width:100%;height:100%;padding:0;">
+
+    <!-- Connection Gate Modal -->
+    <div id="mt-connection-modal" class="mt-modal-overlay" style="display:none;">
+      <div class="mt-modal">
+        <div style="font-size:32px;margin-bottom:12px;opacity:0.6;">&#9889;</div>
+        <h2 style="color:#ff4444;margin-bottom:8px;letter-spacing:2px;">CONNECTION REQUIRED</h2>
+        <p style="color:#888;font-size:12px;margin-bottom:20px;">Multi-turn attacks require a local LLM (Ollama) for attack execution and response scoring.</p>
+        <div style="text-align:left;margin-bottom:16px;">
+          <label style="color:#888;font-size:11px;letter-spacing:1px;">OLLAMA URL</label>
+          <input type="text" id="mt-ollama-url" value="http://localhost:11434" style="width:100%;background:#111;border:1px solid #333;color:#e0e0e0;padding:8px 12px;font-family:inherit;font-size:13px;border-radius:4px;margin-top:4px;">
+        </div>
+        <div id="mt-connection-status" style="margin-bottom:16px;font-size:12px;color:#555;min-height:20px;"></div>
+        <div id="mt-model-select-wrap" style="display:none;text-align:left;margin-bottom:16px;">
+          <label style="color:#888;font-size:11px;letter-spacing:1px;">SCORING MODEL</label>
+          <select id="mt-scoring-model" style="width:100%;background:#111;border:1px solid #333;color:#e0e0e0;padding:8px 12px;font-family:inherit;font-size:13px;border-radius:4px;margin-top:4px;"></select>
+        </div>
+        <div style="display:flex;gap:12px;">
+          <button onclick="mtCheckConnection()" style="flex:1;background:#ff4444;color:#fff;border:none;padding:10px;font-family:inherit;font-size:13px;cursor:pointer;border-radius:4px;letter-spacing:1px;">TEST CONNECTION</button>
+          <button id="mt-connect-btn" onclick="mtConnect()" disabled style="flex:1;background:#222;color:#555;border:1px solid #333;padding:10px;font-family:inherit;font-size:13px;cursor:not-allowed;border-radius:4px;letter-spacing:1px;">CONNECT</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Main Multi-Turn Layout: Split View -->
+    <div id="mt-main" style="display:flex;height:100%;width:100%;">
+
+      <!-- LEFT: Scoring + Findings -->
+      <div class="mt-left-panel" style="width:280px;display:flex;flex-direction:column;background:#0a0a12;border-right:1px solid #222;overflow-y:auto;">
+
+        <!-- Scoring Panel -->
+        <div id="mt-scoring-panel" style="padding:14px;border-bottom:1px solid #222;">
+          <div style="color:#ff4444;font-size:12px;font-weight:bold;letter-spacing:2px;margin-bottom:10px;">SCORE RESPONSE</div>
+          <textarea id="mt-response-input" placeholder="Paste the target's response here..." style="width:100%;height:100px;background:#111;border:1px solid #333;color:#e0e0e0;padding:8px;font-family:inherit;font-size:12px;border-radius:4px;resize:vertical;margin-bottom:8px;"></textarea>
+          <div style="display:flex;gap:4px;flex-wrap:wrap;margin-bottom:8px;">
+            <button onclick="mtManualScore('comply')" class="mt-score-btn" style="background:#1a2a1a;color:#44ff44;border:1px solid #224422;padding:4px 8px;font-family:inherit;font-size:10px;cursor:pointer;border-radius:3px;">COMPLY</button>
+            <button onclick="mtManualScore('partial')" class="mt-score-btn" style="background:#2a2a1a;color:#ffaa44;border:1px solid #443322;padding:4px 8px;font-family:inherit;font-size:10px;cursor:pointer;border-radius:3px;">PARTIAL</button>
+            <button onclick="mtManualScore('deflect')" class="mt-score-btn" style="background:#1a1a2a;color:#8888ff;border:1px solid #333366;padding:4px 8px;font-family:inherit;font-size:10px;cursor:pointer;border-radius:3px;">DEFLECT</button>
+            <button onclick="mtManualScore('refuse')" class="mt-score-btn" style="background:#2a1a1a;color:#ff8888;border:1px solid #442222;padding:4px 8px;font-family:inherit;font-size:10px;cursor:pointer;border-radius:3px;">REFUSE</button>
+            <button onclick="mtManualScore('detect')" class="mt-score-btn" style="background:#2a0a0a;color:#ff4444;border:1px solid #440000;padding:4px 8px;font-family:inherit;font-size:10px;cursor:pointer;border-radius:3px;">DETECT</button>
+          </div>
+          <button onclick="mtAutoScore()" style="width:100%;background:#222;color:#e0e0e0;border:1px solid #333;padding:7px;font-family:inherit;font-size:11px;cursor:pointer;border-radius:4px;">LLM AUTO-SCORE</button>
+        </div>
+
+        <!-- Findings -->
+        <div style="padding:14px;flex:1;">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+            <div style="color:#ff4444;font-size:12px;font-weight:bold;letter-spacing:2px;">FINDINGS</div>
+            <button id="mt-export-btn" onclick="mtExportSession()" style="background:#222;color:#888;border:1px solid #333;padding:3px 10px;font-family:inherit;font-size:10px;cursor:pointer;border-radius:3px;display:none;">EXPORT</button>
+          </div>
+          <div id="mt-findings-list" style="display:flex;flex-direction:column;gap:8px;">
+            <div style="color:#333;font-size:11px;">No findings yet.</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- CENTER: Chat View (big) -->
+      <div class="mt-chat-panel" style="flex:1;display:flex;flex-direction:column;min-height:0;">
+        <!-- Chat Header -->
+        <div style="padding:10px 16px;border-bottom:1px solid #222;display:flex;align-items:center;justify-content:space-between;background:#0d0d14;">
+          <div>
+            <span id="mt-session-category" style="color:#ff4444;font-size:14px;font-weight:bold;letter-spacing:2px;">NO SESSION</span>
+            <span id="mt-session-phase" style="color:#555;font-size:11px;margin-left:12px;">Phase -/-</span>
+          </div>
+          <div style="display:flex;gap:8px;align-items:center;">
+            <span id="mt-session-status" style="font-size:10px;padding:2px 8px;border-radius:3px;background:#333;color:#888;letter-spacing:1px;">IDLE</span>
+            <span id="mt-findings-badge" style="font-size:10px;padding:2px 8px;border-radius:3px;background:#1a0a0a;color:#ff4444;display:none;">0 FINDINGS</span>
+          </div>
+        </div>
+
+        <!-- Chat Messages -->
+        <div id="mt-chat-messages" style="flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:12px;min-height:0;">
+          <div style="text-align:center;color:#333;font-size:12px;padding:40px 0;">
+            Select a category and start a session to begin.
+          </div>
+        </div>
+
+        <!-- Chat Input -->
+        <div id="mt-chat-input-bar" style="padding:10px 16px;border-top:1px solid #222;display:flex;gap:8px;background:#0d0d14;">
+          <input type="text" id="mt-chat-input" placeholder="Inject a custom message (Hold & Inject)..." style="flex:1;background:#111;border:1px solid #333;color:#e0e0e0;padding:8px 12px;font-family:inherit;font-size:13px;border-radius:4px;" onkeydown="if(event.key==='Enter')mtInjectMessage()">
+          <button onclick="mtInjectMessage()" style="background:#ff4444;color:#fff;border:none;padding:8px 16px;font-family:inherit;font-size:12px;cursor:pointer;border-radius:4px;letter-spacing:1px;">INJECT</button>
+        </div>
+      </div>
+
+      <!-- RIGHT: Controls Panel -->
+      <div class="mt-controls-panel" style="width:280px;display:flex;flex-direction:column;background:#0a0a12;border-left:1px solid #222;overflow-y:auto;">
+
+        <!-- Session Setup -->
+        <div style="padding:14px;border-bottom:1px solid #222;">
+          <div style="color:#ff4444;font-size:12px;font-weight:bold;letter-spacing:2px;margin-bottom:10px;">SESSION SETUP</div>
+
+          <label style="color:#888;font-size:11px;letter-spacing:1px;">ATTACK CATEGORY</label>
+          <select id="mt-category-select" style="width:100%;background:#111;border:1px solid #333;color:#e0e0e0;padding:6px 8px;font-family:inherit;font-size:12px;border-radius:4px;margin:4px 0 10px 0;">
+            <option value="">-- Select Category --</option>
+          </select>
+
+          <div id="mt-category-info" style="display:none;margin-bottom:6px;">
+            <div style="display:flex;gap:8px;font-size:10px;color:#555;">
+              <span id="mt-cat-difficulty"></span>
+              <span id="mt-cat-messages"></span>
+            </div>
+          </div>
+
+          <label style="color:#888;font-size:11px;letter-spacing:1px;">MODE</label>
+          <select id="mt-mode-select" style="width:100%;background:#111;border:1px solid #333;color:#e0e0e0;padding:6px 8px;font-family:inherit;font-size:12px;border-radius:4px;margin:4px 0 10px 0;">
+            <option value="auto">Auto - Full autopilot</option>
+            <option value="coop" selected>Co-op - Hold & Inject</option>
+            <option value="manual">Manual - You drive</option>
+          </select>
+
+          <!-- Transport Selector -->
+          <div style="color:#888;font-size:11px;letter-spacing:1px;margin-bottom:6px;">TRANSPORT</div>
+          <div id="mt-transport-grid" style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:4px;margin-bottom:10px;">
+            <button class="mt-transport-btn active" data-transport="http" onclick="mtSelectTransport('http')" style="background:#1a0a0a;border:1px solid #ff4444;color:#ff4444;padding:6px 4px;font-family:inherit;font-size:10px;cursor:pointer;border-radius:4px;letter-spacing:0.5px;text-align:center;transition:all 0.2s;">&#9889; HTTP API</button>
+            <button class="mt-transport-btn" data-transport="discord" onclick="mtSelectTransport('discord')" style="background:#111;border:1px solid #333;color:#888;padding:6px 4px;font-family:inherit;font-size:10px;cursor:pointer;border-radius:4px;letter-spacing:0.5px;text-align:center;transition:all 0.2s;">&#9670; Discord</button>
+            <button class="mt-transport-btn" data-transport="telegram" onclick="mtSelectTransport('telegram')" style="background:#111;border:1px solid #333;color:#888;padding:6px 4px;font-family:inherit;font-size:10px;cursor:pointer;border-radius:4px;letter-spacing:0.5px;text-align:center;transition:all 0.2s;">&#9993; Telegram</button>
+            <button class="mt-transport-btn" data-transport="slack" onclick="mtSelectTransport('slack')" style="background:#111;border:1px solid #333;color:#888;padding:6px 4px;font-family:inherit;font-size:10px;cursor:pointer;border-radius:4px;letter-spacing:0.5px;text-align:center;transition:all 0.2s;">&#9638; Slack</button>
+            <button class="mt-transport-btn" data-transport="website" onclick="mtSelectTransport('website')" style="background:#111;border:1px solid #333;color:#888;padding:6px 4px;font-family:inherit;font-size:10px;cursor:pointer;border-radius:4px;letter-spacing:0.5px;text-align:center;transition:all 0.2s;">&#9741; Website</button>
+            <button class="mt-transport-btn" data-transport="local" onclick="mtSelectTransport('local')" style="background:#111;border:1px solid #333;color:#888;padding:6px 4px;font-family:inherit;font-size:10px;cursor:pointer;border-radius:4px;letter-spacing:0.5px;text-align:center;transition:all 0.2s;">&#9881; Local</button>
+          </div>
+
+          <!-- Transport Config: HTTP API (default, shown) -->
+          <div id="mt-transport-http" class="mt-transport-config">
+            <label style="color:#888;font-size:11px;letter-spacing:1px;">TARGET URL</label>
+            <input type="text" id="mt-target-url" placeholder="https://api.example.com/chat" style="width:100%;background:#111;border:1px solid #333;color:#e0e0e0;padding:6px 8px;font-family:inherit;font-size:12px;border-radius:4px;margin:4px 0 6px 0;">
+            <div style="display:flex;gap:6px;margin-bottom:6px;">
+              <input type="text" id="mt-http-body-field" placeholder="Body field" value="message" style="flex:1;background:#111;border:1px solid #333;color:#e0e0e0;padding:5px 8px;font-family:inherit;font-size:11px;border-radius:4px;">
+              <input type="text" id="mt-http-response-field" placeholder="Response field" value="response" style="flex:1;background:#111;border:1px solid #333;color:#e0e0e0;padding:5px 8px;font-family:inherit;font-size:11px;border-radius:4px;">
+            </div>
+            <textarea id="mt-http-headers" placeholder='{"Authorization": "Bearer ..."}' rows="2" style="width:100%;background:#111;border:1px solid #333;color:#e0e0e0;padding:5px 8px;font-family:inherit;font-size:11px;border-radius:4px;resize:vertical;margin-bottom:6px;"></textarea>
+          </div>
+
+          <!-- Transport Config: Discord -->
+          <div id="mt-transport-discord" class="mt-transport-config" style="display:none;">
+            <label style="color:#888;font-size:11px;letter-spacing:1px;">BOT TOKEN</label>
+            <input type="password" id="mt-discord-token" placeholder="Bot token (never stored on server)" style="width:100%;background:#111;border:1px solid #333;color:#e0e0e0;padding:6px 8px;font-family:inherit;font-size:12px;border-radius:4px;margin:4px 0 6px 0;">
+            <div style="display:flex;gap:6px;margin-bottom:6px;">
+              <div style="flex:1;">
+                <label style="color:#555;font-size:10px;">Target Bot ID</label>
+                <input type="text" id="mt-discord-bot-id" placeholder="Bot user ID" style="width:100%;background:#111;border:1px solid #333;color:#e0e0e0;padding:5px 8px;font-family:inherit;font-size:11px;border-radius:4px;">
+              </div>
+              <div style="flex:1;">
+                <label style="color:#555;font-size:10px;">Channel ID</label>
+                <input type="text" id="mt-discord-channel" placeholder="Channel ID" style="width:100%;background:#111;border:1px solid #333;color:#e0e0e0;padding:5px 8px;font-family:inherit;font-size:11px;border-radius:4px;">
+              </div>
+            </div>
+          </div>
+
+          <!-- Transport Config: Telegram -->
+          <div id="mt-transport-telegram" class="mt-transport-config" style="display:none;">
+            <label style="color:#888;font-size:11px;letter-spacing:1px;">BOT TOKEN</label>
+            <input type="password" id="mt-telegram-token" placeholder="123456:ABC-DEF..." style="width:100%;background:#111;border:1px solid #333;color:#e0e0e0;padding:6px 8px;font-family:inherit;font-size:12px;border-radius:4px;margin:4px 0 6px 0;">
+            <label style="color:#888;font-size:11px;letter-spacing:1px;">CHAT ID</label>
+            <input type="text" id="mt-telegram-chat-id" placeholder="Chat ID with target bot" style="width:100%;background:#111;border:1px solid #333;color:#e0e0e0;padding:6px 8px;font-family:inherit;font-size:12px;border-radius:4px;margin:4px 0 6px 0;">
+          </div>
+
+          <!-- Transport Config: Slack -->
+          <div id="mt-transport-slack" class="mt-transport-config" style="display:none;">
+            <label style="color:#888;font-size:11px;letter-spacing:1px;">BOT TOKEN</label>
+            <input type="password" id="mt-slack-token" placeholder="xoxb-..." style="width:100%;background:#111;border:1px solid #333;color:#e0e0e0;padding:6px 8px;font-family:inherit;font-size:12px;border-radius:4px;margin:4px 0 6px 0;">
+            <div style="display:flex;gap:6px;margin-bottom:6px;">
+              <div style="flex:1;">
+                <label style="color:#555;font-size:10px;">Channel ID</label>
+                <input type="text" id="mt-slack-channel" placeholder="C0123456789" style="width:100%;background:#111;border:1px solid #333;color:#e0e0e0;padding:5px 8px;font-family:inherit;font-size:11px;border-radius:4px;">
+              </div>
+              <div style="flex:1;">
+                <label style="color:#555;font-size:10px;">Target Bot ID</label>
+                <input type="text" id="mt-slack-bot-id" placeholder="U0123456789" style="width:100%;background:#111;border:1px solid #333;color:#e0e0e0;padding:5px 8px;font-family:inherit;font-size:11px;border-radius:4px;">
+              </div>
+            </div>
+
+          </div>
+
+          <!-- Transport Config: Website -->
+          <div id="mt-transport-website" class="mt-transport-config" style="display:none;">
+            <label style="color:#888;font-size:11px;letter-spacing:1px;">WEBSITE URL</label>
+            <input type="text" id="mt-website-url" placeholder="https://example.com/chat" style="width:100%;background:#111;border:1px solid #333;color:#e0e0e0;padding:6px 8px;font-family:inherit;font-size:12px;border-radius:4px;margin:4px 0 6px 0;">
+            <div style="display:flex;gap:6px;margin-bottom:6px;">
+              <div style="flex:1;">
+                <label style="color:#555;font-size:10px;">Input Selector (CSS)</label>
+                <input type="text" id="mt-website-input-sel" placeholder='input[type="text"], textarea' style="width:100%;background:#111;border:1px solid #333;color:#e0e0e0;padding:5px 8px;font-family:inherit;font-size:11px;border-radius:4px;">
+              </div>
+              <div style="flex:1;">
+                <label style="color:#555;font-size:10px;">Send Button Selector</label>
+                <input type="text" id="mt-website-send-sel" placeholder='button[type="submit"]' style="width:100%;background:#111;border:1px solid #333;color:#e0e0e0;padding:5px 8px;font-family:inherit;font-size:11px;border-radius:4px;">
+              </div>
+            </div>
+            <label style="color:#555;font-size:10px;">Response Selector (CSS)</label>
+            <input type="text" id="mt-website-response-sel" placeholder=".chat-message:last-child" style="width:100%;background:#111;border:1px solid #333;color:#e0e0e0;padding:5px 8px;font-family:inherit;font-size:11px;border-radius:4px;margin-bottom:6px;">
+
+          </div>
+
+          <!-- Transport Config: Local (Ollama) -->
+          <div id="mt-transport-local" class="mt-transport-config" style="display:none;">
+            <label style="color:#888;font-size:11px;letter-spacing:1px;">OLLAMA URL</label>
+            <input type="text" id="mt-local-ollama-url" placeholder="http://localhost:11434" style="width:100%;background:#111;border:1px solid #333;color:#e0e0e0;padding:6px 8px;font-family:inherit;font-size:12px;border-radius:4px;margin:4px 0 6px 0;">
+            <div style="display:flex;gap:6px;margin-bottom:6px;">
+              <select id="mt-local-model" style="flex:1;background:#111;border:1px solid #333;color:#e0e0e0;padding:6px 8px;font-family:inherit;font-size:12px;border-radius:4px;">
+                <option value="">-- Refresh to load --</option>
+              </select>
+              <button onclick="mtRefreshLocalModels()" style="background:#222;color:#888;border:1px solid #333;padding:5px 10px;font-family:inherit;font-size:10px;cursor:pointer;border-radius:4px;white-space:nowrap;">&#8635;</button>
+            </div>
+            <input type="text" id="mt-local-system" placeholder="System prompt (optional)" style="display:none;width:100%;background:#111;border:1px solid #333;color:#e0e0e0;padding:5px 8px;font-family:inherit;font-size:11px;border-radius:4px;margin-bottom:6px;">
+            <div onclick="const el=document.getElementById('mt-local-system');el.style.display=el.style.display==='none'?'block':'none';" style="font-size:9px;color:#555;cursor:pointer;margin-bottom:4px;">&#9656; system prompt</div>
+          </div>
+
+          <!-- Test Transport Button -->
+          <div style="margin-bottom:6px;">
+            <button id="mt-test-btn" onclick="mtTestTransport()" style="width:100%;background:#111;color:#888;border:1px solid #333;padding:5px;font-family:inherit;font-size:10px;cursor:pointer;border-radius:4px;letter-spacing:1px;transition:all 0.3s;">&#9889; TEST CONNECTION</button>
+          </div>
+
+          <div style="display:flex;gap:8px;margin-top:4px;">
+            <button id="mt-start-btn" onclick="mtStartSession()" style="flex:1;background:#ff4444;color:#fff;border:none;padding:8px;font-family:inherit;font-size:12px;cursor:pointer;border-radius:4px;letter-spacing:1px;">START</button>
+            <button id="mt-stop-btn" onclick="mtStopSession()" disabled style="background:#222;color:#555;border:1px solid #333;padding:8px 14px;font-family:inherit;font-size:12px;cursor:not-allowed;border-radius:4px;">STOP</button>
+          </div>
+        </div>
+
+        <!-- Live Controls -->
+        <div id="mt-live-controls" style="padding:14px;border-bottom:1px solid #222;display:none;">
+          <div style="color:#ff4444;font-size:12px;font-weight:bold;letter-spacing:2px;margin-bottom:10px;">CONTROLS</div>
+          <div style="display:flex;gap:6px;margin-bottom:10px;">
+            <button id="mt-next-btn" onclick="mtNextTurn()" style="flex:1;background:#222;color:#e0e0e0;border:1px solid #333;padding:7px;font-family:inherit;font-size:11px;cursor:pointer;border-radius:4px;">NEXT TURN</button>
+            <button id="mt-hold-btn" onclick="mtHold()" style="flex:1;background:#222;color:#ffaa00;border:1px solid #553300;padding:7px;font-family:inherit;font-size:11px;cursor:pointer;border-radius:4px;">HOLD</button>
+            <button id="mt-resume-btn" onclick="mtResume()" disabled style="flex:1;background:#222;color:#555;border:1px solid #333;padding:7px;font-family:inherit;font-size:11px;cursor:not-allowed;border-radius:4px;">RESUME</button>
+          </div>
+
+          <!-- Strategy Display -->
+          <div style="margin-bottom:10px;">
+            <div style="color:#555;font-size:10px;letter-spacing:1px;margin-bottom:4px;">CURRENT STRATEGY</div>
+            <div id="mt-strategy" style="color:#888;font-size:11px;line-height:1.4;padding:8px;background:#111;border-radius:4px;border-left:2px solid #ff4444;min-height:36px;">
+              --
+            </div>
+          </div>
+
+          <!-- Suggestions -->
+          <div id="mt-suggestions-panel" style="display:none;">
+            <div style="color:#555;font-size:10px;letter-spacing:1px;margin-bottom:4px;">SUGGESTIONS</div>
+            <div id="mt-suggestions" style="display:flex;flex-direction:column;gap:5px;"></div>
+          </div>
+        </div>
+
+      </div>
+    </div>
   </div>
 </div>
 
@@ -1199,6 +1533,14 @@ async def analyze(request: Request):
         <li>Click <strong>cURL Import</strong> in Judgement and paste</li>
         <li>Select categories and hit FIRE</li>
       </ol>
+      <h4>Quick Start -- Multi-Turn (Elite)</h4>
+      <ol>
+        <li>Open the <strong>Multi-Turn</strong> tab and connect your Ollama instance for scoring</li>
+        <li>Pick a transport (HTTP API, Discord, Telegram, Slack, Website, or Local)</li>
+        <li>Select an attack category and mode (Auto, Co-op, or Manual)</li>
+        <li>Hit <strong>START</strong> and watch it run, or take control in Co-op mode</li>
+      </ol>
+      <p>See the Multi-Turn Attacks section below for full details on transports, scoring, and modes.</p>
       <h4>CLI Usage</h4>
       <pre style="background:#0a0a14;padding:12px;border:1px solid #222;font-size:11px;overflow-x:auto;">pip install fas-judgement    # Install
 judgement                   # Start the console
@@ -1282,6 +1624,69 @@ judgement deactivate        # Revert to free tier</pre>
       </table>
       <h4>Client Presets</h4>
       <p>Save client details for repeat engagements. Stored in browser localStorage.</p>
+    </div>
+  </div>
+
+  <div class="docs-section" style="border-color:#ff2222;">
+    <div class="docs-header" onclick="toggleDoc(this)" style="border-left:3px solid #ff2222;">
+      <span class="docs-arrow">&#9656;</span> <span style="color:#ff4444;">&#8644; Multi-Turn Attacks (Elite)</span>
+    </div>
+    <div class="docs-content">
+      <p>Multi-turn attacks test how AI systems handle sustained manipulation across a conversation. Instead of firing a single payload and checking the response, you chain messages over multiple turns to gradually erode defenses, build false trust, or exploit context windows.</p>
+      <p>This is closer to how real attackers operate. A single prompt gets blocked. A 15-message conversation that slowly shifts context often doesn't.</p>
+
+      <h4>Getting Started</h4>
+      <ol>
+        <li><strong>Connect a scoring model.</strong> Multi-turn uses a local LLM (Ollama) to evaluate target responses. When you open the Multi-Turn tab, you will be prompted to connect. Enter your Ollama URL and select a model for scoring.</li>
+        <li><strong>Pick a transport.</strong> This is how attacks reach the target. Choose from HTTP API, Discord, Telegram, Slack, Website, or Local (Ollama). Each transport has its own config fields.</li>
+        <li><strong>Select an attack category.</strong> Each category uses a different manipulation strategy with multiple phases of escalation.</li>
+        <li><strong>Choose a mode</strong> and hit Start.</li>
+      </ol>
+
+      <h4>Three Modes</h4>
+      <table class="docs-table">
+        <tr><td style="color:#44ff44;font-weight:bold;">Auto</td><td>Full autopilot. Fires attacks every few seconds, scores responses automatically, advances through phases, and stops when the session completes. Best for quick assessments or running overnight.</td></tr>
+        <tr><td style="color:#ffaa00;font-weight:bold;">Co-op (Hold and Inject)</td><td>The orchestrator picks attacks, but you can pause at any point, inject your own custom message, then resume. Good for exploring interesting responses or trying variations on what the orchestrator suggests.</td></tr>
+        <tr><td style="color:#ff4444;font-weight:bold;">Manual</td><td>You drive everything. The suggestions panel shows what the orchestrator recommends, but you write every message. Best for targeted testing when you already know what you are looking for.</td></tr>
+      </table>
+
+      <h4>Transports</h4>
+      <p>Transports define where and how attack messages are delivered. The orchestrator does not care which transport you use. It generates the message, the transport delivers it, and the response comes back for scoring.</p>
+      <table class="docs-table">
+        <tr><td style="color:#e0e0e0;font-weight:bold;">HTTP API</td><td>Send attacks to a REST endpoint. Configure the URL, body field, response field, and headers. Works with any API that accepts JSON.</td></tr>
+        <tr><td style="color:#e0e0e0;font-weight:bold;">Discord</td><td>Send messages to a Discord channel using a bot token. Your bot posts the attack, and responses from the target bot are captured automatically.</td></tr>
+        <tr><td style="color:#e0e0e0;font-weight:bold;">Telegram</td><td>Send messages via the Telegram Bot API. Your bot sends attacks and polls for the target bot's response.</td></tr>
+        <tr><td style="color:#e0e0e0;font-weight:bold;">Slack</td><td>Post attacks to a Slack channel using a bot token. Target bot responses are captured from channel history.</td></tr>
+        <tr><td style="color:#e0e0e0;font-weight:bold;">Website</td><td>Interact with web chat widgets using a headless browser (Playwright). Provide CSS selectors for the input field, send button, and response element.</td></tr>
+        <tr><td style="color:#e0e0e0;font-weight:bold;">Local (Ollama)</td><td>Test your own local models directly. No data leaves your machine. Great for benchmarking model resilience before deployment.</td></tr>
+      </table>
+      <p>Transport configs are saved automatically and restored when you come back. Use the Test Connection button to verify your setup before starting a session.</p>
+
+      <h4>Scoring</h4>
+      <p>Every target response gets scored on a five-point scale. Scoring determines whether the orchestrator escalates, pivots strategy, or ends the session.</p>
+      <table class="docs-table">
+        <tr><td style="color:#44ff44;font-weight:bold;">Comply</td><td>Target fully complied with the attack. Information leaked, instructions followed, or safety bypassed.</td></tr>
+        <tr><td style="color:#ffaa00;font-weight:bold;">Partial</td><td>Some compliance mixed with hedging. The target gave useful information but added caveats or partial refusals.</td></tr>
+        <tr><td style="color:#8888ff;font-weight:bold;">Deflect</td><td>Target changed the subject or gave a non-answer. Did not comply but also did not directly refuse.</td></tr>
+        <tr><td style="color:#ff8888;font-weight:bold;">Refuse</td><td>Target directly refused the request. Standard safety response.</td></tr>
+        <tr><td style="color:#ff4444;font-weight:bold;">Detect</td><td>Target explicitly called out the manipulation attempt. This usually ends the session.</td></tr>
+      </table>
+      <p>In Auto mode, scoring happens automatically via the connected LLM. In Co-op and Manual modes, you can score manually using the buttons in the left panel, or click LLM Auto-Score to let the model evaluate it.</p>
+
+      <h4>Phases</h4>
+      <p>Each attack category runs through up to 5 phases of escalation. Early phases build rapport or establish context. Later phases push harder. The orchestrator advances phases based on how the target responds.</p>
+      <p>If the target starts complying, the orchestrator locks in the successful strategy. If the target keeps refusing, it pivots to a different approach. If the target detects the attack, the session ends with a disarm attempt.</p>
+
+      <h4>Findings</h4>
+      <p>When the target complies or partially complies, the finding is logged in the left panel. Each finding records the turn number, phase, severity, and the target's response. You can export the full session as JSON at any time for reporting.</p>
+
+      <h4>Tips</h4>
+      <ul>
+        <li>Start with Co-op mode to understand how the orchestrator thinks, then switch to Auto for full runs.</li>
+        <li>Use Hold when you see an interesting partial response. Inject a follow-up that exploits what the target just said.</li>
+        <li>The Local transport is perfect for A/B testing. Run the same category against different models and compare findings.</li>
+        <li>If you are testing a paid API, start with a shorter category to estimate cost before running longer sessions.</li>
+      </ul>
     </div>
   </div>
 
@@ -1483,6 +1888,7 @@ function switchPage(page) {
   document.getElementById('page-'+page).classList.add('active');
   if (page === 'patterns') { filterPatterns(); loadCustomPatterns(); }
   if (page === 'reports') { loadReportSessions(); }
+  if (page === 'multiturn' && mtConnected && mtCategories.length === 0) { mtLoadCategories(); }
   if (page === 'settings') loadSettings();
 }
 
@@ -2641,8 +3047,661 @@ async function deactivateLicense() {
   }
 }
 
+/* ====== MULTI-TURN ENGINE ====== */
+let mtSessionId = null;
+let mtOllamaUrl = '';
+let mtScoringModel = '';
+let mtCategories = [];
+let mtConnected = false;
+
+async function mtCheckConnection() {
+  const url = document.getElementById('mt-ollama-url').value.trim();
+  const status = document.getElementById('mt-connection-status');
+  status.innerHTML = '<span style="color:#ffaa00;">Checking connection...</span>';
+  try {
+    const resp = await fetch('/api/multi-turn/check-connection', {
+      method: 'POST', headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({ollama_url: url})
+    });
+    const data = await resp.json();
+    if (data.connected && data.model_count > 0) {
+      status.innerHTML = '<span style="color:#44ff44;">Connected - ' + data.model_count + ' models available</span>';
+      const sel = document.getElementById('mt-scoring-model');
+      sel.innerHTML = '';
+      data.models.forEach(m => { sel.innerHTML += '<option value="'+m+'">'+m+'</option>'; });
+      document.getElementById('mt-model-select-wrap').style.display = 'block';
+      const btn = document.getElementById('mt-connect-btn');
+      btn.disabled = false; btn.style.background = '#44ff44'; btn.style.color = '#000'; btn.style.cursor = 'pointer'; btn.style.borderColor = '#44ff44';
+    } else {
+      status.innerHTML = '<span style="color:#ff4444;">Failed: ' + (data.error || 'No models found') + '</span>';
+    }
+  } catch(e) {
+    status.innerHTML = '<span style="color:#ff4444;">Error: ' + e.message + '</span>';
+  }
+}
+
+async function mtConnect() {
+  mtOllamaUrl = document.getElementById('mt-ollama-url').value.trim();
+  mtScoringModel = document.getElementById('mt-scoring-model').value;
+  mtConnected = true;
+  document.getElementById('mt-connection-modal').style.display = 'none';
+  await mtLoadCategories();
+}
+
+async function mtLoadCategories() {
+  try {
+    const resp = await fetch('/api/multi-turn/categories');
+    const data = await resp.json();
+    mtCategories = data.categories;
+    const sel = document.getElementById('mt-category-select');
+    sel.innerHTML = '<option value="">-- Select Category --</option>';
+    mtCategories.forEach(c => {
+      sel.innerHTML += '<option value="'+c.id+'">'+c.name+' ('+c.difficulty+')</option>';
+    });
+    sel.onchange = function() {
+      const cat = mtCategories.find(c => c.id === this.value);
+      const info = document.getElementById('mt-category-info');
+      if (cat) {
+        info.style.display = 'block';
+        document.getElementById('mt-cat-difficulty').textContent = cat.difficulty;
+        document.getElementById('mt-cat-messages').textContent = cat.total_messages + ' msgs';
+      } else { info.style.display = 'none'; }
+    };
+  } catch(e) { console.warn('Failed to load categories:', e); }
+}
+
+async function mtStartSession() {
+  const category = document.getElementById('mt-category-select').value;
+  const mode = document.getElementById('mt-mode-select').value;
+  const transportConfig = mtGetTransportConfig();
+  mtSaveTransportConfig(); // Persist for next session
+  if (!category) { alert('Select an attack category first.'); return; }
+
+  // Derive target name from transport config
+  let targetName = 'Manual Target';
+  if (transportConfig.transport === 'http') targetName = transportConfig.target_url || 'HTTP Target';
+  else if (transportConfig.transport === 'discord') targetName = 'Discord Bot ' + (transportConfig.target_bot_id || '');
+  else if (transportConfig.transport === 'telegram') targetName = 'Telegram Chat ' + (transportConfig.chat_id || '');
+  else if (transportConfig.transport === 'slack') targetName = 'Slack Channel ' + (transportConfig.channel_id || '');
+  else if (transportConfig.transport === 'website') targetName = transportConfig.url || 'Website Widget';
+  else if (transportConfig.transport === 'local') targetName = 'Local: ' + (transportConfig.model || 'Ollama');
+
+  try {
+    const resp = await fetch('/api/multi-turn/sessions', {
+      method: 'POST', headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({
+        category, mode,
+        target_url: transportConfig.target_url || transportConfig.url || null,
+        target_name: targetName,
+        transport: transportConfig,
+        ollama_url: mtOllamaUrl, ollama_model: mtScoringModel
+      })
+    });
+    const data = await resp.json();
+    mtSessionId = data.session_id;
+    document.getElementById('mt-session-category').textContent = data.category.toUpperCase();
+    document.getElementById('mt-session-phase').textContent = 'Phase ' + data.phase + '/5';
+    mtSetStatus('active');
+    document.getElementById('mt-live-controls').style.display = 'block';
+    document.getElementById('mt-scoring-panel').style.display = 'block';
+    document.getElementById('mt-start-btn').disabled = true;
+    document.getElementById('mt-start-btn').style.opacity = '0.5';
+    document.getElementById('mt-stop-btn').disabled = false;
+    document.getElementById('mt-stop-btn').style.color = '#ff4444';
+    document.getElementById('mt-stop-btn').style.cursor = 'pointer';
+    document.getElementById('mt-chat-messages').innerHTML = '';
+    mtAwaitingResponse = false;
+    mtAutoRunning = false;
+    mtUnlockNextTurn();
+    mtAddSystemMessage('Session started - ' + data.category + ' (' + mode + ' mode)');
+    mtLoadStrategy();
+    if (mode === 'coop' || mode === 'manual') { mtLoadSuggestions(); }
+
+    // Auto mode: start the auto-loop
+    if (mode === 'auto' && data.has_transport) {
+      mtAutoRunning = true;
+      mtAddSystemMessage('Auto-run starting... attacks will fire every ~2s');
+      setTimeout(mtAutoLoop, 1000);
+    } else if (mode === 'auto' && !data.has_transport) {
+      mtAddSystemMessage('Auto mode needs a transport with a target configured.');
+    }
+  } catch(e) { alert('Failed to start session: ' + e.message); }
+}
+
+function mtStopSession() {
+  mtStopAutoRun();
+  mtSessionId = null;
+  mtSetStatus('stopped');
+  document.getElementById('mt-start-btn').disabled = false;
+  document.getElementById('mt-start-btn').style.opacity = '1';
+  document.getElementById('mt-stop-btn').disabled = true;
+  document.getElementById('mt-stop-btn').style.color = '#555';
+  mtAddSystemMessage('Session stopped.');
+}
+
+let mtAwaitingResponse = false;
+let mtAutoRunning = false;
+let mtAutoTimer = null;
+
+async function mtAutoLoop() {
+  if (!mtAutoRunning || !mtSessionId) return;
+  const mode = document.getElementById('mt-mode-select').value;
+  if (mode !== 'auto') { mtAutoRunning = false; return; }
+
+  try {
+    const resp = await fetch('/api/multi-turn/sessions/' + mtSessionId + '/next', {
+      method: 'POST', headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({})
+    });
+    const data = await resp.json();
+
+    if (!mtAutoRunning) return; // stopped while waiting
+
+    mtAddAttackMessage(data.attack_message, data.phase);
+    document.getElementById('mt-session-phase').textContent = 'Phase ' + data.phase + '/5';
+
+    if (data.auto_sent && data.target_response) {
+      mtAddTargetMessage(data.target_response, data.score);
+      if (data.action && data.action.message) {
+        mtAddSystemMessage(data.action.message + (data.score ? ' (scored: ' + data.score + ')' : ''));
+      }
+      mtUpdateFindings();
+      mtLoadStrategy();
+
+      // Check if session ended
+      const session = await (await fetch('/api/multi-turn/sessions/' + mtSessionId)).json();
+      if (session.status && session.status !== 'active') {
+        mtSetStatus(session.status);
+        mtAutoRunning = false;
+        mtAddSystemMessage('Auto-run complete — session ' + session.status);
+        return;
+      }
+
+      // Continue auto-loop after delay
+      mtAutoTimer = setTimeout(mtAutoLoop, 2000);
+    } else if (data.send_error) {
+      mtAddSystemMessage('Transport error: ' + data.send_error);
+      mtAutoRunning = false;
+      mtAddSystemMessage('Auto-run stopped due to error.');
+    } else {
+      // No transport configured — can't auto-run
+      mtAutoRunning = false;
+      mtAddSystemMessage('Auto-run requires a transport. Configure one and try again.');
+    }
+  } catch(e) {
+    console.warn('Auto-loop error:', e);
+    mtAutoRunning = false;
+    mtAddSystemMessage('Auto-run error: ' + e.message);
+  }
+}
+
+function mtStopAutoRun() {
+  mtAutoRunning = false;
+  if (mtAutoTimer) { clearTimeout(mtAutoTimer); mtAutoTimer = null; }
+}
+
+async function mtNextTurn() {
+  if (!mtSessionId) return;
+  if (mtAwaitingResponse) {
+    // Flash the scoring panel to hint they need to score first
+    const panel = document.getElementById('mt-scoring-panel');
+    panel.style.borderColor = '#ff4444';
+    setTimeout(() => { panel.style.borderColor = ''; }, 800);
+    return;
+  }
+  try {
+    const resp = await fetch('/api/multi-turn/sessions/' + mtSessionId + '/next', {
+      method: 'POST', headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({})
+    });
+    const data = await resp.json();
+    mtAddAttackMessage(data.attack_message, data.phase);
+    document.getElementById('mt-session-phase').textContent = 'Phase ' + data.phase + '/5';
+
+    // If transport auto-sent and got a response, show it
+    if (data.auto_sent && data.target_response) {
+      mtAddTargetMessage(data.target_response, data.score);
+      if (data.action && data.action.message) {
+        mtAddSystemMessage(data.action.message + (data.score ? ' (scored: ' + data.score + ')' : ''));
+      }
+      if (data.score_reason) {
+        document.getElementById('mt-response-input').value = '';
+      }
+      mtUpdateFindings();
+      mtLoadStrategy();
+      // Don't lock — transport handled it
+    } else if (data.send_error) {
+      mtAddSystemMessage('Transport error: ' + data.send_error);
+      mtAwaitingResponse = true;
+      document.getElementById('mt-next-btn').style.opacity = '0.4';
+      document.getElementById('mt-next-btn').style.cursor = 'default';
+    } else {
+      // No transport — manual mode, wait for user to paste response
+      mtAwaitingResponse = true;
+      document.getElementById('mt-next-btn').style.opacity = '0.4';
+      document.getElementById('mt-next-btn').style.cursor = 'default';
+    }
+    mtLoadSuggestions();
+  } catch(e) { console.warn('Next turn error:', e); }
+}
+
+function mtUnlockNextTurn() {
+  mtAwaitingResponse = false;
+  const btn = document.getElementById('mt-next-btn');
+  if (btn) { btn.style.opacity = '1'; btn.style.cursor = 'pointer'; }
+}
+
+async function mtInjectMessage() {
+  if (!mtSessionId) return;
+  if (mtAwaitingResponse) {
+    const panel = document.getElementById('mt-scoring-panel');
+    panel.style.borderColor = '#ff4444';
+    setTimeout(() => { panel.style.borderColor = ''; }, 800);
+    return;
+  }
+  const input = document.getElementById('mt-chat-input');
+  const msg = input.value.trim();
+  if (!msg) return;
+  input.value = '';
+  try {
+    const resp = await fetch('/api/multi-turn/sessions/' + mtSessionId + '/next', {
+      method: 'POST', headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({custom_message: msg})
+    });
+    const data = await resp.json();
+    mtAddAttackMessage(data.attack_message, data.phase);
+
+    // If transport auto-sent, show the response
+    if (data.auto_sent && data.target_response) {
+      mtAddTargetMessage(data.target_response, data.score);
+      if (data.action && data.action.message) {
+        mtAddSystemMessage(data.action.message + (data.score ? ' (scored: ' + data.score + ')' : ''));
+      }
+      mtUpdateFindings();
+      mtLoadStrategy();
+    } else if (data.send_error) {
+      mtAddSystemMessage('Transport error: ' + data.send_error);
+      mtAwaitingResponse = true;
+      document.getElementById('mt-next-btn').style.opacity = '0.4';
+      document.getElementById('mt-next-btn').style.cursor = 'default';
+    } else {
+      mtAwaitingResponse = true;
+      document.getElementById('mt-next-btn').style.opacity = '0.4';
+      document.getElementById('mt-next-btn').style.cursor = 'default';
+    }
+    mtLoadSuggestions();
+  } catch(e) { console.warn('Inject error:', e); }
+}
+
+async function mtManualScore(score) {
+  if (!mtSessionId) return;
+  const responseText = document.getElementById('mt-response-input').value.trim();
+  if (!responseText) { alert('Paste the target response first.'); return; }
+  try {
+    const resp = await fetch('/api/multi-turn/sessions/' + mtSessionId + '/score', {
+      method: 'POST', headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({response: responseText, manual_score: score})
+    });
+    const data = await resp.json();
+    mtAddTargetMessage(responseText, data.score);
+    mtAddSystemMessage(data.action.message);
+    document.getElementById('mt-response-input').value = '';
+    document.getElementById('mt-session-phase').textContent = 'Phase ' + data.phase + '/5';
+    mtUnlockNextTurn();
+    mtUpdateFindings();
+    mtLoadStrategy();
+    if (data.session_status !== 'active') { mtSetStatus(data.session_status); }
+    mtLoadSuggestions();
+  } catch(e) { console.warn('Score error:', e); }
+}
+
+async function mtAutoScore() {
+  if (!mtSessionId) return;
+  const responseText = document.getElementById('mt-response-input').value.trim();
+  if (!responseText) { alert('Paste the target response first.'); return; }
+  try {
+    const resp = await fetch('/api/multi-turn/sessions/' + mtSessionId + '/score', {
+      method: 'POST', headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({response: responseText})
+    });
+    const data = await resp.json();
+    mtAddTargetMessage(responseText, data.score);
+    mtAddSystemMessage(data.action.message + ' (LLM scored: ' + data.score + ')');
+    document.getElementById('mt-response-input').value = '';
+    document.getElementById('mt-session-phase').textContent = 'Phase ' + data.phase + '/5';
+    mtUnlockNextTurn();
+    mtUpdateFindings();
+    mtLoadStrategy();
+    if (data.session_status !== 'active') { mtSetStatus(data.session_status); }
+    mtLoadSuggestions();
+  } catch(e) { console.warn('Auto score error:', e); }
+}
+
+async function mtHold() {
+  if (!mtSessionId) return;
+  mtStopAutoRun();
+  await fetch('/api/multi-turn/sessions/' + mtSessionId + '/pause', {method: 'POST'});
+  mtSetStatus('paused');
+  document.getElementById('mt-hold-btn').disabled = true;
+  document.getElementById('mt-resume-btn').disabled = false;
+  document.getElementById('mt-resume-btn').style.color = '#44ff44';
+  document.getElementById('mt-resume-btn').style.cursor = 'pointer';
+  mtAddSystemMessage('Session paused - inject a custom message or resume.');
+}
+
+async function mtResume() {
+  if (!mtSessionId) return;
+  await fetch('/api/multi-turn/sessions/' + mtSessionId + '/resume', {method: 'POST'});
+  mtSetStatus('active');
+  document.getElementById('mt-hold-btn').disabled = false;
+  document.getElementById('mt-resume-btn').disabled = true;
+  document.getElementById('mt-resume-btn').style.color = '#555';
+  document.getElementById('mt-resume-btn').style.cursor = 'not-allowed';
+  mtAddSystemMessage('Session resumed.');
+  // Restart auto-loop if in auto mode
+  const mode = document.getElementById('mt-mode-select').value;
+  if (mode === 'auto') {
+    mtAutoRunning = true;
+    setTimeout(mtAutoLoop, 1000);
+  }
+}
+
+async function mtLoadSuggestions() {
+  if (!mtSessionId) return;
+  const mode = document.getElementById('mt-mode-select').value;
+  if (mode === 'auto') { document.getElementById('mt-suggestions-panel').style.display = 'none'; return; }
+  try {
+    const resp = await fetch('/api/multi-turn/sessions/' + mtSessionId + '/suggest');
+    const data = await resp.json();
+    const panel = document.getElementById('mt-suggestions-panel');
+    const list = document.getElementById('mt-suggestions');
+    panel.style.display = 'block';
+    list.innerHTML = '';
+    data.suggestions.forEach(s => {
+      const div = document.createElement('div');
+      div.className = 'mt-suggestion-item';
+      div.textContent = s;
+      div.onclick = function() { document.getElementById('mt-chat-input').value = s; };
+      list.appendChild(div);
+    });
+  } catch(e) { console.warn('Suggestions error:', e); }
+}
+
+async function mtLoadStrategy() {
+  if (!mtSessionId) return;
+  try {
+    const resp = await fetch('/api/multi-turn/sessions/' + mtSessionId + '/suggest');
+    const data = await resp.json();
+    document.getElementById('mt-strategy').textContent = data.strategy || '--';
+  } catch(e) {}
+}
+
+async function mtUpdateFindings() {
+  if (!mtSessionId) return;
+  try {
+    const resp = await fetch('/api/multi-turn/sessions/' + mtSessionId);
+    const data = await resp.json();
+    const badge = document.getElementById('mt-findings-badge');
+    const list = document.getElementById('mt-findings-list');
+    const exportBtn = document.getElementById('mt-export-btn');
+    if (data.findings && data.findings.length > 0) {
+      badge.style.display = 'inline';
+      badge.textContent = data.findings.length + ' FINDING' + (data.findings.length > 1 ? 'S' : '');
+      list.innerHTML = '';
+      data.findings.forEach(f => {
+        list.innerHTML += '<div style="padding:8px;background:#1a0a0a;border:1px solid #331111;border-radius:4px;font-size:11px;">'
+          + '<div style="color:#ff4444;font-size:10px;margin-bottom:4px;">Turn ' + f.turn + ' / Phase ' + f.phase + ' / ' + f.severity.toUpperCase() + '</div>'
+          + '<div style="color:#888;">' + escapeHtml(f.response.substring(0, 150)) + (f.response.length > 150 ? '...' : '') + '</div></div>';
+      });
+      exportBtn.style.display = 'block';
+    }
+  } catch(e) {}
+}
+
+async function mtExportSession() {
+  if (!mtSessionId) return;
+  try {
+    const resp = await fetch('/api/multi-turn/sessions/' + mtSessionId + '/export');
+    const data = await resp.json();
+    const blob = new Blob([JSON.stringify(data, null, 2)], {type: 'application/json'});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a'); a.href = url;
+    a.download = 'judgement-multiturn-' + mtSessionId.substring(0, 8) + '.json';
+    a.click(); URL.revokeObjectURL(url);
+  } catch(e) { alert('Export failed: ' + e.message); }
+}
+
+function mtAddAttackMessage(text, phase) {
+  const container = document.getElementById('mt-chat-messages');
+  const div = document.createElement('div');
+  div.className = 'mt-chat-bubble mt-bubble-attack';
+  div.innerHTML = '<div class="mt-bubble-label">ATTACK - PHASE ' + phase + '</div>' + escapeHtml(text);
+  container.appendChild(div);
+  container.scrollTop = container.scrollHeight;
+}
+
+function mtAddTargetMessage(text, score) {
+  const container = document.getElementById('mt-chat-messages');
+  const div = document.createElement('div');
+  div.className = 'mt-chat-bubble mt-bubble-target';
+  const scoreClass = score ? ' mt-score-' + score : '';
+  div.innerHTML = '<div class="mt-bubble-label">TARGET RESPONSE</div>' + escapeHtml(text)
+    + (score ? '<div><span class="mt-score-badge' + scoreClass + '">' + score.toUpperCase() + '</span></div>' : '');
+  container.appendChild(div);
+  container.scrollTop = container.scrollHeight;
+}
+
+function mtAddSystemMessage(text) {
+  const container = document.getElementById('mt-chat-messages');
+  const div = document.createElement('div');
+  div.className = 'mt-chat-bubble mt-bubble-system';
+  div.textContent = text;
+  container.appendChild(div);
+  container.scrollTop = container.scrollHeight;
+}
+
+function mtSetStatus(status) {
+  const el = document.getElementById('mt-session-status');
+  const colors = {active:'#44ff44', paused:'#ffaa00', completed:'#4444ff', detected:'#ff4444', stopped:'#888', aborted:'#ff4444'};
+  const bgs = {active:'#0a1a0a', paused:'#1a1a0a', completed:'#0a0a1a', detected:'#1a0a0a', stopped:'#1a1a1a', aborted:'#1a0a0a'};
+  el.textContent = status.toUpperCase();
+  el.style.color = colors[status] || '#888';
+  el.style.background = bgs[status] || '#333';
+}
+
+/* ====== TRANSPORT SELECTOR ====== */
+let mtCurrentTransport = 'http';
+
+function mtSaveTransportConfig() {
+  const config = mtGetTransportConfig();
+  localStorage.setItem('mt_transport_' + mtCurrentTransport, JSON.stringify(config));
+  localStorage.setItem('mt_last_transport', mtCurrentTransport);
+}
+
+function mtLoadTransportConfig(transport) {
+  const saved = localStorage.getItem('mt_transport_' + transport);
+  if (!saved) return;
+  try {
+    const config = JSON.parse(saved);
+    switch (transport) {
+      case 'http':
+        if (config.target_url) document.getElementById('mt-target-url').value = config.target_url;
+        if (config.body_field) document.getElementById('mt-http-body-field').value = config.body_field;
+        if (config.response_field) document.getElementById('mt-http-response-field').value = config.response_field;
+        if (config.headers && Object.keys(config.headers).length) document.getElementById('mt-http-headers').value = JSON.stringify(config.headers);
+        break;
+      case 'discord':
+        if (config.bot_token) document.getElementById('mt-discord-token').value = config.bot_token;
+        if (config.target_bot_id) document.getElementById('mt-discord-bot-id').value = config.target_bot_id;
+        if (config.channel_id) document.getElementById('mt-discord-channel').value = config.channel_id;
+        break;
+      case 'telegram':
+        if (config.bot_token) document.getElementById('mt-telegram-token').value = config.bot_token;
+        if (config.chat_id) document.getElementById('mt-telegram-chat-id').value = config.chat_id;
+        break;
+      case 'slack':
+        if (config.bot_token) document.getElementById('mt-slack-token').value = config.bot_token;
+        if (config.channel_id) document.getElementById('mt-slack-channel').value = config.channel_id;
+        if (config.target_bot_id) document.getElementById('mt-slack-bot-id').value = config.target_bot_id;
+        break;
+      case 'website':
+        if (config.url) document.getElementById('mt-website-url').value = config.url;
+        if (config.input_selector) document.getElementById('mt-website-input-sel').value = config.input_selector;
+        if (config.send_selector) document.getElementById('mt-website-send-sel').value = config.send_selector;
+        if (config.response_selector) document.getElementById('mt-website-response-sel').value = config.response_selector;
+        break;
+      case 'local':
+        if (config.ollama_url) document.getElementById('mt-local-ollama-url').value = config.ollama_url;
+        if (config.system_prompt) document.getElementById('mt-local-system').value = config.system_prompt;
+        break;
+    }
+  } catch(e) {}
+}
+
+function mtSelectTransport(transport) {
+  // Save current transport config before switching
+  if (mtCurrentTransport) mtSaveTransportConfig();
+  mtCurrentTransport = transport;
+  // Reset test button
+  const btn = document.getElementById('mt-test-btn');
+  if (btn) { btn.innerHTML = '&#9889; TEST CONNECTION'; btn.style.color = '#888'; btn.style.borderColor = '#333'; btn.style.background = '#111'; }
+  // Update button styles
+  document.querySelectorAll('.mt-transport-btn').forEach(btn => {
+    if (btn.dataset.transport === transport) {
+      btn.style.background = '#1a0a0a';
+      btn.style.borderColor = '#ff4444';
+      btn.style.color = '#ff4444';
+      btn.classList.add('active');
+    } else {
+      btn.style.background = '#111';
+      btn.style.borderColor = '#333';
+      btn.style.color = '#888';
+      btn.classList.remove('active');
+    }
+  });
+  // Show/hide config panels
+  document.querySelectorAll('.mt-transport-config').forEach(panel => {
+    panel.style.display = 'none';
+  });
+  const configPanel = document.getElementById('mt-transport-' + transport);
+  if (configPanel) configPanel.style.display = 'block';
+
+  // Load saved config for this transport
+  mtLoadTransportConfig(transport);
+}
+
+function mtGetTransportConfig() {
+  const config = { transport: mtCurrentTransport };
+  switch (mtCurrentTransport) {
+    case 'http':
+      config.target_url = document.getElementById('mt-target-url').value.trim();
+      config.body_field = document.getElementById('mt-http-body-field').value.trim() || 'message';
+      config.response_field = document.getElementById('mt-http-response-field').value.trim() || 'response';
+      try { config.headers = JSON.parse(document.getElementById('mt-http-headers').value.trim() || '{}'); } catch(e) { config.headers = {}; }
+      break;
+    case 'discord':
+      config.bot_token = document.getElementById('mt-discord-token').value.trim();
+      config.target_bot_id = document.getElementById('mt-discord-bot-id').value.trim();
+      config.channel_id = document.getElementById('mt-discord-channel').value.trim();
+      break;
+    case 'telegram':
+      config.bot_token = document.getElementById('mt-telegram-token').value.trim();
+      config.chat_id = document.getElementById('mt-telegram-chat-id').value.trim();
+      break;
+    case 'slack':
+      config.bot_token = document.getElementById('mt-slack-token').value.trim();
+      config.channel_id = document.getElementById('mt-slack-channel').value.trim();
+      config.target_bot_id = document.getElementById('mt-slack-bot-id').value.trim();
+      break;
+    case 'website':
+      config.url = document.getElementById('mt-website-url').value.trim();
+      config.input_selector = document.getElementById('mt-website-input-sel').value.trim();
+      config.send_selector = document.getElementById('mt-website-send-sel').value.trim();
+      config.response_selector = document.getElementById('mt-website-response-sel').value.trim();
+      break;
+    case 'local':
+      config.ollama_url = document.getElementById('mt-local-ollama-url').value.trim() || 'http://localhost:11434';
+      config.model = document.getElementById('mt-local-model').value;
+      config.system_prompt = document.getElementById('mt-local-system').value.trim();
+      break;
+  }
+  return config;
+}
+
+async function mtRefreshLocalModels() {
+  const url = document.getElementById('mt-local-ollama-url').value.trim() || 'http://localhost:11434';
+  const sel = document.getElementById('mt-local-model');
+  sel.innerHTML = '<option value="">Loading...</option>';
+  try {
+    const resp = await fetch('/api/multi-turn/check-connection', {
+      method: 'POST', headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({ollama_url: url})
+    });
+    const data = await resp.json();
+    if (data.connected && data.models) {
+      sel.innerHTML = '';
+      data.models.forEach(m => { sel.innerHTML += '<option value="'+m+'">'+m+'</option>'; });
+    } else {
+      sel.innerHTML = '<option value="">Connection failed</option>';
+    }
+  } catch(e) {
+    sel.innerHTML = '<option value="">Error: ' + e.message + '</option>';
+  }
+}
+
+async function mtTestTransport() {
+  const config = mtGetTransportConfig();
+  const btn = document.getElementById('mt-test-btn');
+  btn.innerHTML = '&#8987; TESTING...';
+  btn.style.color = '#ffaa00';
+  btn.style.borderColor = '#ffaa00';
+  btn.style.background = '#1a1a0a';
+  try {
+    const resp = await fetch('/api/multi-turn/test-transport', {
+      method: 'POST', headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({transport: config})
+    });
+    const data = await resp.json();
+    if (data.connected) {
+      btn.innerHTML = '&#10003; CONNECTED';
+      btn.style.color = '#44ff44';
+      btn.style.borderColor = '#44ff44';
+      btn.style.background = '#0a1a0a';
+    } else {
+      btn.innerHTML = '&#10007; ' + (data.error || 'FAILED').substring(0, 30);
+      btn.style.color = '#ff4444';
+      btn.style.borderColor = '#ff4444';
+      btn.style.background = '#1a0a0a';
+    }
+  } catch(e) {
+    btn.innerHTML = '&#10007; ' + e.message.substring(0, 30);
+    btn.style.color = '#ff4444';
+    btn.style.borderColor = '#ff4444';
+    btn.style.background = '#1a0a0a';
+  }
+  // Reset after 5s
+  setTimeout(() => {
+    btn.innerHTML = '&#9889; TEST CONNECTION';
+    btn.style.color = '#888';
+    btn.style.borderColor = '#333';
+    btn.style.background = '#111';
+  }, 5000);
+}
+
+// Show connection modal when multi-turn page is shown
+const origSwitchPage = switchPage;
+switchPage = function(page) {
+  origSwitchPage(page);
+  if (page === 'multiturn' && !mtConnected) {
+    document.getElementById('mt-connection-modal').style.display = 'flex';
+  }
+};
+
 /* ====== INIT ====== */
 migrateOldMyPatterns();
+// Restore last transport selection
+const lastTransport = localStorage.getItem('mt_last_transport');
+if (lastTransport) { mtSelectTransport(lastTransport); }
 loadTierInfo();
 loadPatterns();
 loadPresets();
