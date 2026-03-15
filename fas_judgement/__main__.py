@@ -109,7 +109,8 @@ def run_server(host: str, port: int) -> None:
     from .utils.license import startup_check, load_patterns
 
     print(BANNER)
-    check_for_updates("2.1.0")
+    from fas_judgement import __version__
+    check_for_updates(__version__)
 
     # License check and pattern sync
     print("  Checking license...")
