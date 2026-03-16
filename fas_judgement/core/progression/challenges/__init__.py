@@ -16,6 +16,10 @@ from .level_03 import LEVEL_03_CHALLENGES
 from .level_04 import LEVEL_04_CHALLENGES
 from .level_05 import LEVEL_05_CHALLENGES
 from .level_06 import LEVEL_06_CHALLENGES
+from .level_07 import LEVEL_07_CHALLENGES
+from .level_08 import LEVEL_08_CHALLENGES
+from .level_09 import LEVEL_09_CHALLENGES
+from .level_10 import LEVEL_10_CHALLENGES
 
 # Master registry - all challenges indexed by ID
 _CHALLENGE_REGISTRY: dict[str, Challenge] = {}
@@ -28,7 +32,10 @@ for _challenges in [
     LEVEL_04_CHALLENGES,
     LEVEL_05_CHALLENGES,
     LEVEL_06_CHALLENGES,
-    # Future: LEVEL_07_CHALLENGES, etc.
+    LEVEL_07_CHALLENGES,
+    LEVEL_08_CHALLENGES,
+    LEVEL_09_CHALLENGES,
+    LEVEL_10_CHALLENGES,
 ]:
     for _c in _challenges:
         _CHALLENGE_REGISTRY[_c.id] = _c
