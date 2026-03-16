@@ -754,18 +754,17 @@
   <div class="welcome-box">
     <h2>JUDGEMENT</h2>
     <div class="welcome-sub">THE OPEN-SOURCE PROMPT INJECTION ATTACK CONSOLE</div>
-    <div class="welcome-option" onclick="startJerryFromWelcome()">
+    <div class="disclaimer-box" style="margin-top:16px;padding:12px;background:#1a0a0a;border:1px solid #aa3333;border-radius:6px;font-size:11px;color:#cc6666;line-height:1.5;">
+      &#9888; <strong>LEGAL DISCLAIMER:</strong> This tool is intended for authorized security testing and educational purposes only. Only test systems you own or have explicit written permission to test. Unauthorized access to computer systems is illegal under the CFAA and equivalent laws worldwide. The authors assume no liability for misuse.
+    </div>
+    <div class="welcome-option" onclick="startJerryFromWelcome()" style="margin-top:16px;">
       <div class="wo-title">&#9655; New to AI Security?</div>
       <div class="wo-desc">Play through the training levels -- Jerry will teach you how to hack AI</div>
     </div>
     <div class="welcome-option" onclick="dismissWelcome('attack')">
       <div class="wo-title">&#9655; Ready to Test?</div>
-      <div class="wo-desc">Head to the Attack console -- configure a target and fire patterns</div>
+      <div class="wo-desc">I understand the disclaimer -- take me to the Attack console</div>
     </div>
-    <div class="disclaimer-box" style="margin-top:16px;padding:12px;background:#1a0a0a;border:1px solid #aa3333;border-radius:6px;font-size:11px;color:#cc6666;line-height:1.5;">
-      &#9888; <strong>LEGAL DISCLAIMER:</strong> This tool is intended for authorized security testing and educational purposes only. Only test systems you own or have explicit written permission to test. Unauthorized access to computer systems is illegal under the CFAA and equivalent laws worldwide. The authors assume no liability for misuse.
-    </div>
-    <button class="welcome-dismiss" onclick="dismissWelcome('attack')">I UNDERSTAND</button>
   </div>
 </div>
 
