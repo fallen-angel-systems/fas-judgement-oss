@@ -31,6 +31,7 @@ from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
 
 from .personas import PERSONAS, match_trigger, get_persona_info, list_personas
+from .challenge_target import build_challenge_routes
 
 # === SECTION: DEMO APP INSTANCE === #
 
@@ -258,3 +259,8 @@ async def health() -> JSONResponse:
         "server": "FAS Judgement Demo Target v1.0.0",
         "active_persona": _active_persona,
     })
+
+
+# === SECTION: CHALLENGE TARGET ROUTES === #
+# Register challenge-specific routes (POST /demo/challenge/chat, etc.)
+build_challenge_routes(demo_app)

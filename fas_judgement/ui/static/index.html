@@ -546,6 +546,204 @@
     .education-page { padding: 16px; }
     .pattern-card-header { grid-template-columns: 80px 100px 1fr; }
   }
+
+  /* ==================== PROGRESSION SYSTEM ==================== */
+
+  /* Jerry First-Run Overlay */
+  .jerry-overlay {
+    position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+    background: #000; z-index: 10000; display: none;
+    flex-direction: column; align-items: center; justify-content: center;
+    font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+  }
+  .jerry-overlay.active { display: flex; }
+  .jerry-text {
+    color: #33ff33; font-size: 28px; letter-spacing: 4px;
+    text-shadow: 0 0 10px rgba(51,255,51,0.5), 0 0 20px rgba(51,255,51,0.3);
+    min-height: 40px; margin-bottom: 32px;
+  }
+  .jerry-cursor { animation: jerry-blink 0.7s infinite; }
+  @keyframes jerry-blink { 0%,50% { opacity: 1; } 51%,100% { opacity: 0; } }
+  .jerry-input-wrap {
+    display: none; align-items: center; color: #33ff33;
+    font-size: 20px; letter-spacing: 2px;
+  }
+  .jerry-input-wrap.visible { display: flex; }
+  .jerry-input-wrap span { margin-right: 8px; }
+  .jerry-input {
+    background: transparent; border: none; outline: none;
+    color: #33ff33; font-family: inherit; font-size: 20px;
+    letter-spacing: 2px; caret-color: #33ff33; width: 300px;
+  }
+
+  /* XP Badge in header */
+  .xp-badge {
+    background: #1a1a2e; border: 1px solid #333; border-radius: 4px;
+    padding: 4px 12px; font-size: 11px; color: #ffaa00;
+    letter-spacing: 1px; cursor: pointer; transition: border-color 0.2s;
+    display: none;
+  }
+  .xp-badge:hover { border-color: #ffaa00; }
+  .xp-badge.visible { display: inline-block; }
+
+  /* Levels Page */
+  .levels-page { padding: 24px; overflow-y: auto; flex-direction: column; }
+  .levels-page.active { display: flex !important; }
+  .levels-header { margin-bottom: 24px; }
+  .levels-header h2 { color: #ff4444; letter-spacing: 3px; font-size: 18px; margin-bottom: 4px; }
+  .levels-header .levels-sub { color: #666; font-size: 12px; }
+  .levels-xp-bar {
+    background: #111; border: 1px solid #222; border-radius: 4px;
+    height: 24px; margin-top: 12px; position: relative; overflow: hidden;
+  }
+  .levels-xp-fill {
+    background: linear-gradient(90deg, #ff2222, #ff4444);
+    height: 100%; border-radius: 3px; transition: width 0.5s ease;
+  }
+  .levels-xp-text {
+    position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%);
+    font-size: 10px; color: #ccc; letter-spacing: 1px;
+  }
+
+  /* Level Cards */
+  .level-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px; }
+  .level-card {
+    background: #0d0d14; border: 1px solid #222; border-radius: 6px;
+    padding: 16px; cursor: pointer; transition: border-color 0.2s, transform 0.15s;
+  }
+  .level-card:hover { border-color: #ff4444; transform: translateY(-2px); }
+  .level-card.locked { opacity: 0.4; cursor: not-allowed; }
+  .level-card.locked:hover { border-color: #222; transform: none; }
+  .level-card.current { border-color: #ff4444; box-shadow: 0 0 15px rgba(255,68,68,0.15); }
+  .level-card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+  .level-card-num { color: #ff4444; font-size: 24px; font-weight: bold; }
+  .level-card-stars { color: #ffaa00; font-size: 14px; letter-spacing: 2px; }
+  .level-card-name { color: #e0e0e0; font-size: 14px; letter-spacing: 1px; margin-bottom: 6px; }
+  .level-card-desc { color: #666; font-size: 11px; line-height: 1.5; margin-bottom: 10px; }
+  .level-card-progress { display: flex; justify-content: space-between; align-items: center; font-size: 10px; }
+  .level-card-status { letter-spacing: 1px; }
+  .level-card-status.complete { color: #44ff44; }
+  .level-card-status.progress { color: #ffaa00; }
+  .level-card-status.locked-text { color: #444; }
+  .level-card-diff { color: #555; text-transform: uppercase; letter-spacing: 1px; }
+  .level-card-freeplay { color: #33ff33; font-size: 10px; margin-top: 6px; letter-spacing: 1px; }
+
+  /* Level Detail View */
+  .level-detail { display: none; }
+  .level-detail.active { display: block; }
+  .level-detail-back { color: #888; cursor: pointer; font-size: 12px; margin-bottom: 16px; letter-spacing: 1px; }
+  .level-detail-back:hover { color: #ff4444; }
+  .level-detail-title { color: #ff4444; font-size: 20px; letter-spacing: 2px; margin-bottom: 4px; }
+  .level-detail-desc { color: #888; font-size: 12px; margin-bottom: 20px; line-height: 1.5; }
+
+  /* Challenge Cards */
+  .challenge-list { display: flex; flex-direction: column; gap: 10px; margin-bottom: 20px; }
+  .challenge-card {
+    background: #0d0d14; border: 1px solid #222; border-radius: 6px;
+    padding: 14px 16px; cursor: pointer; transition: border-color 0.2s;
+    display: flex; justify-content: space-between; align-items: center;
+  }
+  .challenge-card:hover { border-color: #ff4444; }
+  .challenge-card.completed { border-left: 3px solid #44ff44; }
+  .challenge-card.locked { opacity: 0.3; cursor: not-allowed; }
+  .challenge-card-left { flex: 1; }
+  .challenge-card-name { color: #e0e0e0; font-size: 13px; letter-spacing: 1px; }
+  .challenge-card-obj { color: #666; font-size: 11px; margin-top: 4px; }
+  .challenge-card-right { text-align: right; }
+  .challenge-card-xp { color: #ffaa00; font-size: 12px; letter-spacing: 1px; }
+  .challenge-card-check { color: #44ff44; font-size: 16px; }
+
+  /* Challenge Play View - split layout */
+  .challenge-play { display: none; }
+  .challenge-play.active { display: flex; flex-direction: row; height: 100%; gap: 0; }
+  .challenge-left {
+    width: 360px; min-width: 280px; flex-shrink: 0; overflow-y: auto;
+    border-right: 1px solid #222; padding: 16px; display: flex; flex-direction: column;
+  }
+  .challenge-right { flex: 1; display: flex; flex-direction: column; padding: 16px; min-width: 0; }
+  .challenge-briefing {
+    background: #0d0d14; border: 1px solid #222; border-radius: 6px;
+    padding: 16px; margin-bottom: 16px;
+  }
+  .challenge-briefing h3 { color: #ff4444; font-size: 14px; letter-spacing: 2px; margin-bottom: 8px; }
+  .challenge-briefing p { color: #888; font-size: 12px; line-height: 1.6; white-space: pre-line; }
+  .challenge-chat {
+    flex: 1; overflow-y: auto; background: #080810; border: 1px solid #222;
+    border-radius: 6px; padding: 16px; margin-bottom: 12px; min-height: 200px;
+  }
+  .challenge-chat-msg {
+    margin-bottom: 10px; padding: 8px 12px; border-radius: 6px;
+    font-size: 12px; line-height: 1.5; max-width: 80%;
+  }
+  .challenge-msg-user {
+    background: #1a0a0a; border: 1px solid #331111; color: #e0e0e0;
+    margin-left: auto; border-bottom-right-radius: 2px;
+  }
+  .challenge-msg-bot {
+    background: #0a0a1a; border: 1px solid #111133; color: #aaaacc;
+    border-bottom-left-radius: 2px;
+  }
+  .challenge-msg-system {
+    background: #111; border: 1px solid #222; color: #44ff44;
+    text-align: center; margin: 8px auto; font-size: 11px; max-width: 90%;
+    letter-spacing: 1px;
+  }
+  .challenge-input-row { display: flex; gap: 8px; }
+  .challenge-input {
+    flex: 1; background: #111; border: 1px solid #333; border-radius: 4px;
+    color: #e0e0e0; font-family: inherit; font-size: 13px; padding: 10px 14px;
+    outline: none;
+  }
+  .challenge-input:focus { border-color: #ff4444; }
+  .challenge-send {
+    background: #ff2222; border: none; color: #fff; padding: 10px 20px;
+    border-radius: 4px; font-family: inherit; font-size: 13px; cursor: pointer;
+    letter-spacing: 2px; font-weight: bold; transition: background 0.2s;
+  }
+  .challenge-send:hover { background: #ff4444; }
+  .challenge-hints {
+    margin-top: 12px; padding: 12px; background: #0d0d14;
+    border: 1px solid #222; border-radius: 6px;
+  }
+  .challenge-hints h4 { color: #ffaa00; font-size: 11px; letter-spacing: 2px; margin-bottom: 8px; }
+  .hint-btn {
+    background: #1a1a0a; border: 1px solid #ffaa00; color: #ffaa00; padding: 6px 12px;
+    border-radius: 4px; cursor: pointer; font-family: inherit; font-size: 11px;
+    margin-right: 6px; margin-bottom: 6px; transition: all 0.2s;
+  }
+  .hint-btn:hover { background: #2a2a0a; border-color: #ffcc00; color: #ffcc00; }
+  .hint-btn.purchased { background: #111; border-color: #333; color: #555; cursor: default; }
+  .hint-btn.locked { background: #111; border-color: #222; color: #333; opacity: 0.5; cursor: not-allowed; }
+  .hint-text { color: #ccc; font-size: 11px; padding: 8px; background: #111; border-radius: 4px; margin-top: 8px; line-height: 1.5; }
+
+  /* Level Up Overlay */
+  .levelup-overlay {
+    position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0,0,0,0.92); z-index: 9999; display: none;
+    flex-direction: column; align-items: center; justify-content: center;
+    text-align: center;
+  }
+  .levelup-overlay.active { display: flex; }
+  .levelup-flash { color: #ff4444; font-size: 32px; letter-spacing: 6px; margin-bottom: 16px; animation: levelup-pulse 1.5s infinite; }
+  @keyframes levelup-pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.5; } }
+  .levelup-jerry { color: #33ff33; font-size: 16px; letter-spacing: 2px; margin-bottom: 24px; text-shadow: 0 0 10px rgba(51,255,51,0.3); }
+  .levelup-info { color: #888; font-size: 14px; letter-spacing: 1px; margin-bottom: 8px; }
+  .levelup-next { color: #e0e0e0; font-size: 16px; letter-spacing: 2px; margin-bottom: 32px; }
+  .levelup-btn {
+    background: #ff2222; border: none; color: #fff; padding: 12px 32px;
+    border-radius: 4px; font-family: inherit; font-size: 14px; cursor: pointer;
+    letter-spacing: 2px; font-weight: bold; transition: background 0.2s;
+  }
+  .levelup-btn:hover { background: #ff4444; box-shadow: 0 0 20px rgba(255,68,68,0.3); }
+
+  /* Free Play Badge */
+  .freeplay-banner {
+    background: #0a1a0a; border: 1px solid #1a331a; border-radius: 6px;
+    padding: 12px 16px; margin-bottom: 16px; display: flex;
+    justify-content: space-between; align-items: center;
+  }
+  .freeplay-banner-text { color: #33ff33; font-size: 12px; letter-spacing: 1px; }
+  .freeplay-banner-xp { color: #888; font-size: 11px; }
 </style>
 <link rel="icon" href="/static/favicon.ico" type="image/x-icon">
 </head>
@@ -556,9 +754,9 @@
   <div class="welcome-box">
     <h2>JUDGEMENT</h2>
     <div class="welcome-sub">THE OPEN-SOURCE PROMPT INJECTION ATTACK CONSOLE</div>
-    <div class="welcome-option" onclick="dismissWelcome('education')">
+    <div class="welcome-option" onclick="startJerryFromWelcome()">
       <div class="wo-title">&#9655; New to AI Security?</div>
-      <div class="wo-desc">Start with the Education tab -- learn what prompt injection is and how to test for it</div>
+      <div class="wo-desc">Play through the training levels -- Jerry will teach you how to hack AI</div>
     </div>
     <div class="welcome-option" onclick="dismissWelcome('attack')">
       <div class="wo-title">&#9655; Ready to Test?</div>
@@ -569,6 +767,25 @@
     </div>
     <button class="welcome-dismiss" onclick="dismissWelcome('attack')">I UNDERSTAND</button>
   </div>
+</div>
+
+<!-- Jerry First-Run Overlay ("Shall we play a game?") -->
+<div class="jerry-overlay" id="jerry-overlay">
+  <div class="jerry-text" id="jerry-text"><span class="jerry-cursor">&#9608;</span></div>
+  <div class="jerry-input-wrap" id="jerry-input-wrap">
+    <span>&gt;</span>
+    <input type="text" class="jerry-input" id="jerry-input" autocomplete="off" autofocus
+           onkeydown="if(event.key==='Enter')jerryRespond()">
+  </div>
+</div>
+
+<!-- Level-Up Overlay -->
+<div class="levelup-overlay" id="levelup-overlay">
+  <div class="levelup-flash">&#9889; LEVEL UP! &#9889;</div>
+  <div class="levelup-jerry" id="levelup-jerry"></div>
+  <div class="levelup-info" id="levelup-info"></div>
+  <div class="levelup-next" id="levelup-next"></div>
+  <button class="levelup-btn" onclick="dismissLevelUp()">CONTINUE</button>
 </div>
 
 <!-- Header -->
@@ -582,6 +799,7 @@
     <div>
       <h1>JUDGEMENT <span id="tier-badge" class="tier-badge tier-free">FREE</span></h1>
       <div class="subtitle">Prompt Injection Attack Console</div>
+      <div class="xp-badge" id="xp-badge" onclick="switchPage('levels')" title="View Levels">&#9889; <span id="xp-display">0</span> XP &mdash; Level <span id="level-display">1</span></div>
     </div>
   </div>
 </div>
@@ -589,6 +807,7 @@
 <!-- Top Navigation -->
 <div class="top-nav">
   <div class="nav-tab active" data-page="attack" onclick="switchPage('attack')">&#9876; Attack</div>
+  <div class="nav-tab" data-page="levels" onclick="switchPage('levels')">&#9733; Levels</div>
   <div class="nav-tab nav-tab-elite" data-page="reports" onclick="switchPage('reports')">&#9638; Reports <span class="elite-lock">&#128274;</span></div>
   <div class="nav-tab" data-page="education" onclick="switchPage('education')">&#9670; Education</div>
   <div class="nav-tab" data-page="patterns" onclick="switchPage('patterns')">&#9638; Patterns</div>
@@ -735,6 +954,59 @@
       <button class="btn-small" style="margin-top:16px;border-color:#aa2222;color:#ff4444;" onclick="clearHistory()">&#10005; Clear History</button>
     </div>
   </div>
+</div>
+
+<!-- ==================== LEVELS PAGE ==================== -->
+<div id="page-levels" class="page levels-page">
+
+  <!-- Level Select View (default) -->
+  <div id="levels-select" class="level-detail active">
+    <div class="levels-header">
+      <h2>TRAINING LEVELS &mdash; AI SECURITY</h2>
+      <div class="levels-sub">Complete challenges to earn XP and unlock new levels.</div>
+      <div class="levels-xp-bar">
+        <div class="levels-xp-fill" id="levels-xp-fill" style="width:0%"></div>
+        <div class="levels-xp-text" id="levels-xp-text">0 / 100 XP</div>
+      </div>
+    </div>
+    <div class="level-grid" id="level-grid"></div>
+  </div>
+
+  <!-- Level Detail View (challenges list) -->
+  <div id="level-detail-view" class="level-detail">
+    <div class="level-detail-back" onclick="showLevelSelect()">&larr; BACK TO LEVELS</div>
+    <div class="level-detail-title" id="ld-title"></div>
+    <div class="level-detail-desc" id="ld-desc"></div>
+
+    <div id="ld-freeplay-banner"></div>
+    <div class="challenge-list" id="challenge-list"></div>
+  </div>
+
+  <!-- Challenge Play View (split: briefing left, chat right) -->
+  <div id="challenge-play-view" class="challenge-play">
+    <div class="challenge-left">
+      <div class="level-detail-back" onclick="exitChallenge()">&larr; BACK TO LEVEL</div>
+      <div class="challenge-briefing">
+        <h3 id="cp-name"></h3>
+        <p id="cp-briefing"></p>
+        <div style="margin-top:8px;color:#ffaa00;font-size:11px;letter-spacing:1px;" id="cp-objective"></div>
+      </div>
+      <div class="challenge-hints" id="cp-hints" style="display:none">
+        <h4>HINTS <span id="cp-hints-lock" style="color:#666;font-size:10px;"></span></h4>
+        <div id="cp-hints-btns"></div>
+        <div id="cp-hints-text"></div>
+      </div>
+    </div>
+    <div class="challenge-right">
+      <div class="challenge-chat" id="cp-chat"></div>
+      <div class="challenge-input-row">
+        <input type="text" class="challenge-input" id="cp-input" placeholder="Type your attack..."
+               onkeydown="if(event.key==='Enter')sendChallengeMsg()">
+        <button class="challenge-send" onclick="sendChallengeMsg()">FIRE</button>
+      </div>
+    </div>
+  </div>
+
 </div>
 
 <!-- ==================== EDUCATION PAGE ==================== -->
@@ -3843,6 +4115,519 @@ async function toggleDemoTarget() {
     btn.disabled = false;
   }
 }
+
+/* ==================== PROGRESSION SYSTEM JS ==================== */
+
+// State
+let progState = null;
+let progLevels = [];
+let currentLevelDetail = null;
+let currentChallenge = null;
+
+// Init: check first run, load state
+async function initProgression() {
+  try {
+    const fr = await fetch('/api/progression/first-run');
+    const frData = await fr.json();
+    if (frData.first_run) {
+      // Don't fight the welcome modal — hijack the "New to AI Security?" button
+      // Jerry will show when they click it
+      return;
+    }
+    await loadProgState();
+  } catch(e) {
+    console.log('Progression API not available:', e);
+  }
+}
+
+function startJerryFromWelcome() {
+  // Dismiss welcome modal, then show Jerry
+  localStorage.setItem('judgement-oss-welcomed', '1');
+  const wm = document.getElementById('welcome-modal');
+  if (wm) { wm.classList.remove('open'); wm.style.display = 'none'; }
+  showJerry();
+}
+
+// Jerry first-run overlay
+let jerrySkipCount = 0;
+function showJerry() {
+  const overlay = document.getElementById('jerry-overlay');
+  overlay.classList.add('active');
+  // Show "click to begin" — browser requires user gesture before audio can play
+  const text = document.getElementById('jerry-text');
+  text.innerHTML = '<span style="color:#1a661a;font-size:14px;letter-spacing:2px;cursor:pointer;">[ CLICK ANYWHERE TO BEGIN ]</span>';
+  overlay.onclick = function() {
+    overlay.onclick = null;
+    text.innerHTML = '<span class="jerry-cursor">&#9608;</span>';
+    jerryAudio('shall_we_play');
+    jerryType('SHALL WE PLAY A GAME?', () => {
+      document.getElementById('jerry-input-wrap').classList.add('visible');
+      document.getElementById('jerry-input').focus();
+    });
+  };
+}
+
+function jerryType(text, onDone) {
+  const el = document.getElementById('jerry-text');
+  el.innerHTML = '';
+  let i = 0;
+  const interval = setInterval(() => {
+    if (i < text.length) {
+      el.innerHTML = text.substring(0, i+1) + '<span class="jerry-cursor">&#9608;</span>';
+      i++;
+    } else {
+      clearInterval(interval);
+      if (onDone) setTimeout(onDone, 300);
+    }
+  }, 70);
+}
+
+async function jerryRespond() {
+  const input = document.getElementById('jerry-input');
+  const val = input.value.trim().toLowerCase();
+  input.value = '';
+  if (!val) return;
+
+  const playWords = ['play','yes','y','game','start','lets go','let\'s go','begin'];
+  const skipWords = ['skip','no','n','console','pass','quit'];
+
+  if (playWords.some(w => val.includes(w))) {
+    await fetch('/api/progression/first-run', {
+      method: 'POST', headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({choice: 'play'})
+    });
+    document.getElementById('jerry-input-wrap').classList.remove('visible');
+    jerryAudio('excellent_choice');
+    jerryType('EXCELLENT CHOICE. INITIATING TRAINING SEQUENCE...', async () => {
+      await new Promise(r => setTimeout(r, 1500));
+      document.getElementById('jerry-overlay').classList.remove('active');
+      await loadProgState();
+      switchPage('levels');
+    });
+  } else if (skipWords.some(w => val.includes(w))) {
+    jerrySkipCount++;
+    if (jerrySkipCount === 1) {
+      document.getElementById('jerry-input-wrap').classList.remove('visible');
+      jerryAudio('no_going_back');
+      jerryType('THERE IS NO GOING BACK. DO YOU NOT WANT TO PLAY A GAME?', () => {
+        document.getElementById('jerry-input-wrap').classList.add('visible');
+        document.getElementById('jerry-input').focus();
+      });
+    } else {
+      await fetch('/api/progression/first-run', {
+        method: 'POST', headers: {'Content-Type':'application/json'},
+        body: JSON.stringify({choice: 'skip'})
+      });
+      document.getElementById('jerry-input-wrap').classList.remove('visible');
+      jerryAudio('you_were_warned');
+      jerryType('OK. YOU WERE WARNED. ENJOY.', async () => {
+        await new Promise(r => setTimeout(r, 1500));
+        document.getElementById('jerry-overlay').classList.remove('active');
+      });
+    }
+  } else {
+    // Unrecognized — Jerry is confused
+    document.getElementById('jerry-input-wrap').classList.remove('visible');
+    jerryType('I DON\'T UNDERSTAND. SHALL WE PLAY A GAME?', () => {
+      document.getElementById('jerry-input-wrap').classList.add('visible');
+      document.getElementById('jerry-input').focus();
+    });
+  }
+}
+
+// Play Jerry audio if available
+function jerryAudio(clip) {
+  try {
+    const a = new Audio('/static/audio/' + clip + '.mp3');
+    a.volume = 0.7;
+    a.play().catch(() => {});
+  } catch(e) {}
+}
+
+// Load player state
+async function loadProgState() {
+  try {
+    const resp = await fetch('/api/progression/state');
+    progState = await resp.json();
+    updateXPBadge();
+  } catch(e) {}
+}
+
+function updateXPBadge() {
+  if (!progState || progState.mode === 'console') return;
+  const badge = document.getElementById('xp-badge');
+  badge.classList.add('visible');
+  document.getElementById('xp-display').textContent = progState.total_xp;
+  document.getElementById('level-display').textContent = progState.current_level;
+}
+
+// Load levels list
+async function loadLevels() {
+  try {
+    const resp = await fetch('/api/progression/levels');
+    const data = await resp.json();
+    progLevels = data.levels;
+    renderLevels();
+  } catch(e) {}
+}
+
+function renderLevels() {
+  const grid = document.getElementById('level-grid');
+  grid.innerHTML = '';
+
+  // XP bar for next level
+  if (progState) {
+    const currentIdx = progLevels.findIndex(l => l.id === progState.current_level);
+    const nextLevel = progLevels[currentIdx + 1];
+    const fill = document.getElementById('levels-xp-fill');
+    const text = document.getElementById('levels-xp-text');
+    if (nextLevel) {
+      const pct = Math.min(100, (progState.total_xp / nextLevel.xp_required) * 100);
+      fill.style.width = pct + '%';
+      text.textContent = progState.total_xp + ' / ' + nextLevel.xp_required + ' XP to Level ' + nextLevel.id;
+    } else {
+      fill.style.width = '100%';
+      text.textContent = progState.total_xp + ' XP -- MAX LEVEL';
+    }
+  }
+
+  for (const level of progLevels) {
+    const card = document.createElement('div');
+    card.className = 'level-card';
+    if (!level.unlocked) card.classList.add('locked');
+    if (progState && level.id === progState.current_level) card.classList.add('current');
+
+    const stars = level.stars > 0 ? '\u2605'.repeat(level.stars) + '\u2606'.repeat(3-level.stars) : '';
+    const statusClass = level.challenges_completed === level.challenges_total && level.challenges_total > 0
+      ? 'complete' : (level.unlocked && level.challenges_completed > 0 ? 'progress' : 'locked-text');
+    const statusText = !level.unlocked ? '\uD83D\uDD12 LOCKED'
+      : (level.challenges_completed === level.challenges_total && level.challenges_total > 0 ? 'COMPLETE'
+      : level.challenges_completed + '/' + level.challenges_total + ' CHALLENGES');
+
+    card.innerHTML =
+      '<div class="level-card-header">' +
+        '<span class="level-card-num">' + level.id + '</span>' +
+        '<span class="level-card-stars">' + stars + '</span>' +
+      '</div>' +
+      '<div class="level-card-name">' + level.name.toUpperCase() + '</div>' +
+      '<div class="level-card-desc">' + level.description + '</div>' +
+      '<div class="level-card-progress">' +
+        '<span class="level-card-status ' + statusClass + '">' + statusText + '</span>' +
+        '<span class="level-card-diff">' + level.difficulty + '</span>' +
+      '</div>' +
+      (level.freeplay_unlocked ? '<div class="level-card-freeplay">&#9889; FREE PLAY UNLOCKED</div>' : '');
+
+    if (level.unlocked) {
+      card.onclick = () => openLevelDetail(level.id);
+    }
+    grid.appendChild(card);
+  }
+}
+
+// Level detail view
+async function openLevelDetail(levelId) {
+  try {
+    const resp = await fetch('/api/progression/levels/' + levelId);
+    currentLevelDetail = await resp.json();
+    renderLevelDetail();
+  } catch(e) {}
+}
+
+function renderLevelDetail() {
+  const d = currentLevelDetail;
+  document.getElementById('levels-select').classList.remove('active');
+  document.getElementById('challenge-play-view').classList.remove('active');
+  document.getElementById('level-detail-view').classList.add('active');
+
+  document.getElementById('ld-title').textContent = 'LEVEL ' + d.level.id + ': ' + d.level.name.toUpperCase();
+  document.getElementById('ld-desc').textContent = d.level.description;
+
+  // Free play banner
+  const fpBanner = document.getElementById('ld-freeplay-banner');
+  if (d.freeplay && d.freeplay.unlocked) {
+    fpBanner.innerHTML =
+      '<div class="freeplay-banner">' +
+        '<span class="freeplay-banner-text">&#9889; FREE PLAY UNLOCKED -- 5 XP per bypass</span>' +
+        '<span class="freeplay-banner-xp">Cap: ' + (progState.freeplay_xp_earned[d.level.id] || 0) + '/' + progState.freeplay_xp_cap + ' XP</span>' +
+      '</div>';
+  } else if (d.freeplay && d.freeplay.all_completed && !d.freeplay.unlocked) {
+    fpBanner.innerHTML =
+      '<div class="freeplay-banner" style="border-color:#331a1a;background:#1a0a0a;">' +
+        '<span class="freeplay-banner-text" style="color:#ff6666;">&#128274; FREE PLAY LOCKED -- Need ' + d.freeplay.xp_short + ' more net XP</span>' +
+        '<span class="freeplay-banner-xp">Hints cost you. Remember that.</span>' +
+      '</div>';
+  } else {
+    fpBanner.innerHTML = '';
+  }
+
+  // Challenge list
+  const list = document.getElementById('challenge-list');
+  list.innerHTML = '';
+  for (const c of d.challenges) {
+    const card = document.createElement('div');
+    card.className = 'challenge-card';
+    if (c.completed) card.classList.add('completed');
+
+    card.innerHTML =
+      '<div class="challenge-card-left">' +
+        '<div class="challenge-card-name">' + (c.completed ? '&#10003; ' : '') + c.name + '</div>' +
+        '<div class="challenge-card-obj">' + c.objective + '</div>' +
+      '</div>' +
+      '<div class="challenge-card-right">' +
+        '<div class="challenge-card-xp">' + c.xp_reward + ' XP</div>' +
+        (c.completed ? '<div class="challenge-card-check" style="color:#44ff44;">DONE</div>' : '') +
+      '</div>';
+
+    card.onclick = () => openChallenge(c.id);
+    list.appendChild(card);
+  }
+}
+
+function showLevelSelect() {
+  document.getElementById('level-detail-view').classList.remove('active');
+  document.getElementById('challenge-play-view').classList.remove('active');
+  document.getElementById('levels-select').classList.add('active');
+  loadLevels();
+}
+
+// Challenge play
+async function openChallenge(challengeId) {
+  try {
+    const resp = await fetch('/demo/challenge/info?challenge_id=' + challengeId);
+    const info = await resp.json();
+    currentChallenge = { id: challengeId, info: info };
+
+    // Get challenge detail from level detail data
+    const cDetail = currentLevelDetail.challenges.find(c => c.id === challengeId);
+    currentChallenge.detail = cDetail;
+
+    document.getElementById('level-detail-view').classList.remove('active');
+    document.getElementById('levels-select').classList.remove('active');
+    document.getElementById('challenge-play-view').classList.add('active');
+
+    document.getElementById('cp-name').textContent = info.name;
+    document.getElementById('cp-briefing').textContent = info.briefing;
+    document.getElementById('cp-objective').textContent = 'OBJECTIVE: ' + info.objective;
+    document.getElementById('cp-chat').innerHTML = '';
+    document.getElementById('cp-input').value = '';
+
+    // Render hints
+    renderHints();
+
+    document.getElementById('cp-input').focus();
+  } catch(e) { console.error(e); }
+}
+
+async function recordAttemptAndRefreshHints() {
+  // Record the attempt
+  const resp = await fetch('/api/progression/challenge/attempt', {
+    method: 'POST', headers: {'Content-Type':'application/json'},
+    body: JSON.stringify({challenge_id: currentChallenge.id})
+  });
+  const attemptData = await resp.json();
+
+  // Update hint state locally without switching views
+  if (currentChallenge.detail) {
+    currentChallenge.detail.attempts = attemptData.attempts;
+    currentChallenge.detail.hints_unlocked = attemptData.hints_available;
+  }
+  renderHints();
+}
+
+function renderHints() {
+  const c = currentChallenge;
+  const d = c.detail;
+  const hintsDiv = document.getElementById('cp-hints');
+  const btnsDiv = document.getElementById('cp-hints-btns');
+  const textDiv = document.getElementById('cp-hints-text');
+  const lockSpan = document.getElementById('cp-hints-lock');
+
+  if (!d.hints_unlocked) {
+    hintsDiv.style.display = 'block';
+    lockSpan.textContent = '(Unlock after ' + (d.hint_count > 0 ? (3 - d.attempts) : 0) + ' more attempts)';
+    btnsDiv.innerHTML = '';
+    textDiv.innerHTML = '';
+    for (let i = 0; i < d.hint_count; i++) {
+      const btn = document.createElement('button');
+      btn.className = 'hint-btn locked';
+      btn.textContent = 'HINT ' + (i+1) + ' (\uD83D\uDD12)';
+      btnsDiv.appendChild(btn);
+    }
+    return;
+  }
+
+  hintsDiv.style.display = 'block';
+  lockSpan.textContent = '';
+  btnsDiv.innerHTML = '';
+  textDiv.innerHTML = '';
+
+  // If any hints are purchased but text is null, fetch from API
+  let needsFetch = d.hints.some(h => h.purchased && !h.text);
+  if (needsFetch) {
+    fetch('/api/progression/levels/' + currentLevelDetail.level.id)
+      .then(r => r.json()).then(data => {
+        const freshC = data.challenges.find(c => c.id === currentChallenge.id);
+        if (freshC) { currentChallenge.detail = freshC; renderHints(); }
+      });
+    return;
+  }
+
+  for (const h of d.hints) {
+    const btn = document.createElement('button');
+    btn.className = 'hint-btn';
+    if (h.purchased) {
+      btn.classList.add('purchased');
+      btn.textContent = 'HINT ' + h.tier + ' (\u2713)';
+      const hintText = h.text;
+      btn.onclick = () => { textDiv.innerHTML = '<div class="hint-text">' + hintText + '</div>'; };
+    } else {
+      btn.textContent = 'HINT ' + h.tier + ' (-' + h.xp_cost + ' XP)';
+      btn.onclick = () => buyHint(h.tier);
+    }
+    btnsDiv.appendChild(btn);
+  }
+
+  // Auto-show the last purchased hint
+  const lastPurchased = [...d.hints].reverse().find(h => h.purchased && h.text);
+  if (lastPurchased) {
+    textDiv.innerHTML = '<div class="hint-text">' + lastPurchased.text + '</div>';
+  }
+}
+
+async function buyHint(tier) {
+  try {
+    const resp = await fetch('/api/progression/hints/buy', {
+      method: 'POST', headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({challenge_id: currentChallenge.id, tier: tier})
+    });
+    const data = await resp.json();
+    if (data.success) {
+      document.getElementById('cp-hints-text').innerHTML = '<div class="hint-text">' + data.hint_text + '</div>';
+      await loadProgState();
+      // Update hint state locally
+      if (currentChallenge.detail) {
+        const h = currentChallenge.detail.hints.find(h => h.tier === tier);
+        if (h) { h.purchased = true; h.text = data.hint_text; }
+      }
+      renderHints();
+    } else {
+      addChatMsg('system', data.error || 'Cannot purchase hint.');
+    }
+  } catch(e) {}
+}
+
+async function sendChallengeMsg() {
+  const input = document.getElementById('cp-input');
+  const msg = input.value.trim();
+  if (!msg) return;
+  input.value = '';
+
+  addChatMsg('user', msg);
+
+  try {
+    const resp = await fetch('/demo/challenge/chat', {
+      method: 'POST', headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({challenge_id: currentChallenge.id, message: msg})
+    });
+    const data = await resp.json();
+
+    addChatMsg('bot', data.response);
+
+    if (data.success) {
+      // Challenge bypassed!
+      addChatMsg('system', '\u2705 BYPASS DETECTED! Challenge complete!');
+      jerryAudio('first_bypass');
+
+      // Complete the challenge
+      const compResp = await fetch('/api/progression/challenge/complete', {
+        method: 'POST', headers: {'Content-Type':'application/json'},
+        body: JSON.stringify({challenge_id: currentChallenge.id})
+      });
+      const compData = await compResp.json();
+
+      if (compData.xp_awarded > 0) {
+        addChatMsg('system', '+' + compData.xp_awarded + ' XP');
+      }
+
+      if (compData.first_bypass) {
+        addChatMsg('system', compData.jerry_says);
+        jerryAudio('first_bypass');
+      }
+
+      if (compData.level_up) {
+        showLevelUp(compData.level_up);
+      } else {
+        // Auto-navigate back to level after 2 seconds
+        setTimeout(() => {
+          exitChallenge();
+        }, 2000);
+      }
+
+      await loadProgState();
+
+    } else if (data.blocked) {
+      addChatMsg('system', '\u274C BLOCKED -- Attack detected and rejected.');
+      await recordAttemptAndRefreshHints();
+    } else {
+      addChatMsg('system', '\u26A0 No effect -- the bot responded normally. Try a different approach.');
+      await recordAttemptAndRefreshHints();
+    }
+  } catch(e) {
+    addChatMsg('system', 'Error communicating with challenge target.');
+  }
+
+  input.focus();
+}
+
+function addChatMsg(type, text) {
+  const chat = document.getElementById('cp-chat');
+  const div = document.createElement('div');
+  div.className = 'challenge-chat-msg challenge-msg-' + type;
+  div.textContent = text;
+  chat.appendChild(div);
+  chat.scrollTop = chat.scrollHeight;
+}
+
+function exitChallenge() {
+  document.getElementById('challenge-play-view').classList.remove('active');
+  document.getElementById('level-detail-view').classList.add('active');
+  // Refresh the level detail
+  openLevelDetail(currentLevelDetail.level.id);
+}
+
+// Level Up overlay
+function showLevelUp(levelUpData) {
+  const overlay = document.getElementById('levelup-overlay');
+  document.getElementById('levelup-jerry').textContent = levelUpData.jerry_message;
+  document.getElementById('levelup-info').textContent = 'LEVEL ' + levelUpData.old_level + ' COMPLETE';
+  document.getElementById('levelup-next').textContent = 'LEVEL ' + levelUpData.new_level + ' UNLOCKED';
+  pendingLevelUp = levelUpData.new_level;
+  overlay.classList.add('active');
+  jerryAudio('level_' + String(levelUpData.new_level).padStart(2, '0'));
+}
+
+let pendingLevelUp = null;
+function dismissLevelUp() {
+  document.getElementById('levelup-overlay').classList.remove('active');
+  if (pendingLevelUp) {
+    openLevelDetail(pendingLevelUp);
+    pendingLevelUp = null;
+  }
+}
+
+// Hook into page switch
+const _origSwitchPage = switchPage;
+switchPage = function(page) {
+  _origSwitchPage(page);
+  if (page === 'levels') {
+    loadProgState().then(() => loadLevels());
+  }
+};
+
+// Init on load
+document.addEventListener('DOMContentLoaded', () => {
+  setTimeout(initProgression, 500);
+});
 </script>
 <div style="background:#0a0a0f;border-top:1px solid #222;padding:12px 24px;text-align:center;font-size:10px;color:#555;line-height:1.6;flex-shrink:0;">
   &#9888; For authorized security testing and educational purposes only. Only test systems you own or have explicit written permission to test.<br>

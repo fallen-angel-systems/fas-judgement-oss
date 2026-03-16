@@ -63,11 +63,17 @@ def _include_routers():
     from .router_scan import router as scan_router
     from .router_patterns import router as patterns_router
     from .router_demo import router as demo_router
+    from .router_progression import router as progression_router
 
     app.include_router(core_router)
     app.include_router(scan_router)
     app.include_router(patterns_router)
     app.include_router(demo_router)
+    app.include_router(progression_router)
+
+    # Register challenge target routes on main app too (so UI can call them directly)
+    from ..modules.ai_security.demo.challenge_target import build_challenge_routes
+    build_challenge_routes(app)
 
     # WHY import the package (not a class): the ai_security __init__.py is
     # responsible for calling registry.register(AiSecurityModule()). Importing
