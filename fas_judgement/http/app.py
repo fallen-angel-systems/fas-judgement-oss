@@ -19,22 +19,69 @@ LAYER: HTTP (outermost) — imports everything.
 
 from pathlib import Path
 
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import HTMLResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
+from slowapi import Limiter, _rate_limit_exceeded_handler
+from slowapi.util import get_remote_address
+from slowapi.errors import RateLimitExceeded
+from starlette.middleware.base import BaseHTTPMiddleware
+from starlette.responses import Response
 
 from ..config import DB_PATH
+
+
+# === SECTION: RATE LIMITER === #
+
+limiter = Limiter(key_func=get_remote_address)
+
+
+# === SECTION: SECURITY HEADERS MIDDLEWARE === #
+
+class SecurityHeadersMiddleware(BaseHTTPMiddleware):
+    """Add security headers (CSP, X-Content-Type-Options, etc.) to all responses."""
+    async def dispatch(self, request: Request, call_next):
+        response: Response = await call_next(request)
+        response.headers["Content-Security-Policy"] = (
+            "default-src 'self'; "
+            "script-src 'self' 'unsafe-inline'; "
+            "style-src 'self' 'unsafe-inline'; "
+            "img-src 'self' data:; "
+            "connect-src 'self'; "
+            "font-src 'self'; "
+            "media-src 'self'"
+        )
+        response.headers["X-Content-Type-Options"] = "nosniff"
+        response.headers["X-Frame-Options"] = "DENY"
+        response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
+        return response
 
 
 # === SECTION: APP INSTANCE === #
 
 app = FastAPI(
     title="FAS Judgement OSS",
-    version="2.1.0",
+    version="3.0.3",
     docs_url=None,      # No public Swagger UI (security hygiene even for local)
     redoc_url=None,
     openapi_url=None,
 )
+
+# CORS - localhost only
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:8668", "http://127.0.0.1:8668", "http://localhost:8666", "http://127.0.0.1:8666"],
+    allow_methods=["GET", "POST"],
+    allow_headers=["Content-Type"],
+)
+
+# Security headers (CSP, X-Frame-Options, etc.)
+app.add_middleware(SecurityHeadersMiddleware)
+
+# Rate limiting
+app.state.limiter = limiter
+app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
 
 # === SECTION: ROUTER MOUNTING === #

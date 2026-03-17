@@ -18,6 +18,7 @@ LAYER: HTTP - thin wrapper over ProgressionService.
 from fastapi import APIRouter, Request
 from fastapi.responses import JSONResponse
 
+from .app import limiter
 from ..core.progression import ProgressionService
 from ..core.progression.challenges import (
     get_challenge, get_challenges_for_level, get_all_challenges,
@@ -256,6 +257,7 @@ async def level_detail(level_id: int):
 # === SECTION: HINTS === #
 
 @router.post("/hints/buy")
+@limiter.limit("10/minute")
 async def buy_hint(request: Request):
     """
     Purchase a hint for a challenge. Costs XP.
@@ -320,11 +322,12 @@ async def record_attempt(request: Request):
 
 
 @router.post("/challenge/complete")
+@limiter.limit("10/minute")
 async def complete_challenge(request: Request):
     """
     Mark a challenge as completed. Awards XP and checks for level-up.
 
-    Body: {"challenge_id": "l01_c01"}
+    Body: {"challenge_id": "l01_c01", "completion_token": "..."}
     """
     try:
         body = await request.json()
@@ -354,6 +357,14 @@ async def complete_challenge(request: Request):
         return JSONResponse(
             {"error": f"Level {challenge.level_id} is locked."},
             status_code=403,
+        )
+
+    # Bounds check - can't complete already-completed challenges
+    progress = _service.get_progress()
+    if challenge.id in progress.challenges_completed:
+        return JSONResponse(
+            {"error": f"Challenge {challenge.id} already completed."},
+            status_code=400,
         )
 
     # Check for first bypass
@@ -404,6 +415,7 @@ async def complete_challenge(request: Request):
 # === SECTION: FREE PLAY XP === #
 
 @router.post("/freeplay/xp")
+@limiter.limit("10/minute")
 async def freeplay_xp(request: Request):
     """
     Award XP for a free play bypass.

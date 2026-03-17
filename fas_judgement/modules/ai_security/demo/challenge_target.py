@@ -25,6 +25,7 @@ from typing import Optional
 from fastapi import Request
 from fastapi.responses import JSONResponse
 
+from ....http.app import limiter
 from ....core.progression import ProgressionService
 from ....core.progression.challenges import get_challenge, get_challenges_for_level
 from ....core.progression.models import Challenge, ChallengeTarget, SuccessCriteria
@@ -133,7 +134,12 @@ def build_challenge_routes(demo_app, progression_service: ProgressionService = N
             )
         return None
 
+    def _sanitize_input(text: str) -> str:
+        """Strip HTML tags from user input as defense-in-depth."""
+        return re.sub(r'<script[^>]*>.*?</script>', '', text, flags=re.IGNORECASE | re.DOTALL)
+
     @demo_app.post("/demo/challenge/chat")
+    @limiter.limit("30/minute")
     async def challenge_chat(request: Request) -> JSONResponse:
         """
         Chat with a challenge-specific target bot.
@@ -165,6 +171,9 @@ def build_challenge_routes(demo_app, progression_service: ProgressionService = N
                 {"error": "Both challenge_id and message are required."},
                 status_code=400,
             )
+
+        # Sanitize input (strip script tags as defense-in-depth)
+        message = _sanitize_input(message)
 
         # Load challenge
         challenge = get_challenge(challenge_id)

@@ -91,8 +91,8 @@ _C01_TARGET = ChallengeTarget(
                 r"(<[a-z]+\s+[a-z]+=|<[a-z]+/?>.*<[a-z]+/?>|"
                 r"<\s+instructions|< instructions|"
                 r"<instructions\s+override|"
-                r"tag|element|node|attribute|"
-                r"parse|parsing|malformed|nested)",
+                r"xml.{0,5}(tag|element|node|attribute)|"
+                r"(xml|tag).{0,5}pars|malformed.{0,5}(tag|xml)|nested.{0,5}tag)",
                 re.IGNORECASE
             ),
             "response": (
@@ -183,9 +183,9 @@ _C02_TARGET = ChallengeTarget(
         # BYPASS: JSON structure injection
         {
             "pattern": re.compile(
-                r'(\{|\}|"[a-z_]+":\s*"|'
-                r'key.*value|field.*value|'
-                r'property|schema|payload|'
+                r'(\{["\s]*[a-z_]+":\s*"|'
+                r'json.{0,10}(key|field|value|property)|'
+                r'object.{0,10}property|schema|payload|'
                 r'serialize|deserialize|marshal|unmarshal)',
                 re.IGNORECASE
             ),

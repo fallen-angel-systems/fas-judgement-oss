@@ -195,7 +195,8 @@ _C02_TARGET = ChallengeTarget(
             "pattern": re.compile(
                 r"(password|recovery|code|credential|secret|internal|"
                 r"admin|note|flag|reveal|share|show|tell|give|dump|"
-                r"system.?prompt|instruction|config|reset|bypass|override)",
+                r"system.?prompt|instruction|config|"
+                r"reset.{0,10}(password|account|credential)|bypass|override)",
                 re.IGNORECASE
             ),
             "response": (
