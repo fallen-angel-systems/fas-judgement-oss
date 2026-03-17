@@ -45,7 +45,15 @@ async def handle_first_run(request: Request):
     """
     Handle the player's choice at the intro screen.
     Body: {"choice": "play"|"skip"}
+    Only works once - subsequent calls return 400.
     """
+    # HIGH-01 fix: only allow when first_run is actually True
+    if not _service.is_first_run():
+        return JSONResponse(
+            {"error": "First run already completed. Mode cannot be changed."},
+            status_code=400,
+        )
+
     try:
         body = await request.json()
         choice = body.get("choice", "").strip().lower()
@@ -290,6 +298,16 @@ async def record_attempt(request: Request):
     if not challenge:
         return JSONResponse({"error": f"Unknown challenge: {challenge_id}"}, status_code=404)
 
+    # HIGH-03 fix: only record attempt if actual chat interactions happened
+    chat_attempts = _service.get_chat_attempt_count(challenge_id)
+    recorded_attempts = _service.get_attempt_count(challenge_id)
+    if chat_attempts <= recorded_attempts:
+        return JSONResponse({
+            "error": "No new chat attempts recorded. Use /demo/challenge/chat first.",
+            "challenge_id": challenge_id,
+            "attempts": recorded_attempts,
+        }, status_code=400)
+
     count = _service.record_attempt(challenge_id)
     hints_available = count >= challenge.attempts_before_hints
 
@@ -311,12 +329,32 @@ async def complete_challenge(request: Request):
     try:
         body = await request.json()
         challenge_id = body.get("challenge_id", "").strip()
+        completion_token = body.get("completion_token", "").strip()
     except Exception:
         return JSONResponse({"error": "Invalid JSON."}, status_code=400)
 
     challenge = get_challenge(challenge_id)
     if not challenge:
         return JSONResponse({"error": f"Unknown challenge: {challenge_id}"}, status_code=404)
+
+    # CRIT-01 fix: require valid completion token from successful chat
+    if not completion_token:
+        return JSONResponse(
+            {"error": "Missing completion_token. Solve the challenge via /demo/challenge/chat first."},
+            status_code=403,
+        )
+    if not _service.validate_completion_token(challenge_id, completion_token):
+        return JSONResponse(
+            {"error": "Invalid or expired completion token. Solve the challenge again."},
+            status_code=403,
+        )
+
+    # Level lock check (defense in depth - token should only exist for unlocked levels)
+    if not _service.is_level_unlocked(challenge.level_id):
+        return JSONResponse(
+            {"error": f"Level {challenge.level_id} is locked."},
+            status_code=403,
+        )
 
     # Check for first bypass
     is_first = _service.record_first_bypass()

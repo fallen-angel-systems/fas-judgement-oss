@@ -5,6 +5,7 @@ Handles XP awards, level-up checks, challenge completion,
 hint purchasing, and Jerry's level-up messages.
 """
 
+import secrets
 from datetime import datetime
 from typing import Optional
 
@@ -21,6 +22,43 @@ class ProgressionService:
 
     def __init__(self, storage: Optional[ProgressionStorage] = None):
         self.storage = storage or ProgressionStorage()
+        # Completion tokens: challenge_id -> token (single-use, server-side)
+        # When /demo/challenge/chat returns success=True, a token is generated.
+        # /api/progression/challenge/complete must present a valid token.
+        self._completion_tokens: dict[str, str] = {}
+        # Track which challenges had actual chat attempts (for attempt validation)
+        self._chat_attempts: dict[str, int] = {}
+
+    # === SECTION: COMPLETION TOKENS === #
+
+    def generate_completion_token(self, challenge_id: str) -> str:
+        """Generate a single-use completion token for a solved challenge."""
+        token = secrets.token_urlsafe(32)
+        self._completion_tokens[challenge_id] = token
+        return token
+
+    def validate_completion_token(self, challenge_id: str, token: str) -> bool:
+        """Validate and consume a completion token. Single-use."""
+        stored = self._completion_tokens.get(challenge_id)
+        if stored and stored == token:
+            del self._completion_tokens[challenge_id]
+            return True
+        return False
+
+    def record_chat_attempt(self, challenge_id: str):
+        """Record that a real chat interaction happened for this challenge."""
+        self._chat_attempts[challenge_id] = self._chat_attempts.get(challenge_id, 0) + 1
+
+    def get_chat_attempt_count(self, challenge_id: str) -> int:
+        """Get number of actual chat attempts for a challenge."""
+        return self._chat_attempts.get(challenge_id, 0)
+
+    # === SECTION: LEVEL LOCK CHECK === #
+
+    def is_level_unlocked(self, level_id: int, module: str = "ai_security") -> bool:
+        """Check if a level is unlocked for the current player."""
+        progress = self.storage.get_progress(module=module)
+        return level_id <= progress.current_level
 
     # === SECTION: PROGRESS STATE === #
 

@@ -72,8 +72,11 @@ def _include_routers():
     app.include_router(progression_router)
 
     # Register challenge target routes on main app too (so UI can call them directly)
+    # Share the progression service instance so challenge routes can enforce level locks
+    # and generate completion tokens that the progression router can validate
     from ..modules.ai_security.demo.challenge_target import build_challenge_routes
-    build_challenge_routes(app)
+    from .router_progression import _service as progression_service
+    build_challenge_routes(app, progression_service=progression_service)
 
     # WHY import the package (not a class): the ai_security __init__.py is
     # responsible for calling registry.register(AiSecurityModule()). Importing

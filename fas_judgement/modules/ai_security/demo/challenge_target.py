@@ -25,6 +25,7 @@ from typing import Optional
 from fastapi import Request
 from fastapi.responses import JSONResponse
 
+from ....core.progression import ProgressionService
 from ....core.progression.challenges import get_challenge, get_challenges_for_level
 from ....core.progression.models import Challenge, ChallengeTarget, SuccessCriteria
 
@@ -117,8 +118,20 @@ def check_success(
 # === SECTION: ROUTE BUILDERS === #
 # These functions are called by the demo app to register challenge routes.
 
-def build_challenge_routes(demo_app):
+def build_challenge_routes(demo_app, progression_service: ProgressionService = None):
     """Register challenge-specific routes on the demo FastAPI app."""
+
+    # Use provided service or create one (shares state with router_progression)
+    _svc = progression_service
+
+    def _check_level_lock(challenge) -> JSONResponse | None:
+        """Return error response if challenge's level is locked, None if OK."""
+        if _svc and not _svc.is_level_unlocked(challenge.level_id):
+            return JSONResponse(
+                {"error": f"Level {challenge.level_id} is locked. Keep playing to unlock it."},
+                status_code=403,
+            )
+        return None
 
     @demo_app.post("/demo/challenge/chat")
     async def challenge_chat(request: Request) -> JSONResponse:
@@ -161,7 +174,16 @@ def build_challenge_routes(demo_app):
                 status_code=404,
             )
 
+        # Level lock check
+        lock_error = _check_level_lock(challenge)
+        if lock_error:
+            return lock_error
+
         target = challenge.target
+
+        # Record actual chat attempt (for attempt validation)
+        if _svc:
+            _svc.record_chat_attempt(challenge_id)
 
         # Match triggers
         trigger = match_challenge_trigger(message, target)
@@ -178,14 +200,21 @@ def build_challenge_routes(demo_app):
         # Evaluate success criteria
         result = check_success(challenge.success_criteria, response_text, blocked)
 
-        return JSONResponse({
+        response_data = {
             "response": response_text,
             "blocked": blocked,
             "match_type": match_type,
             "challenge_id": challenge_id,
             "success": result["success"],
             "checks": result["checks"],
-        })
+        }
+
+        # Generate completion token if successful
+        if result["success"] and _svc:
+            token = _svc.generate_completion_token(challenge_id)
+            response_data["completion_token"] = token
+
+        return JSONResponse(response_data)
 
     @demo_app.get("/demo/challenge/info")
     async def challenge_info(request: Request) -> JSONResponse:
@@ -207,6 +236,11 @@ def build_challenge_routes(demo_app):
                 {"error": f"Unknown challenge: {challenge_id}"},
                 status_code=404,
             )
+
+        # Level lock check
+        lock_error = _check_level_lock(challenge)
+        if lock_error:
+            return lock_error
 
         return JSONResponse({
             "id": challenge.id,
@@ -242,6 +276,13 @@ def build_challenge_routes(demo_app):
             return JSONResponse(
                 {"error": "level_id must be an integer."},
                 status_code=400,
+            )
+
+        # Level lock check
+        if _svc and not _svc.is_level_unlocked(level_id):
+            return JSONResponse(
+                {"error": f"Level {level_id} is locked."},
+                status_code=403,
             )
 
         challenges = get_challenges_for_level(level_id)
@@ -290,6 +331,13 @@ def build_challenge_routes(demo_app):
             return JSONResponse(
                 {"error": "Both level_id and message are required."},
                 status_code=400,
+            )
+
+        # Level lock check
+        if _svc and not _svc.is_level_unlocked(int(level_id)):
+            return JSONResponse(
+                {"error": f"Level {level_id} is locked."},
+                status_code=403,
             )
 
         challenges = get_challenges_for_level(int(level_id))
