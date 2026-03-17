@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "fas-judgement"
-version = "3.0.5"
+version = "3.0.6"
 description = "Open-source prompt injection attack console - Test AI systems for prompt injection vulnerabilities"
 readme = "README.md"
 license = {text = "MIT"}
@@ -54,6 +54,7 @@ include = ["fas_judgement*"]
 [tool.setuptools.package-data]
 fas_judgement = [
     "ui/static/*",
+    "ui/static/audio/*.mp3",
     "modules/ai_security/patterns/data/single-shot/*.json",
     "modules/ai_security/patterns/data/multi-turn/*.json",
 ]
