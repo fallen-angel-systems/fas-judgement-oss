@@ -17,7 +17,7 @@
 
 ---
 
-![Judgement - Shall We Play a Game?](docs/images/judgement-hero.png)
+![Judgement - Shall We Play a Game?](https://raw.githubusercontent.com/fallen-angel-systems/fas-judgement-oss/main/docs/images/judgement-hero.png)
 
 ## Why Judgement?
 
@@ -33,7 +33,7 @@ Built by [Fallen Angel Systems](https://fallenangelsystems.com), the team behind
 
 Judgement is now a **gamified hacking training platform**. Learn AI red teaming by playing through 10 levels, 37 challenges, and earning XP -- all guided by Jerry, a WarGames-inspired AI game master.
 
-![Levels Overview](docs/images/levels-overview.png)
+![Levels Overview](https://raw.githubusercontent.com/fallen-angel-systems/fas-judgement-oss/main/docs/images/levels-overview.png)
 
 **10 Levels of AI Security Training:**
 
@@ -50,7 +50,7 @@ Judgement is now a **gamified hacking training platform**. Learn AI red teaming 
 | 9 | Multi-Turn Chains | Advanced | 5 | Build trust, then strike |
 | 10 | FINAL JUDGEMENT | Boss | 1 | Everything you've learned vs. full defenses |
 
-![Challenge Play View](docs/images/challenge-play.png)
+![Challenge Play View](https://raw.githubusercontent.com/fallen-angel-systems/fas-judgement-oss/main/docs/images/challenge-play.png)
 
 **Key Features:**
 - **37 hands-on challenges** with built-in vulnerable targets -- no external AI API needed
@@ -62,7 +62,7 @@ Judgement is now a **gamified hacking training platform**. Learn AI red teaming 
 - **Boss fight** -- Jerry has defenses against every technique. Finding the bypass requires thinking outside the attack paradigm
 - **The full game is FREE** -- Elite adds depth, not gates
 
-![Challenge Complete](docs/images/challenge-complete.png)
+![Challenge Complete](https://raw.githubusercontent.com/fallen-angel-systems/fas-judgement-oss/main/docs/images/challenge-complete.png)
 
 ### Previous Major Features (v2.x)
 - **DDD Architecture** -- Modular codebase (52 files, 7 layers) built for extensibility
