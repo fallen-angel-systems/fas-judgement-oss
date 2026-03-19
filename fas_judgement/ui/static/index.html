@@ -4729,7 +4729,40 @@ async function loadProgState() {
     const resp = await fetch('/api/progression/state');
     progState = await resp.json();
     updateXPBadge();
+    // Sync progress to leaderboard if logged in
+    if (authToken && progState && progState.total_xp > 0) {
+      syncProgressToLeaderboard();
+    }
   } catch(e) {}
+}
+
+async function syncProgressToLeaderboard() {
+  try {
+    // Convert hints_purchased from {id: [tiers]} to {id: count} for server
+    const hintsCount = {};
+    if (progState.hints_purchased) {
+      for (const [k, v] of Object.entries(progState.hints_purchased)) {
+        hintsCount[k] = Array.isArray(v) ? v.length : (v || 0);
+      }
+    }
+    await fetch('/api/leaderboard/progress/sync', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + authToken },
+      body: JSON.stringify({
+        module: 'ai_security',
+        current_level: progState.current_level || 1,
+        total_xp: progState.total_xp || 0,
+        challenges_completed: progState.challenges_completed || [],
+        level_completions: progState.level_completions || {},
+        challenge_attempts: progState.challenge_attempts || {},
+        hints_purchased: hintsCount,
+        level_times: progState.level_times || {},
+        total_play_time_seconds: progState.total_play_time_seconds || 0,
+        first_bypass_at: progState.first_bypass_at || null,
+        completed_at: progState.completed_at || null
+      })
+    });
+  } catch(e) { /* silent - sync is best effort */ }
 }
 
 function updateXPBadge() {
