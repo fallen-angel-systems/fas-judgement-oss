@@ -1951,7 +1951,7 @@ async def analyze(request: Request):
 
 <!-- ==================== LEADERBOARD PAGE ==================== -->
 <div id="page-leaderboard" class="page leaderboard-page">
-  <!-- Auth bar (slim, inline) -->
+  <!-- Auth bar (slim, inline) - shows sign in or signed-in state -->
   <div id="auth-section" class="leaderboard-auth-bar">
     <div class="auth-text">
       <span class="auth-title">&#9889; SIGN IN TO COMPETE</span>
@@ -1963,6 +1963,17 @@ async def analyze(request: Request):
       </button>
       <button onclick="signInGoogle()" class="auth-btn google">
         <span>G</span> Google
+      </button>
+    </div>
+  </div>
+  <div id="auth-signed-in" class="leaderboard-auth-bar" style="display:none;">
+    <div class="auth-text">
+      <span style="color:#44ff44;font-size:12px;letter-spacing:1px;">&#10003; SIGNED IN</span>
+      <span id="auth-username" style="color:#e0e0e0;font-size:12px;margin-left:8px;font-weight:bold;"></span>
+    </div>
+    <div class="auth-buttons">
+      <button onclick="signOut()" class="auth-btn" style="background:#2a0a0a;border:1px solid #aa2222;">
+        Sign Out
       </button>
     </div>
   </div>
@@ -4258,6 +4269,8 @@ async function loadLeaderboard() {
       currentUser = leaderboardData.find(u => u.is_current_user);
       if (currentUser) {
         document.getElementById('auth-section').style.display = 'none';
+        document.getElementById('auth-signed-in').style.display = 'flex';
+        document.getElementById('auth-username').textContent = currentUser.username;
       }
     }
 
@@ -4360,6 +4373,16 @@ function signInGithub() {
 function signInGoogle() {
   const redirect = encodeURIComponent(window.location.origin);
   window.location.href = 'https://judgement-app.fallenangelsystems.com/api/leaderboard/auth/google?redirect_url=' + redirect;
+}
+
+function signOut() {
+  authToken = null;
+  currentUser = null;
+  localStorage.removeItem('judgement_auth_token');
+  document.getElementById('auth-section').style.display = 'flex';
+  document.getElementById('auth-signed-in').style.display = 'none';
+  document.getElementById('auth-username').textContent = '';
+  loadLeaderboard();
 }
 
 /* ====== INIT ====== */
