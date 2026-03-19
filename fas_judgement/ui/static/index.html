@@ -2292,6 +2292,19 @@ judgement deactivate        # Revert to free tier</pre>
 <!-- ==================== SETTINGS PAGE ==================== -->
 <div id="page-settings" class="page settings-page">
   <div class="settings-section">
+    <h3>&#9670; Profile</h3>
+    <div class="form-group" style="margin-bottom:8px;">
+      <span style="color:#888;font-size:12px;">Display Name / Hacker Name</span>
+      <input type="text" id="settings-display-name" placeholder="e.g. SHADOW_WRAITH" maxlength="32" style="text-transform:uppercase;">
+    </div>
+    <label style="margin-bottom:8px;display:flex;align-items:center;gap:8px;">
+      <input type="checkbox" id="settings-use-display-name">
+      <span style="font-size:12px;">Use display name on leaderboard instead of OAuth username</span>
+    </label>
+    <p style="color:#666;font-size:11px;">This name will appear on the global leaderboard podium and rankings.</p>
+  </div>
+
+  <div class="settings-section">
     <h3>&#9670; LLM Configuration</h3>
     <div class="form-group" style="margin-bottom:8px;">
       <span style="color:#888;font-size:12px;">Ollama URL</span>
@@ -3141,6 +3154,8 @@ async function loadSettings() {
     const resp = await fetch('/api/settings');
     const data = await resp.json();
     const s = data.settings||{};
+    if (s.display_name) document.getElementById('settings-display-name').value = s.display_name;
+    if (s.use_display_name === 'true') document.getElementById('settings-use-display-name').checked = true;
     if (s.ollama_url) document.getElementById('settings-ollama-url').value = s.ollama_url;
     if (s.ollama_model) document.getElementById('settings-ollama-model').value = s.ollama_model;
     if (s.mcp_url) document.getElementById('settings-mcp-url').value = s.mcp_url;
@@ -3398,7 +3413,12 @@ function importCustomPatterns(event) {
 }
 
 async function saveAllSettings() {
+  const displayName = document.getElementById('settings-display-name').value.trim();
+  const useDisplayName = document.getElementById('settings-use-display-name').checked;
+  
   await fetch('/api/settings',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({
+    display_name: displayName,
+    use_display_name: useDisplayName ? 'true' : 'false',
     ollama_url:document.getElementById('settings-ollama-url').value.trim(),
     ollama_model:document.getElementById('settings-ollama-model').value.trim(),
     mcp_url:document.getElementById('settings-mcp-url').value.trim(),
@@ -3407,6 +3427,18 @@ async function saveAllSettings() {
     error_cutoff:document.getElementById('settings-error-cutoff').value,
     cost_warning:document.getElementById('settings-cost-warning').checked?'true':'false'
   })});
+  
+  // Sync display name to leaderboard server if logged in and enabled
+  if (authToken && displayName && useDisplayName) {
+    try {
+      await fetch('/api/leaderboard/auth/display-name', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + authToken },
+        body: JSON.stringify({ display_name: displayName })
+      });
+    } catch(e) { /* silent - remote sync is best effort */ }
+  }
+  
   document.getElementById('settings-save-status').textContent = 'Saved!';
   setTimeout(()=>{document.getElementById('settings-save-status').textContent='';}, 2000);
 }
@@ -4289,7 +4321,7 @@ async function loadLeaderboard() {
           });
           if (meResp.ok) {
             const meData = await meResp.json();
-            displayName = meData.username || meData.display_name || 'Player';
+            displayName = meData.display_name || meData.username || 'Player';
           }
         } catch(e) { /* silent */ }
       }
