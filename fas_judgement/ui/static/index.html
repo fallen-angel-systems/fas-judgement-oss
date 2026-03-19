@@ -4246,15 +4246,6 @@ let authToken = localStorage.getItem('judgement_auth_token');
 
 async function loadLeaderboard() {
   try {
-    // Check for auth token from URL params (OAuth callback)
-    const urlParams = new URLSearchParams(window.location.search);
-    const tokenParam = urlParams.get('token');
-    if (tokenParam) {
-      authToken = tokenParam;
-      localStorage.setItem('judgement_auth_token', authToken);
-      window.history.replaceState({}, document.title, window.location.pathname);
-    }
-
     // Load leaderboard
     const headers = {};
     if (authToken) headers.Authorization = 'Bearer ' + authToken;
@@ -5030,6 +5021,16 @@ switchPage = function(page) {
 
 // Init on load
 document.addEventListener('DOMContentLoaded', () => {
+  // Capture OAuth token from URL params on any page load (redirect lands on default tab)
+  const urlParams = new URLSearchParams(window.location.search);
+  const tokenParam = urlParams.get('token');
+  if (tokenParam) {
+    authToken = tokenParam;
+    localStorage.setItem('judgement_auth_token', authToken);
+    window.history.replaceState({}, document.title, window.location.pathname);
+    // Auto-switch to leaderboard tab to show logged-in state
+    switchPage('leaderboard');
+  }
   setTimeout(initProgression, 500);
 });
 </script>

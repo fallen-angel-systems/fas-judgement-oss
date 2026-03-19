@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "fas-judgement"
-version = "3.0.13"
+version = "3.0.14"
 description = "Open-source prompt injection attack console - Test AI systems for prompt injection vulnerabilities"
 readme = "README.md"
 license = {text = "MIT"}
