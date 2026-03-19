@@ -130,7 +130,8 @@
     overflow: hidden !important;
     max-height: calc(100vh - 90px) !important;
   }
-  #page-multiturn .mt-console {
+  /* Only show mt-console when elite is unlocked */
+  #page-multiturn.elite-unlocked .mt-console {
     flex: 1 !important;
     display: flex !important;
     flex-direction: column !important;
@@ -3550,6 +3551,9 @@ function updateTierUI(data) {
   document.querySelectorAll('.elite-gate-unlocked').forEach(el => {
     el.style.display = data.is_elite ? 'block' : 'none';
   });
+  // Add class for CSS-driven multi-turn console layout
+  const mtPage = document.getElementById('page-multiturn');
+  if (mtPage) { data.is_elite ? mtPage.classList.add('elite-unlocked') : mtPage.classList.remove('elite-unlocked'); }
 
   // Update settings license section
   const tierDisplay = document.getElementById('license-tier-display');
