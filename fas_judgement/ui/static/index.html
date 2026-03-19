@@ -4362,11 +4362,13 @@ function formatPlayTime(seconds) {
 }
 
 function signInGithub() {
-  window.location.href = 'https://judgement-app.fallenangelsystems.com/api/leaderboard/auth/github';
+  const redirect = encodeURIComponent(window.location.origin);
+  window.location.href = 'https://judgement-app.fallenangelsystems.com/api/leaderboard/auth/github?redirect_url=' + redirect;
 }
 
 function signInGoogle() {
-  window.location.href = 'https://judgement-app.fallenangelsystems.com/api/leaderboard/auth/google';
+  const redirect = encodeURIComponent(window.location.origin);
+  window.location.href = 'https://judgement-app.fallenangelsystems.com/api/leaderboard/auth/google?redirect_url=' + redirect;
 }
 
 /* ====== INIT ====== */
