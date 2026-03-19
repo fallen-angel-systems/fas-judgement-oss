@@ -4261,7 +4261,20 @@ async function loadLeaderboard() {
     const headers = {};
     if (authToken) headers.Authorization = 'Bearer ' + authToken;
     
-    const leaderResp = await fetch('https://judgement-app.fallenangelsystems.com/api/leaderboard/leaderboard/', { headers });
+    let leaderResp = await fetch('https://judgement-app.fallenangelsystems.com/api/leaderboard/leaderboard/', { headers });
+    
+    // If auth fails, retry without token and clear stale auth
+    if (!leaderResp.ok && authToken) {
+      console.warn('Auth request failed (' + leaderResp.status + '), retrying without token');
+      authToken = null;
+      localStorage.removeItem('judgement_auth_token');
+      leaderResp = await fetch('https://judgement-app.fallenangelsystems.com/api/leaderboard/leaderboard/');
+    }
+    
+    if (!leaderResp.ok) {
+      throw new Error('HTTP ' + leaderResp.status);
+    }
+    
     leaderboardData = await leaderResp.json();
 
     // Check if user is authenticated
@@ -4278,7 +4291,10 @@ async function loadLeaderboard() {
   } catch(e) {
     console.warn('Leaderboard load failed:', e);
     document.getElementById('leaderboard-content').innerHTML =
-      '<div style="text-align:center;padding:40px;color:#ff4444;font-size:12px;">Failed to load leaderboard. Check your connection.</div>';
+      '<div style="text-align:center;padding:40px;color:#ff4444;font-size:12px;">' +
+      'Failed to load leaderboard.<br><span style="color:#666;font-size:11px;">' + 
+      escapeHtml(e.message || String(e)) + '</span><br>' +
+      '<button onclick="loadLeaderboard()" style="margin-top:12px;background:#222;color:#ff4444;border:1px solid #ff4444;padding:6px 16px;border-radius:4px;cursor:pointer;font-family:inherit;">Retry</button></div>';
   }
 }
 
