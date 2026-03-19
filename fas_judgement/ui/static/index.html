@@ -4261,14 +4261,14 @@ async function loadLeaderboard() {
     const headers = {};
     if (authToken) headers.Authorization = 'Bearer ' + authToken;
     
-    let leaderResp = await fetch('https://judgement-app.fallenangelsystems.com/api/leaderboard/leaderboard/', { headers });
+    let leaderResp = await fetch('/api/leaderboard/leaderboard/', { headers });
     
     // If auth fails, retry without token and clear stale auth
     if (!leaderResp.ok && authToken) {
       console.warn('Auth request failed (' + leaderResp.status + '), retrying without token');
       authToken = null;
       localStorage.removeItem('judgement_auth_token');
-      leaderResp = await fetch('https://judgement-app.fallenangelsystems.com/api/leaderboard/leaderboard/');
+      leaderResp = await fetch('/api/leaderboard/leaderboard/');
     }
     
     if (!leaderResp.ok) {
@@ -4284,7 +4284,7 @@ async function loadLeaderboard() {
       let displayName = currentUser ? currentUser.username : null;
       if (!displayName) {
         try {
-          const meResp = await fetch('https://judgement-app.fallenangelsystems.com/api/leaderboard/auth/me', {
+          const meResp = await fetch('/api/leaderboard/auth/me', {
             headers: { 'Authorization': 'Bearer ' + authToken }
           });
           if (meResp.ok) {

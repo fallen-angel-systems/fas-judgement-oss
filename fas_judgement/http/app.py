@@ -139,6 +139,34 @@ def _include_routers():
 _include_routers()
 
 
+# === SECTION: LEADERBOARD PROXY === #
+# Proxy leaderboard API calls through local server to avoid CORS issues.
+# Browser calls /api/leaderboard/* locally, we forward to the remote API.
+
+LEADERBOARD_API = "https://judgement-app.fallenangelsystems.com/api/leaderboard"
+
+@app.api_route("/api/leaderboard/{path:path}", methods=["GET", "POST", "PUT", "DELETE"])
+async def leaderboard_proxy(path: str, request: Request):
+    """Proxy requests to the remote leaderboard API to avoid CORS."""
+    import httpx
+    url = f"{LEADERBOARD_API}/{path}"
+    headers = {}
+    if "authorization" in request.headers:
+        headers["Authorization"] = request.headers["authorization"]
+    
+    async with httpx.AsyncClient(timeout=10.0) as client:
+        if request.method == "GET":
+            resp = await client.get(url, headers=headers, params=dict(request.query_params))
+        else:
+            body = await request.body()
+            resp = await client.request(request.method, url, headers=headers, content=body,
+                                       params=dict(request.query_params))
+    
+    from fastapi.responses import Response
+    return Response(content=resp.content, status_code=resp.status_code,
+                    media_type=resp.headers.get("content-type", "application/json"))
+
+
 # === SECTION: STARTUP === #
 
 @app.on_event("startup")
