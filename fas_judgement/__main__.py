@@ -27,6 +27,13 @@ from .config import BANNER
 
 # === SECTION: UPDATE CHECKER === #
 
+def _parse_version(v: str):
+    """Parse version string into tuple of ints for proper comparison."""
+    try:
+        return tuple(int(x) for x in v.split("."))
+    except (ValueError, AttributeError):
+        return (0,)
+
 def check_for_updates(current_version: str) -> None:
     """
     Ping PyPI for a newer version. Silent on failure (no network = no problem).
@@ -39,7 +46,7 @@ def check_for_updates(current_version: str) -> None:
         )
         data = json.loads(resp.read())
         latest = data["info"]["version"]
-        if latest != current_version:
+        if _parse_version(latest) > _parse_version(current_version):
             print(
                 f"\n  \033[33m⚡ Update available: {current_version} → {latest}\033[0m"
             )
