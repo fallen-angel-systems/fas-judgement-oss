@@ -1,2 +1,2 @@
 """FAS Judgement OSS — Open-source prompt injection attack console."""
-__version__ = "3.0.18"
+__version__ = "3.0.19"

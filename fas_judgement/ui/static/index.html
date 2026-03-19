@@ -5087,6 +5087,12 @@ document.addEventListener('DOMContentLoaded', () => {
     // Auto-switch to leaderboard tab to show logged-in state
     switchPage('leaderboard');
   }
+  // If we have a stored token, immediately show signed-in state
+  if (authToken) {
+    document.getElementById('auth-section').style.display = 'none';
+    document.getElementById('auth-signed-in').style.display = 'flex';
+    document.getElementById('auth-username').textContent = 'Loading...';
+  }
   setTimeout(initProgression, 500);
 });
 </script>
