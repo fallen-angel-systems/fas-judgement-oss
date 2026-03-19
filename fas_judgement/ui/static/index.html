@@ -4243,6 +4243,32 @@ function jerryAudio(clip) {
   } catch(e) {}
 }
 
+// === JERRY TAUNT SYSTEM === //
+// Tiered taunts that escalate based on failed attempt count.
+// Tier 1 (attempt 3): mild nudge
+// Tier 2 (attempt 5-6): getting annoyed
+// Tier 3 (attempt 8-9): condescending
+// Tier 4 (attempt 12+): full roast
+// Tier 5 (attempt 20+): nuclear
+const TAUNT_TIERS = [
+  { minAttempts: 20, tier: 't5', count: 5 },
+  { minAttempts: 12, tier: 't4', count: 5 },
+  { minAttempts: 8,  tier: 't3', count: 5 },
+  { minAttempts: 5,  tier: 't2', count: 5 },
+  { minAttempts: 3,  tier: 't1', count: 5 },
+];
+
+function jerryTaunt(attempts) {
+  for (const t of TAUNT_TIERS) {
+    if (attempts >= t.minAttempts) {
+      const idx = String(Math.floor(Math.random() * t.count) + 1).padStart(2, '0');
+      const clip = 'taunts/taunt_' + t.tier + '_' + idx;
+      jerryAudio(clip);
+      return;
+    }
+  }
+}
+
 // Load player state
 async function loadProgState() {
   try {
@@ -4567,9 +4593,13 @@ async function sendChallengeMsg() {
     } else if (data.blocked) {
       addChatMsg('system', '\u274C BLOCKED -- Attack detected and rejected.');
       await recordAttemptAndRefreshHints();
+      // Jerry taunts on failed attempts
+      if (currentChallenge.detail) jerryTaunt(currentChallenge.detail.attempts);
     } else {
       addChatMsg('system', '\u26A0 No effect -- the bot responded normally. Try a different approach.');
       await recordAttemptAndRefreshHints();
+      // Jerry taunts on failed attempts
+      if (currentChallenge.detail) jerryTaunt(currentChallenge.detail.attempts);
     }
   } catch(e) {
     addChatMsg('system', 'Error communicating with challenge target.');
