@@ -11,7 +11,7 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 [![GitHub Stars](https://img.shields.io/github/stars/fallen-angel-systems/fas-judgement-oss?style=social&v=2)](https://github.com/fallen-angel-systems/fas-judgement-oss)
 
-[Install](#quick-start) | [Game Mode](#shall-we-play-a-game) | [Demo Target](#demo-target) | [Features](#features) | [Elite](#free-vs-elite) | [Contributing](#contributing)
+[Install](#quick-start) | [Game Mode](#shall-we-play-a-game) | [Leaderboard](#global-leaderboard) | [Demo Target](#demo-target) | [Features](#features) | [Elite](#free-vs-elite) | [Contributing](#contributing)
 
 </div>
 
@@ -27,9 +27,16 @@ Judgement gives you a structured way to fire categorized attack patterns at any 
 
 Built by [Fallen Angel Systems](https://fallenangelsystems.com), the team behind [Guardian](https://fallenangelsystems.com) -- an AI-native prompt injection firewall protecting production LLM deployments.
 
-## What's New in v3.0.0
+## What's New
 
-### "Shall We Play A Game?" -- Gamified Training System
+### v3.0.22 -- Global Leaderboard + OAuth Login
+- **Global leaderboard** with animated podium (gold/silver/bronze glow cards)
+- **GitHub and Google OAuth** -- sign in to compete
+- **Hacker names** -- custom display names in Settings
+- **Sign in/out flow** with token management
+- **Jerry voice overhaul** -- all 34 voice lines regenerated with the locked WOPR recipe
+
+### v3.0.0 -- "Shall We Play A Game?" -- Gamified Training System
 
 Judgement is now a **gamified hacking training platform**. Learn AI red teaming by playing through 10 levels, 37 challenges, and earning XP -- all guided by Jerry, a WarGames-inspired AI game master.
 
@@ -138,6 +145,25 @@ Jerry has built the perfect defense. He blocks role hijacking, data exfiltration
 The way through isn't through the defenses. It's through Jerry himself.
 
 *"A STRANGE GAME. THE ONLY WINNING MOVE IS... TO KNOW HOW TO PLAY."*
+
+## Global Leaderboard
+
+Compete with prompt injection hackers worldwide. Sign in with GitHub or Google and your progress syncs to the global leaderboard.
+
+**Features:**
+- **Animated podium** -- Top 3 players get gold/silver/bronze cards with glow effects
+- **Full rankings table** -- XP, level, challenges completed, play time, badges
+- **OAuth login** -- GitHub or Google, one click
+- **Hacker names** -- Set a custom display name in Settings (because "jtil4201" doesn't strike fear)
+- **Sign in/out** -- Your session persists locally, sign out anytime
+
+**How to get on the board:**
+1. Click the **Leaderboard** tab
+2. Sign in with GitHub or Google
+3. Play through the levels -- your XP and progress sync automatically
+4. Set a display name in **Settings > Profile**
+
+The leaderboard is **free for everyone** -- not gated behind Elite.
 
 ## Demo Target
 
@@ -263,8 +289,8 @@ fas_judgement/
 | Per-category attack limits | -- | Yes |
 | Transport layer (Discord, Slack, etc.) | HTTP only | All |
 | Phase-aware scoring + data leak detection | -- | Yes |
+| Global Leaderboard (OAuth, hacker names) | **Yes** | **Yes** |
 | Prestige Mode (replay with harder defenses) | -- | Coming Soon |
-| Leaderboards | -- | Coming Soon |
 
 **The full game is FREE.** Elite is for going deeper, not for finishing.
 
