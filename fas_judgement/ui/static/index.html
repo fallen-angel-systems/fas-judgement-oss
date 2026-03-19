@@ -4280,10 +4280,27 @@ async function loadLeaderboard() {
     // Check if user is authenticated
     if (authToken) {
       currentUser = leaderboardData.find(u => u.is_current_user);
-      if (currentUser) {
+      // Try to get username from /auth/me if not in leaderboard
+      let displayName = currentUser ? currentUser.username : null;
+      if (!displayName) {
+        try {
+          const meResp = await fetch('https://judgement-app.fallenangelsystems.com/api/leaderboard/auth/me', {
+            headers: { 'Authorization': 'Bearer ' + authToken }
+          });
+          if (meResp.ok) {
+            const meData = await meResp.json();
+            displayName = meData.username || meData.display_name || 'Player';
+          }
+        } catch(e) { /* silent */ }
+      }
+      if (displayName) {
         document.getElementById('auth-section').style.display = 'none';
         document.getElementById('auth-signed-in').style.display = 'flex';
-        document.getElementById('auth-username').textContent = currentUser.username;
+        document.getElementById('auth-username').textContent = displayName;
+      } else {
+        // Token exists but invalid - clean up
+        authToken = null;
+        localStorage.removeItem('judgement_auth_token');
       }
     }
 
