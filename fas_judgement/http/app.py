@@ -62,7 +62,7 @@ class SecurityHeadersMiddleware(BaseHTTPMiddleware):
 
 app = FastAPI(
     title="FAS Judgement OSS",
-    version="3.0.3",
+    version="3.0.19",
     docs_url=None,      # No public Swagger UI (security hygiene even for local)
     redoc_url=None,
     openapi_url=None,
@@ -159,9 +159,13 @@ if _STATIC_DIR.exists():
 @app.get("/", response_class=HTMLResponse)
 async def index():
     """Serve the OSS frontend SPA."""
+    from fas_judgement import __version__
     html_path = _STATIC_DIR / "index.html"
     if html_path.exists():
-        return HTMLResponse(html_path.read_text())
+        html = html_path.read_text()
+        # Inject current version into static HTML
+        html = html.replace("v3.0.19", f"v{__version__}")
+        return HTMLResponse(html)
     return HTMLResponse(
         "<h1>FAS Judgement OSS</h1><p>Frontend not found. Place index.html in ui/static/</p>"
     )
