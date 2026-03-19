@@ -744,6 +744,31 @@
   }
   .freeplay-banner-text { color: #33ff33; font-size: 12px; letter-spacing: 1px; }
   .freeplay-banner-xp { color: #888; font-size: 11px; }
+
+  /* Leaderboard Podium */
+  .podium-card {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    position: relative;
+    overflow: hidden;
+  }
+  .podium-card:hover { transform: translateY(-2px); }
+  .podium-card.gold {
+    background: linear-gradient(145deg, #1a1800 0%, #0d0d00 40%, #1a1500 100%);
+    border: 2px solid #ffdd0088;
+    animation: goldGlow 3s ease-in-out infinite;
+  }
+  .podium-card.silver {
+    background: linear-gradient(145deg, #1a1a1a 0%, #0d0d0d 40%, #1a1a1a 100%);
+    border: 2px solid #aaaaaa66;
+  }
+  .podium-card.bronze {
+    background: linear-gradient(145deg, #1a1008 0%, #0d0804 40%, #1a0f08 100%);
+    border: 2px solid #cc884466;
+  }
+  @keyframes goldGlow {
+    0%, 100% { box-shadow: 0 0 20px rgba(255,221,0,0.3); }
+    50% { box-shadow: 0 0 30px rgba(255,221,0,0.5); }
+  }
 </style>
 <link rel="icon" href="/static/favicon.ico" type="image/x-icon">
 </head>
@@ -812,6 +837,7 @@
   <div class="nav-tab" data-page="patterns" onclick="switchPage('patterns')">&#9638; Patterns</div>
   <div class="nav-tab nav-tab-elite" data-page="campaigns" onclick="switchPage('campaigns')">&#9733; Campaigns <span class="elite-lock">&#128274;</span></div>
   <div class="nav-tab nav-tab-elite" data-page="multiturn" onclick="switchPage('multiturn')">&#8644; Multi-Turn <span class="elite-lock">&#128274;</span></div>
+  <div class="nav-tab" data-page="leaderboard" onclick="switchPage('leaderboard')">&#9733; Leaderboard</div>
   <div class="nav-tab" data-page="docs" onclick="switchPage('docs')">&#9776; Docs</div>
   <div class="nav-tab" data-page="settings" onclick="switchPage('settings')">&#9881; Settings</div>
 </div>
@@ -1736,6 +1762,103 @@ async def analyze(request: Request):
   </div>
 </div>
 
+<!-- ==================== LEADERBOARD PAGE ==================== -->
+<div id="page-leaderboard" class="page" style="padding:20px;overflow-y:auto;flex-direction:column;">
+  <!-- Header Stats Bar -->
+  <div id="leaderboard-stats" style="background:#0d0d14;border:1px solid #222;border-radius:6px;padding:16px;margin-bottom:24px;display:flex;gap:24px;flex-wrap:wrap;align-items:center;">
+    <div style="flex:1;min-width:150px;">
+      <div style="color:#ff4444;font-size:18px;letter-spacing:2px;margin-bottom:4px;">&#9733; GLOBAL LEADERBOARD</div>
+      <div style="color:#666;font-size:12px;">Compete with prompt injection masters worldwide</div>
+    </div>
+    <div class="stat-box" style="text-align:center;min-width:100px;">
+      <div id="total-players" style="color:#44ff44;font-size:20px;font-weight:bold;">--</div>
+      <div style="color:#888;font-size:11px;letter-spacing:1px;">PLAYERS</div>
+    </div>
+    <div class="stat-box" style="text-align:center;min-width:100px;">
+      <div id="completion-rate" style="color:#ffaa00;font-size:20px;font-weight:bold;">--</div>
+      <div style="color:#888;font-size:11px;letter-spacing:1px;">COMPLETION</div>
+    </div>
+    <div class="stat-box" style="text-align:center;min-width:100px;">
+      <div id="avg-level" style="color:#8888ff;font-size:20px;font-weight:bold;">--</div>
+      <div style="color:#888;font-size:11px;letter-spacing:1px;">AVG LEVEL</div>
+    </div>
+  </div>
+
+  <!-- Authentication Section -->
+  <div id="auth-section" style="background:#1a0a0a;border:1px solid #aa2222;border-radius:6px;padding:16px;margin-bottom:24px;text-align:center;">
+    <div style="color:#ff4444;font-size:14px;letter-spacing:2px;margin-bottom:8px;">&#9889; SIGN IN TO COMPETE</div>
+    <div style="color:#888;font-size:12px;margin-bottom:16px;">Connect your account to appear on the global leaderboard and earn recognition</div>
+    <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap;">
+      <button onclick="signInGithub()" style="background:#24292e;color:#fff;border:1px solid #333;padding:10px 20px;border-radius:4px;cursor:pointer;font-family:inherit;font-size:12px;display:flex;align-items:center;gap:8px;">
+        <span>&#9654;</span> Sign in with GitHub
+      </button>
+      <button onclick="signInGoogle()" style="background:#4285f4;color:#fff;border:1px solid #4285f4;padding:10px 20px;border-radius:4px;cursor:pointer;font-family:inherit;font-size:12px;display:flex;align-items:center;gap:8px;">
+        <span>G</span> Sign in with Google
+      </button>
+    </div>
+  </div>
+
+  <!-- Top 3 Podium -->
+  <div id="podium-section" style="margin-bottom:24px;">
+    <div style="display:flex;gap:12px;justify-content:center;align-items:end;margin-bottom:16px;">
+      <!-- 2nd Place -->
+      <div id="podium-2" class="podium-card silver" style="background:linear-gradient(145deg, #1a1a1a 0%, #0d0d0d 40%, #1a1a1a 100%);border:2px solid #aaaaaa66;border-radius:8px;padding:16px;text-align:center;min-width:140px;position:relative;min-height:160px;">
+        <div style="position:absolute;top:-8px;left:50%;transform:translateX(-50%);background:#aaa;color:#000;font-size:12px;padding:4px 12px;border-radius:12px;font-weight:bold;">2ND</div>
+        <div class="rank-avatar" style="width:48px;height:48px;border-radius:50%;background:#333;margin:12px auto 8px;background-size:cover;"></div>
+        <div class="rank-username" style="color:#e0e0e0;font-size:13px;font-weight:bold;margin-bottom:4px;">--</div>
+        <div class="rank-level" style="color:#aaa;font-size:11px;margin-bottom:8px;">--</div>
+        <div class="rank-xp" style="color:#ffaa00;font-size:14px;font-weight:bold;">-- XP</div>
+      </div>
+      <!-- 1st Place -->
+      <div id="podium-1" class="podium-card gold" style="background:linear-gradient(145deg, #1a1800 0%, #0d0d00 40%, #1a1500 100%);border:2px solid #ffdd0088;border-radius:8px;padding:20px;text-align:center;min-width:160px;position:relative;min-height:180px;box-shadow:0 0 20px rgba(255,221,0,0.3);">
+        <div style="position:absolute;top:-8px;left:50%;transform:translateX(-50%);background:#ffdd00;color:#000;font-size:14px;padding:6px 16px;border-radius:12px;font-weight:bold;">1ST</div>
+        <div class="rank-avatar" style="width:56px;height:56px;border-radius:50%;background:#333;margin:16px auto 8px;background-size:cover;border:2px solid #ffdd00;"></div>
+        <div class="rank-username" style="color:#e0e0e0;font-size:15px;font-weight:bold;margin-bottom:4px;">--</div>
+        <div class="rank-level" style="color:#aaa;font-size:12px;margin-bottom:8px;">--</div>
+        <div class="rank-xp" style="color:#ffdd00;font-size:16px;font-weight:bold;">-- XP</div>
+      </div>
+      <!-- 3rd Place -->
+      <div id="podium-3" class="podium-card bronze" style="background:linear-gradient(145deg, #1a1008 0%, #0d0804 40%, #1a0f08 100%);border:2px solid #cc884466;border-radius:8px;padding:16px;text-align:center;min-width:140px;position:relative;min-height:160px;">
+        <div style="position:absolute;top:-8px;left:50%;transform:translateX(-50%);background:#cc8844;color:#000;font-size:12px;padding:4px 12px;border-radius:12px;font-weight:bold;">3RD</div>
+        <div class="rank-avatar" style="width:48px;height:48px;border-radius:50%;background:#333;margin:12px auto 8px;background-size:cover;"></div>
+        <div class="rank-username" style="color:#e0e0e0;font-size:13px;font-weight:bold;margin-bottom:4px;">--</div>
+        <div class="rank-level" style="color:#aaa;font-size:11px;margin-bottom:8px;">--</div>
+        <div class="rank-xp" style="color:#cc8844;font-size:14px;font-weight:bold;">-- XP</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Full Rankings Table -->
+  <div style="background:#0d0d14;border:1px solid #222;border-radius:6px;overflow:hidden;">
+    <div style="padding:12px 16px;border-bottom:1px solid #222;display:flex;justify-content:space-between;align-items:center;">
+      <div style="color:#ff4444;font-size:14px;font-weight:bold;letter-spacing:2px;">FULL RANKINGS</div>
+      <div style="color:#666;font-size:11px;" id="leaderboard-count">-- players</div>
+    </div>
+    <div style="overflow-x:auto;">
+      <table style="width:100%;border-collapse:collapse;font-size:12px;">
+        <thead>
+          <tr style="background:#111118;border-bottom:2px solid #222;">
+            <th style="text-align:left;color:#ff4444;font-size:11px;text-transform:uppercase;letter-spacing:1px;padding:8px 12px;">Rank</th>
+            <th style="text-align:left;color:#ff4444;font-size:11px;text-transform:uppercase;letter-spacing:1px;padding:8px 12px;">Player</th>
+            <th style="text-align:right;color:#ff4444;font-size:11px;text-transform:uppercase;letter-spacing:1px;padding:8px 12px;">XP</th>
+            <th style="text-align:center;color:#ff4444;font-size:11px;text-transform:uppercase;letter-spacing:1px;padding:8px 12px;">Level</th>
+            <th style="text-align:center;color:#ff4444;font-size:11px;text-transform:uppercase;letter-spacing:1px;padding:8px 12px;">Challenges</th>
+            <th style="text-align:center;color:#ff4444;font-size:11px;text-transform:uppercase;letter-spacing:1px;padding:8px 12px;">Play Time</th>
+            <th style="text-align:center;color:#ff4444;font-size:11px;text-transform:uppercase;letter-spacing:1px;padding:8px 12px;">Badges</th>
+          </tr>
+        </thead>
+        <tbody id="leaderboard-table">
+          <tr>
+            <td colspan="7" style="padding:40px;text-align:center;color:#444;font-size:12px;">
+              Loading leaderboard data...
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
 <!-- ==================== DOCS PAGE ==================== -->
 <div id="page-docs" class="page" style="padding:20px;overflow-y:auto;">
   <div style="text-align:center;margin-bottom:24px;">
@@ -2173,6 +2296,7 @@ function switchPage(page) {
   if (page === 'patterns') { filterPatterns(); loadCustomPatterns(); }
   if (page === 'reports') { loadReportSessions(); }
   if (page === 'multiturn' && mtConnected && mtCategories.length === 0) { mtLoadCategories(); }
+  if (page === 'leaderboard') { loadLeaderboard(); }
   if (page === 'settings') loadSettings();
 }
 
@@ -3995,6 +4119,150 @@ switchPage = function(page) {
     document.getElementById('mt-connection-modal').style.display = 'flex';
   }
 };
+
+/* ====== LEADERBOARD ====== */
+let leaderboardData = [];
+let currentUser = null;
+let authToken = localStorage.getItem('judgement_auth_token');
+
+async function loadLeaderboard() {
+  try {
+    // Check for auth token from URL params (OAuth callback)
+    const urlParams = new URLSearchParams(window.location.search);
+    const tokenParam = urlParams.get('token');
+    if (tokenParam) {
+      authToken = tokenParam;
+      localStorage.setItem('judgement_auth_token', authToken);
+      // Clean URL
+      window.history.replaceState({}, document.title, window.location.pathname);
+    }
+
+    // Load stats
+    const statsResp = await fetch('https://judgement-app.fallenangelsystems.com/api/leaderboard/stats');
+    const statsData = await statsResp.json();
+    document.getElementById('total-players').textContent = statsData.total_players || 0;
+    document.getElementById('completion-rate').textContent = (statsData.completion_rate || 0).toFixed(1) + '%';
+    document.getElementById('avg-level').textContent = (statsData.average_level || 1).toFixed(1);
+
+    // Load leaderboard
+    const headers = {};
+    if (authToken) headers.Authorization = 'Bearer ' + authToken;
+    
+    const leaderResp = await fetch('https://judgement-app.fallenangelsystems.com/api/leaderboard/', { headers });
+    leaderboardData = await leaderResp.json();
+
+    // Check if user is authenticated
+    if (authToken) {
+      currentUser = leaderboardData.find(u => u.is_current_user);
+      if (currentUser) {
+        document.getElementById('auth-section').style.display = 'none';
+      }
+    }
+
+    renderLeaderboard();
+  } catch(e) {
+    console.warn('Leaderboard load failed:', e);
+    // Show placeholder data
+    document.getElementById('leaderboard-table').innerHTML = 
+      '<tr><td colspan="7" style="padding:40px;text-align:center;color:#ff4444;font-size:12px;">Failed to load leaderboard. Check your connection.</td></tr>';
+  }
+}
+
+function renderLeaderboard() {
+  const count = leaderboardData.length;
+  document.getElementById('leaderboard-count').textContent = count + ' player' + (count !== 1 ? 's' : '');
+
+  // Render podium (top 3)
+  for (let i = 1; i <= 3; i++) {
+    const player = leaderboardData[i - 1];
+    const podium = document.getElementById('podium-' + i);
+    if (player) {
+      const avatar = podium.querySelector('.rank-avatar');
+      const username = podium.querySelector('.rank-username');
+      const level = podium.querySelector('.rank-level');
+      const xp = podium.querySelector('.rank-xp');
+
+      if (player.avatar_url) {
+        avatar.style.backgroundImage = 'url(' + player.avatar_url + ')';
+      }
+      username.textContent = player.username + (player.is_current_user ? ' (you)' : '');
+      level.textContent = 'Level ' + player.current_level;
+      xp.textContent = player.total_xp.toLocaleString() + ' XP';
+
+      if (player.is_current_user) {
+        podium.style.borderColor = '#ff4444';
+        podium.style.boxShadow = '0 0 20px rgba(255,68,68,0.4)';
+      }
+    } else {
+      // Empty podium spot
+      const username = podium.querySelector('.rank-username');
+      const level = podium.querySelector('.rank-level');
+      const xp = podium.querySelector('.rank-xp');
+      username.textContent = '--';
+      level.textContent = '--';
+      xp.textContent = '-- XP';
+    }
+  }
+
+  // Render full table
+  const table = document.getElementById('leaderboard-table');
+  table.innerHTML = '';
+
+  if (leaderboardData.length === 0) {
+    table.innerHTML = '<tr><td colspan="7" style="padding:40px;text-align:center;color:#444;font-size:12px;">No players yet. Be the first to join!</td></tr>';
+    return;
+  }
+
+  for (const player of leaderboardData) {
+    const row = document.createElement('tr');
+    row.style.borderBottom = '1px solid #1a1a1a';
+    if (player.is_current_user) {
+      row.style.background = 'rgba(255,68,68,0.1)';
+      row.style.borderLeft = '3px solid #ff4444';
+    }
+    row.innerHTML = 
+      '<td style="padding:8px 12px;color:#e0e0e0;font-weight:bold;">#' + player.rank + '</td>' +
+      '<td style="padding:8px 12px;">' +
+        '<div style="display:flex;align-items:center;gap:8px;">' +
+          (player.avatar_url ? '<img src="' + player.avatar_url + '" style="width:24px;height:24px;border-radius:50%;" onerror="this.style.display=\'none\'">' : '<div style="width:24px;height:24px;border-radius:50%;background:#333;"></div>') +
+          '<div>' +
+            '<div style="color:#e0e0e0;font-size:12px;font-weight:bold;">' + escapeHtml(player.username) + (player.is_current_user ? ' <span style="color:#ff4444;">(you)</span>' : '') + '</div>' +
+            (player.badges.length > 0 ? '<div style="margin-top:2px;">' + renderBadges(player.badges) + '</div>' : '') +
+          '</div>' +
+        '</div>' +
+      '</td>' +
+      '<td style="padding:8px 12px;text-align:right;color:#ffaa00;font-weight:bold;">' + player.total_xp.toLocaleString() + '</td>' +
+      '<td style="padding:8px 12px;text-align:center;color:#8888ff;font-weight:bold;">' + player.current_level + '</td>' +
+      '<td style="padding:8px 12px;text-align:center;color:#44ff44;">' + player.challenges_completed + '</td>' +
+      '<td style="padding:8px 12px;text-align:center;color:#888;">' + formatPlayTime(player.total_play_time_seconds) + '</td>' +
+      '<td style="padding:8px 12px;text-align:center;">' + player.badges.length + '</td>';
+    
+    table.appendChild(row);
+  }
+}
+
+function renderBadges(badges) {
+  return badges.slice(0, 3).map(badge => 
+    '<span style="display:inline-block;background:#1a1a2a;color:#8888ff;font-size:9px;padding:1px 4px;border-radius:3px;margin-right:2px;" title="' + escapeHtml(badge.description) + '">' + 
+    (badge.icon || '&#9733;') + '</span>'
+  ).join('') + (badges.length > 3 ? '<span style="color:#555;font-size:9px;">+' + (badges.length - 3) + '</span>' : '');
+}
+
+function formatPlayTime(seconds) {
+  if (!seconds || seconds < 60) return '< 1m';
+  const hours = Math.floor(seconds / 3600);
+  const minutes = Math.floor((seconds % 3600) / 60);
+  if (hours > 0) return hours + 'h ' + minutes + 'm';
+  return minutes + 'm';
+}
+
+function signInGithub() {
+  window.location.href = 'https://judgement-app.fallenangelsystems.com/api/auth/github';
+}
+
+function signInGoogle() {
+  window.location.href = 'https://judgement-app.fallenangelsystems.com/api/auth/google';
+}
 
 /* ====== INIT ====== */
 migrateOldMyPatterns();
